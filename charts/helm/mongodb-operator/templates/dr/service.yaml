@@ -1,0 +1,25 @@
+{{- if (eq .Values.schemaSettings.schemaType "dr") }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: {{ .Values.operator.operatorName }}
+  name: mongodb-disaster-recovery
+  namespace: {{ .Release.Namespace }}
+spec:
+{{- if ne .Values.tls.mode "disabled" }}
+  ports:
+  - name: dr
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+{{- else }}
+  ports:
+  - name: dr
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+{{- end }}
+  selector:
+    name: {{ .Values.operator.operatorName }}
+{{- end }}

@@ -1,0 +1,50 @@
+@token=s.8a7bAofHFLUousHUUKVFNe9n
+@baseUrl = http://vault-service-vault-service.ci-master.openshift.sdntest.netcracker.com
+
+@ingressName = ci-master
+@tls = false
+
+
+# Delete Config DB
+DELETE {{baseUrl}}/v1/database/config/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_mongodb
+X-Vault-Token: {{token}}
+
+###
+#Delete role
+DELETE {{baseUrl}}/v1/database/static-roles/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_operator_backup
+X-Vault-Token: {{token}}
+
+###
+#Delete role
+DELETE {{baseUrl}}/v1/database/static-roles/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_operator_restore
+X-Vault-Token: {{token}}
+
+###
+#Delete role
+DELETE {{baseUrl}}/v1/database/static-roles/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_operator_root
+X-Vault-Token: {{token}}
+
+###
+#Delete role
+DELETE {{baseUrl}}/v1/database/static-roles/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_operator_monitoring
+X-Vault-Token: {{token}}
+
+###
+#Delete role
+DELETE {{baseUrl}}/v1/database/static-roles/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_operator_dbaas
+X-Vault-Token: {{token}}
+
+###
+#Create DB Engine
+PUT {{baseUrl}}/v1/database/config/nc-{{ingressName}}.openshift.sdntest.netcracker.com_mongodb_mongodb
+X-Vault-Token: {{token}}
+Content-Type: application/json
+
+{
+  "plugin_name":      "mongodb-database-plugin",
+  "connection_url":   "mongodb://{{username}}:{{password}}@mongos.mongodb:27017/admin?tls=true&tlsInsecure=true",
+  "username":         "vault-admin",
+  "password":         "vault-admin",
+  "allowed_roles":    "nc*"
+}
+

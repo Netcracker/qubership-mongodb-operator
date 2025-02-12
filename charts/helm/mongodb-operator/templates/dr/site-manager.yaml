@@ -1,0 +1,33 @@
+{{- if and (eq .Values.schemaSettings.schemaType "dr") .Values.disasterRecovery.siteManagerEnabled }}
+apiVersion: netcracker.com/v3
+kind: SiteManager
+metadata:
+  name: mongodb-{{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: mongodb-dr
+    release: {{ .Release.Name }}
+spec:
+  sitemanager:
+    module: "stateful"
+    {{- with .Values.disasterRecovery.afterServices }}
+    after:
+      {{- range . }}
+      - {{ . }}
+      {{- end }}
+    {{- else }}
+    after: []
+    {{- end }}
+    before: []
+    sequence: ["standby","active"]
+    timeout: {{ .Values.drTimeoutSeconds }}
+    allowedStandbyStateList: ["up"]
+    parameters:
+    {{- if ne .Values.tls.mode "disabled" }}
+      serviceEndpoint: "mongodb-disaster-recovery.{{ .Release.Namespace }}.svc.cluster.local:8443/sitemanager"
+      healthzEndpoint: "mongodb-disaster-recovery.{{ .Release.Namespace }}.svc.cluster.local:8443/healthz"
+    {{- else  }}
+      serviceEndpoint: "mongodb-disaster-recovery.{{ .Release.Namespace }}.svc.cluster.local:8080/sitemanager"
+      healthzEndpoint: "mongodb-disaster-recovery.{{ .Release.Namespace }}.svc.cluster.local:8080/healthz"
+    {{- end }}
+{{- end }}

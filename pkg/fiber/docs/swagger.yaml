@@ -1,0 +1,156 @@
+definitions:
+  fiber.Status:
+    properties:
+      status:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /compact/{dbName}:
+    post:
+      description: Compacts all collections in the database
+      parameters:
+      - description: Databases to compact all collections in
+        in: path
+        name: dbName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Compact all
+      tags:
+      - Operator API
+  /compact/{dbName}/{collectionName}:
+    post:
+      description: Compacts the collection in the database
+      parameters:
+      - description: Databases to compact collection in
+        in: path
+        name: dbName
+        required: true
+        type: string
+      - description: Collection name
+        in: path
+        name: collectionName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Compact
+      tags:
+      - Operator API
+  /flush:
+    post:
+      description: Flushes data from RAM to disks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Flush data
+      tags:
+      - Operator API
+  /healthz:
+    get:
+      description: Returns up/down/degraded health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Status'
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Get Mongo Cluster Health
+      tags:
+      - Operator API
+  /keyfile:
+    get:
+      description: Returns list of all existing databases in all namespaces
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Get Mongo Key File
+      tags:
+      - Operator API
+  /rotate-roles:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Rotate Vault Roles
+      tags:
+      - Operator API
+  /rs-status:
+    get:
+      description: Returns output of rs.status()
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Get Mongo Replica sets status
+      tags:
+      - Operator API
+swagger: "2.0"

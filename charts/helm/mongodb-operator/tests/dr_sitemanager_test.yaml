@@ -1,0 +1,35 @@
+suite: Test ServiceEndpoint and HealthzEndpoint
+templates:
+  - dr/site-manager.yaml
+tests:
+  - it: should test the service end point with tls disabled
+    values:
+      - ./../values.yaml
+    set:
+      schemaSettings:
+        schemaType: "dr"
+      tls:
+        mode: "disabled"
+    asserts:
+      - equal:
+          path: spec.sitemanager.parameters.serviceEndpoint
+          value: "mongodb-disaster-recovery.NAMESPACE.svc.cluster.local:8080/sitemanager"
+      - equal:
+          path: spec.sitemanager.parameters.healthzEndpoint
+          value: "mongodb-disaster-recovery.NAMESPACE.svc.cluster.local:8080/healthz"
+  
+  - it: should test the service end point with tls enabled
+    values:
+      - ./../values.yaml
+    set:
+      schemaSettings:
+        schemaType: "dr"
+      tls:
+        mode: requireTLS
+    asserts:
+      - equal:
+          path: spec.sitemanager.parameters.serviceEndpoint
+          value: "mongodb-disaster-recovery.NAMESPACE.svc.cluster.local:8443/sitemanager"
+      - equal:
+          path: spec.sitemanager.parameters.healthzEndpoint
+          value: "mongodb-disaster-recovery.NAMESPACE.svc.cluster.local:8443/healthz"

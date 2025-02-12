@@ -1,0 +1,8 @@
+{{- if and .Values.tls.generateCerts.enabled (ne .Values.tls.mode "disabled") (not (.Values.tls.generateCerts.clusterIssuerName)) }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: mongodb-tls-issuer
+spec:
+  selfSigned: {}
+{{ end }}
