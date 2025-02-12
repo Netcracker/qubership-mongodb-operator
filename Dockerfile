@@ -1,4 +1,4 @@
-FROM artifactorycn.netcracker.com:17114/alpine:3.19.1
+FROM alpine:3.19.1
 
 ENV WORKDIR=/opt/operator/
 
