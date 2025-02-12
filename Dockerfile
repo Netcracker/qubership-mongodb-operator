@@ -3,8 +3,8 @@ FROM --platform=$BUILDPLATFORM golang:1.23.0-alpine3.20 AS builder
 ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker
 
 RUN apk add --no-cache git
-RUN --mount=type=secret,id=GH_ACCESS_TOKEN git config --global url."https://$(cat /run/secrets/GH_ACCESS_TOKEN)@github.com/".insteadOf "https://github.com/"
-
+RUN --mount=type=secret,id=GH_ACCESS_TOKEN \
+    git config --global url."https://$(cat /run/secrets/GH_ACCESS_TOKEN)@github.com/".insteadOf "https://github.com/"
 COPY . /workspace
 
 WORKDIR /workspace
