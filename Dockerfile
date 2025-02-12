@@ -1,8 +1,8 @@
-FROM alpine:3.19.1
+FROM golang:1.22.5-alpine3.19
 
-ENV OPERATOR=/usr/local/bin/mongodb-operator \
+ENV OPERATOR=/usr/local/bin/qubership-mongodb-operator \
     USER_UID=1001 \
-    USER_NAME=mongodb-operator
+    USER_NAME=qubership-mongodb-operator
 
 ENV WORKDIR=/opt/operator/
 ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker/*
@@ -20,6 +20,9 @@ RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.19/main/' > /etc/apk/reposito
     go \
     zip
 
+
+ENV WORKDIR=/opt/operator/
+
 # Set working directory
 WORKDIR ${WORKDIR}
 
@@ -27,27 +30,12 @@ WORKDIR ${WORKDIR}
 COPY charts /opt/operator/charts
 COPY main.go /opt/operator/main.go
 
-# Set GOPATH and Go proxy settings
-ENV GOPATH=/home/netcrk/go
-ENV GOPROXY="direct"
-ENV CGO_ENABLED=0
 
-# Build the Go binary
-RUN go build -o ./bin/mongo-operator -gcflags all=-trimpath=${GOPATH} -asmflags all=-trimpath=${GOPATH} ./main.go
+# Build
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o ./bin/qubership-mongodb-operator \
+-gcflags all=-trimpath=${GOPATH} -asmflags all=-trimpath=${GOPATH} ./main.go
 
-# Build Docker image
-RUN docker build -t mongo_operator .
-
-# Tag the Docker image (replace $DOCKER_NAMES with actual Docker IDs)
-RUN for id in $DOCKER_NAMES; do \
-    docker tag mongo_operator $id; \
-done
-
-# Zip migration artifacts (from 'scripts' directory in your build.sh)
-RUN SCRIPTS=scripts && DIST_FILE="${SCRIPTS}/migration-artifacts.zip" && DIST_CONTENT="migration-artifacts" && \
-    rm -rf ./${SCRIPTS} && \
-    mkdir ${SCRIPTS} && \
-    zip -qr "$DIST_FILE" "$DIST_CONTENT"
 
 # Copy files for Helm deployment
 RUN mkdir -p deployments/charts/mongodb-operator && \
@@ -55,7 +43,7 @@ RUN mkdir -p deployments/charts/mongodb-operator && \
     cp ./charts/deployment-configuration.json deployments/deployment-configuration.json
 
 # Install the Go binary and set up entrypoint
-COPY bin/mongo-operator /usr/local/bin/mongo-operator
+COPY bin/qubership-mongodb-operator /usr/local/bin/qubership-mongodb-operator
 COPY build/bin /usr/local/bin
 
 # Set permissions for entrypoint and user setup
