@@ -1,0 +1,32 @@
+{{- if and .Values.tls.generateCerts.enabled (ne .Values.tls.mode "disabled") }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mongodb-certificate
+spec:
+  isCA: true
+  commonName: mongodb-ca
+  secretName: {{ .Values.tls.certificateSecretName }}
+  duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  dnsNames:
+{{ ( include "mongodb.certDnsNames" . | indent 4 ) }} 
+{{ ( include "mongodb.generateCNFRSFQDNs" . | indent 4 ) }}
+{{ ( include "mongodb.generateDATARSFQDNs" . | indent 4 ) }}
+  ipAddresses:
+{{ ( include "common.certIpAddresses" . | indent 4) }}
+  additionalOutputFormats:
+    - type: CombinedPEM
+  issuerRef:
+    group: cert-manager.io
+  {{- if .Values.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+  {{- else }}
+    name: mongodb-tls-issuer
+    kind: Issuer
+  {{ end }}
+{{ end }}

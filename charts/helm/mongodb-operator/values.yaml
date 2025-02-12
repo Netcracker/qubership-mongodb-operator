@@ -1,0 +1,259 @@
+## Default values for helm-chart.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
+#
+# Do not change
+DEPLOY_W_HELM: true
+operator:
+  operatorName: mongodb-operator
+  image: to_replace
+  initImage: to_replace
+  priorityClassName:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+global: 
+  profile: ""
+
+schemaSettings:
+  sharded: true
+  schemaType: "ha"
+  # Replicas' settings
+  cnfReplicaSize: 3
+  dataReplicaSize: 3
+  mongosReplicas: 1
+  shardCount: 3
+  dcName: mongodb-na
+  publicCloud:
+  thisDomainName: cluster.local
+  otherDomainName:
+  # Starts from 0.
+  # -1 = middle node is selected as arbiter automatically
+  arbiterIndex: -1
+
+disasterRecovery:
+  image: to_replace
+  httpAuth:
+    enabled: false
+    smSecureAuth: false
+    smNamespace: "site-manager-auth"
+    smServiceAccountName: ""
+    restrictedEnvironment: false
+    customAudience: "sm-services"
+  mode: "active"
+  siteManagerEnabled: true
+  afterServices: []
+  resources:
+    limits:
+      cpu: "100m"
+      memory: "32Mi"
+    requests:
+      cpu: "10m"
+      memory: "10Mi"
+  tls:
+    drCASecretName: mongo-dr-certificate
+    duration: 365
+    subjectAlternativeName:
+      additionalDnsNames: [ ]
+      additionalIpAddresses: [ ]
+    certificates:
+      tls_key: 
+      tls_crt: 
+
+imagePullPolicy: IfNotPresent
+
+createIngress: false
+
+# PV recycler settings
+recycler:
+  install: false
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 50m
+    requests:
+      memory: 64Mi
+      cpu: 50m
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+  supplementalGroups:
+
+crProcessingDelaySeconds: 0
+#tolerations example
+# policies:
+#   tolerations:
+#   - key: "key"
+#     operator: "Equal"
+#     value: "value"
+#     effect: "NoSchedule"
+
+# Specifies behavior of operator when resource update fails
+stopOnFailedResourceUpdate: false
+# Specifies pvc deletion using helm
+deletePVConUninstall: false
+# Specifies timeouts for resources operations
+waitSeconds: 300
+drTimeoutSeconds: 360
+
+# Specifies log level of operator pod
+debugLog: false
+
+authDb: admin
+
+# Enables IPv6 support (true or false)
+#
+# Note: If IPv6 is enabled then any ip address used in parameters (except DNS names) should be enclosed in square brackets
+# Examples:
+# [2001:db8::1b]
+# https://[2001:db8::1b]:443/
+# etc.
+#
+ipV6: false
+
+mongodb:
+  install: true
+  # flavor: small
+  # Mandatory MongoDB docker image link
+  dockerImage: to_replace
+  priorityClassName:
+
+  containerTimeoutSeconds: 10
+  containerPeriodSeconds: 10
+
+  # Key-value node labels for each mongo replica.
+  # Example:
+  # additionalNodeLabels:
+  #   label-name: value
+  #   second-label: another-value
+
+  # Credentials
+  rootUser: root
+  rootPassword: root
+  rootUserRole: "'root', '__system'"
+  mongoRootSecretName: mongodb-root-credentials.v1
+
+  # Config, Data and Mongos Resources
+  cnfResources:
+    limits:
+      memory: 1Gi
+      cpu: 500m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+  cnfWiredTigerCacheGb:
+  arbiterResources:
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 100m
+  dataResources:
+    limits:
+      memory: 1Gi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  dataWiredTigerCacheGb:
+  # customDataRSParameters:
+  #     - transactionLifetimeLimitSeconds=20
+  mongosResources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  singleWiredTigerCacheGb: 0.25
+
+  storage:
+    waitPvcBound: false
+    size:
+      - "5Gi"
+    #     List of PV names
+    #     Example:
+    #    volumes:
+    #      - node-left-1-mongo-1
+    #      - node-left-2-mongo-2
+    #      - node-left-3-mongo-3
+    #     List of key-value maps.
+    #     Should be set as different maps to apply it for each replica differently.
+    #     To set node name, use kubernetes.io/hostname label
+    #     Example:
+    #    nodeLabels:
+    #      - "kubernetes.io/hostname": dr311qa-arbiter-node-left-1
+    #      - "kubernetes.io/hostname": dr311qa-arbiter-node-left-2
+    #      - "kubernetes.io/hostname": dr311qa-arbiter-node-left-3
+    # List of volumes' storage classes.
+    # Could be set as list of classes to apply it for each PVC differently
+    # Example:
+    #     storageClasses:
+    #       - class-1
+    #       - class-2
+    #       - class-3
+
+tls:
+  mode: disabled
+  certificateSecretName: root-ca
+  rootCAFileName: ca.crt
+  privateKeyFileName: tls.key
+  signedCRTFileName: tls.crt
+  combinedKeyAndCRTFileName: tls-combined.pem
+  generateCerts:
+    enabled: false
+    clusterIssuerName: ""
+    duration: 365
+    subjectAlternativeName:
+      additionalDnsNames: []
+      additionalIpAddresses: []
+  certificates:
+    tls_key: 
+    tls_crt: 
+    ca_crt: 
+
+vaultRegistration:
+  tokenSecretName: vault-secret
+  dockerImage: to_replace
+  enabled: false
+  path: kv
+  url:
+  role: mongodb-role
+  method: kubernetes
+  rotationPeriod: 8640
+  initContainerResources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 20m
+      memory: 64Mi
+
+vaultDBEngine:
+  name: mongodb-db-engine
+  enabled: false
+  pluginName: mongodb-database-plugin
+  allowedRoles: nc*
+
+role:
+  # Specifies whether a role should be created
+  create: yes
+
+roleBinding:
+  # Specifies whether a roleBinding should be created
+  create: yes
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+
+crd:
+  # Specifies whether a CRD should be created
+  create: yes

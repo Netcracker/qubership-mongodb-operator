@@ -1,0 +1,16 @@
+{{- if and (not .Values.tls.generateCerts.enabled ) (ne (.Values.tls.mode) "disabled")}}
+kind: Secret
+apiVersion: v1
+metadata:
+    name: {{ .Values.tls.certificateSecretName }}
+    namespace: {{ .Release.Namespace }}
+data:
+    {{ .Values.tls.rootCAFileName }}: {{ .Values.tls.certificates.ca_crt }}
+
+    {{ .Values.tls.combinedKeyAndCRTFileName }}: {{ (printf "%s\n%s" (.Values.tls.certificates.tls_key | b64dec) (.Values.tls.certificates.tls_crt | b64dec)) | b64enc }}
+
+    {{ .Values.tls.privateKeyFileName }}: {{ .Values.tls.certificates.tls_key }}
+
+    {{ .Values.tls.signedCRTFileName }}: {{ .Values.tls.certificates.tls_crt }}
+type: Opaque
+{{ end }}

@@ -1,0 +1,407 @@
+{{/* Generating deployment version each time */}}
+{{- $deploymentVersion := randAlphaNum 10 -}}
+apiVersion: netcracker.com/v1alpha1
+kind: MongodbDeployment
+metadata:
+  name: {{ .Values.operator.operatorName }}
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  deploymentVersion: {{ $deploymentVersion | quote }}
+  cloudPublicHost: {{ .Values.CLOUD_PUBLIC_HOST }}
+  # Add fields here
+  schemaSettings:
+    schemaType: {{ .Values.schemaSettings.schemaType }}
+    sharded: {{ .Values.schemaSettings.sharded }}
+    cnfReplicaSize: {{template "fromEnv" (dict "envName" .Values.INFRA_MONGO_DB_REPLICAS "default" .Values.schemaSettings.cnfReplicaSize) }}
+    dataReplicaSize: {{template "fromEnv" (dict "envName" .Values.INFRA_MONGO_DB_REPLICAS "default" .Values.schemaSettings.dataReplicaSize) }}
+    shardCount: {{ .Values.schemaSettings.shardCount }}
+    arbiterIndex: {{ .Values.schemaSettings.arbiterIndex }}
+    thisDomainName: {{ .Values.schemaSettings.thisDomainName }}
+    {{- if .Values.schemaSettings.otherDomainName }}
+    otherDomainName: {{ .Values.schemaSettings.otherDomainName }}
+    {{- end }}
+    mongosReplicas: {{ .Values.schemaSettings.mongosReplicas }}
+
+  imagePullPolicy: {{ .Values.imagePullPolicy }}
+
+  recycler:
+    {{- if eq .Values.schemaSettings.schemaType "dr" }}
+    install: true
+    {{- else }}
+    install: {{ .Values.recycler.install }}
+    {{- end }}
+    resources:
+      limits:
+        memory: {{ .Values.recycler.resources.limits.memory }}
+        cpu: {{ .Values.recycler.resources.limits.cpu | quote }}
+      requests:
+        memory: {{ .Values.recycler.resources.requests.memory }}
+        cpu: {{ .Values.recycler.resources.requests.cpu | quote }}
+
+  podSecurityContext:
+    fsGroup: {{ .Values.podSecurityContext.fsGroup }}
+    runAsUser: {{ .Values.podSecurityContext.runAsUser }}
+    {{- if .Values.supplementalGroups }}
+    supplementalGroups:
+      {{- range $key, $value := .Values.podSecurityContext.supplementalGroups }}
+      - {{ $value | quote }}
+      {{- end }}
+    {{- end }}
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  {{- if .Values.policies }}
+  policies:
+    {{- if .Values.policies.tolerations }}
+    tolerations:
+      {{- range $tKey, $t := .Values.policies.tolerations }}
+      - key: {{ $t.key }}
+        effect: {{ $t.effect }}
+        operator: {{ $t.operator }}
+        tolerationSeconds: {{ $t.tolerationSeconds }}
+        value: {{ $t.value }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  stopOnFailedResourceUpdate: {{ .Values.stopOnFailedResourceUpdate }}
+  deletePVConUninstall: {{ .Values.deletePVConUninstall }}
+
+  waitSeconds: {{ .Values.waitSeconds }}
+  authDb: {{ .Values.authDb }}
+  ipV6: {{ .Values.ipV6 }}
+  disasterRecovery:
+    mode: {{ .Values.disasterRecovery.mode }}
+  serviceAccountName: {{ .Values.operator.operatorName }}
+  mongodb:
+    install: {{ .Values.mongodb.install }}
+    dockerImage: {{template "find_image" (dict "deployName" "dockerMongodb" "SERVICE_NAME" "dockerMongodb" "vals" .Values "default" .Values.mongodb.dockerImage) }}
+    {{- if .Values.mongodb.priorityClassName }}
+    priorityClassName: {{ .Values.mongodb.priorityClassName | quote }}
+    {{- end }}
+    mongoRootSecretName: {{ .Values.mongodb.mongoRootSecretName }}
+    containerTimeoutSeconds: {{.Values.mongodb.containerTimeoutSeconds}}
+    containerPeriodSeconds: {{.Values.mongodb.containerPeriodSeconds}}
+    {{- if .Values.mongodb.additionalNodeLabels }}
+    additionalNodeLabels:
+      {{- range $key, $value := .Values.mongodb.additionalNodeLabels }}
+      {{ $key | quote }}: {{ $value | quote }}
+      {{- end }}
+    {{- end }}
+    cnfResources:
+      {{ template "getCnfrsResourcesForProfile" (dict "envVar" .Values.MONGODB_PROFILE "dotVar" .Values.global.profile "values" .Values) }}
+    {{- if .Values.mongodb.cnfWiredTigerCacheGb }}
+    cnfWiredTigerCacheGb: {{ .Values.mongodb.cnfWiredTigerCacheGb | quote }}
+    {{- end }}
+    dataResources:
+      {{ template "getDatarsResourcesForProfile" (dict "envVar" .Values.MONGODB_PROFILE "dotVar" .Values.global.profile "values" .Values) }}
+    {{- if eq .Values.schemaSettings.schemaType "arbiter"}}
+    {{- if .Values.mongodb.arbiterResources}}
+    arbiterResources:
+      limits:
+        memory: {{ .Values.mongodb.arbiterResources.limits.memory }}
+        cpu: {{ .Values.mongodb.arbiterResources.limits.cpu | quote }}
+      requests:
+        memory: {{ .Values.mongodb.arbiterResources.requests.memory }}
+        cpu: {{ .Values.mongodb.arbiterResources.requests.cpu | quote }}
+    {{- end}}
+    {{- end}}
+    {{- if .Values.mongodb.dataWiredTigerCacheGb }}
+    dataWiredTigerCacheGb: {{ .Values.mongodb.dataWiredTigerCacheGb | quote }}
+    {{- end }}
+    {{- if .Values.mongodb.customDataRSParameters }}
+    customDataRSParameters: {{ .Values.mongodb.customDataRSParameters }}
+    {{- end }}
+    mongosResources:
+      {{ template "getMongosResourcesForProfile" (dict "envVar" .Values.MONGODB_PROFILE "dotVar" .Values.global.profile "values" .Values) }}
+    singleWiredTigerCacheGb: {{ .Values.mongodb.singleWiredTigerCacheGb | quote }}
+    storage:
+      {{- if eq "string" (printf "%T" .Values.mongodb.storage.size) }}
+      size:
+        - {{ .Values.mongodb.storage.size }}
+      {{- else }}
+      size:
+        {{- range $key, $value := .Values.mongodb.storage.size }}
+        - {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+      waitPvcBound: {{ .Values.mongodb.storage.waitPvcBound }}
+      {{- if .Values.mongodb.storage.nodeLabels }}
+      nodeLabels:
+        {{- range $key, $value := .Values.mongodb.storage.nodeLabels }}
+          {{- $arraystart := "-" -}}
+          {{- range $k, $v := $value }}
+          {{ $arraystart }} {{ $k | quote }}: {{ $v | quote }}
+          {{- $arraystart = " " }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.mongodb.storage.volumes }}
+      volumes:
+        {{- range $key, $value := .Values.mongodb.storage.volumes }}
+        - {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.mongodb.storage.storageClasses }}
+      storageClasses:
+        {{- range $key, $value := .Values.mongodb.storage.storageClasses }}
+        - {{ $value | quote }}
+        {{- end }}
+      {{- else if .Values.STORAGE_RWO_CLASS }}
+      storageClasses:
+        - {{ .Values.STORAGE_RWO_CLASS | quote }}
+      {{- else }}
+      storageClasses:
+        - ""
+      {{- end }}
+      {{- if .Values.mongodb.storage.matchLabelSelectors }}
+      matchLabelSelectors:
+        {{- range $key, $value := .Values.mongodb.storage.matchLabelSelectors }}
+        {{- $arraystart := "-" -}}
+        {{- range $k, $v := $value }}
+        {{ $arraystart }} {{ $k | quote }}: {{ $v | quote }}
+        {{- $arraystart = " " }}
+        {{- end }}
+        {{- end }}
+     {{- end }}
+  {{- if .Values.vaultRegistration }}
+  vaultRegistration:
+    dockerImage: {{template "find_image" (dict "deployName" "dockerVaultRegistration" "SERVICE_NAME" "vault-env" "vals" .Values "default" .Values.vaultRegistration.dockerImage) }}
+    enabled: {{ .Values.vaultRegistration.enabled }}
+    {{- if .Values.vaultRegistration.enabled }}
+    path: {{template "ifEnvThenDefault" (dict "envName" .Values.CLOUD_PUBLIC_HOST "then" (printf "secret/nc-%s/%s/%s" .Values.CLOUD_PUBLIC_HOST .Release.Namespace .Values.operator.operatorName) "default" .Values.vaultRegistration.path ) }}
+    method: {{template "ifEnvThenDefault" (dict "envName" .Values.CLOUD_PUBLIC_HOST "then" (printf "nc-%s_%s" .Values.CLOUD_PUBLIC_HOST .Release.Namespace ) "default" .Values.vaultRegistration.method ) }}
+    url: {{template "fromEnv" (dict "envName" .Values.VAULT_ADDR "default" .Values.vaultRegistration.url) }}
+    role: {{ .Values.operator.operatorName }}
+    rotationPeriod: {{ .Values.vaultRegistration.rotationPeriod }}
+    initContainerResources:
+      requests:
+        cpu: {{ .Values.vaultRegistration.initContainerResources.requests.cpu }}
+        memory: {{ .Values.vaultRegistration.initContainerResources.requests.memory }}
+      limits:
+        cpu: {{ .Values.vaultRegistration.initContainerResources.limits.cpu }}
+        memory: {{ .Values.vaultRegistration.initContainerResources.limits.memory }}
+
+    {{- end }}
+  {{- end }}
+
+  vaultDBEngine:
+    name: {{template "ifEnvThenDefault" (dict "envName" .Values.CLOUD_PUBLIC_HOST "then" (printf "nc-%s_%s_mongodb" .Values.CLOUD_PUBLIC_HOST .Release.Namespace ) "default" (printf "%s_%s" .Values.vaultDBEngine.name .Release.Namespace) ) }}
+    enabled: {{ .Values.vaultRegistration.enabled }}
+    pluginName: {{ .Values.vaultDBEngine.pluginName }}
+    allowedRoles: {{ .Values.vaultDBEngine.allowedRoles }}
+    role: {{template "ifEnvThenDefault" (dict "envName" .Values.CLOUD_PUBLIC_HOST "then" (printf "nc-%s_%s_%s_%s" .Values.CLOUD_PUBLIC_HOST .Release.Namespace .Values.operator.operatorName .Values.mongodb.rootUser ) "default" (printf "nc-%s_%s" .Release.Namespace .Values.operator.operatorName ) ) }}
+
+  tls:
+    {{- if ne (.Values.tls.mode) "disabled"}}
+    enabled: true
+    {{- else}}
+    enabled: false
+    {{- end }}
+    mode: {{ .Values.tls.mode }}
+    certificateSecretName: {{ .Values.tls.certificateSecretName }}
+    rootCAFileName: {{ .Values.tls.rootCAFileName }}
+    combinedKeyAndCRTFileName: {{ .Values.tls.combinedKeyAndCRTFileName }}
+    privateKeyFileName: {{ .Values.tls.privateKeyFileName }}
+    signedCRTFileName: {{ .Values.tls.signedCRTFileName }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.operator.operatorName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ .Values.operator.operatorName }}
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.operator.operatorName }}
+    spec:
+      serviceAccountName: {{ .Values.operator.operatorName }}
+      priorityClassName: {{ .Values.operator.priorityClassName | quote }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      {{- if .Values.vaultRegistration.enabled }}
+      initContainers:
+        - name: operator-init
+          image: {{ template "find_image" (dict "deployName" "operator_init" "SERVICE_NAME" "operator_init" "vals" .Values "default" .Values.operator.initImage) }}
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: VAULT_REGISTRATION_PATH
+              value: {{template "ifEnvThenDefault" (dict "envName" .Values.CLOUD_PUBLIC_HOST "then" (printf "secret/nc-%s/%s/%s" .Values.CLOUD_PUBLIC_HOST .Release.Namespace .Values.operator.operatorName) "default" .Values.vaultRegistration.path ) }}
+            - name: KV_ENABLED
+              value: "False"
+            - name: NC_RUN_MIGRATION_FOR_DBAAS
+              value: "False"
+            - name: CLOUD_PUBLIC_HOST
+              value: {{ .Values.CLOUD_PUBLIC_HOST }}
+            - name: SERVICE_ACCOUNT
+              value: {{ .Values.operator.operatorName }}
+            - name: CREATE_VAULT_AUTH
+              value: "True"
+            - name: VAULT_ADDR
+              value: {{template "fromEnv" (dict "envName" .Values.VAULT_ADDR "default" .Values.vaultRegistration.url) }}
+            - name: PAAS_PLATFORM
+              value: {{ default "kubernetes" .Values.vaultRegistration.paasPlatform }}
+            - name: PAAS_VERSION
+              value: {{ default "1.14" .Values.vaultRegistration.paasVersion | quote }}
+            - name: VAULT_SECRET_NAME
+              value: {{ .Values.vaultRegistration.tokenSecretName }}
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.vaultRegistration.tokenSecretName }}
+                  key: token
+            - name: OPENSHIFT_SERVER
+            {{- if and .Values.CLOUD_PROTOCOL .Values.CLOUD_API_HOST .Values.CLOUD_API_PORT }}
+              value: {{ printf "%s://%s:%.0f" .Values.CLOUD_PROTOCOL .Values.CLOUD_API_HOST .Values.CLOUD_API_PORT }}
+            {{- else }}
+              value: "https://kubernetes.default:443"
+            {{- end }}
+
+      {{- end }}
+      containers:
+        - name: {{ .Values.operator.operatorName }}
+          # Replace this with the built image name
+          image: {{template "find_image" (dict "deployName" .Values.operator.operatorName "SERVICE_NAME" .Values.operator.operatorName "vals" .Values "default" .Values.operator.image) }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: CLOUD_PUBLIC_HOST
+              value: {{ .Values.CLOUD_PUBLIC_HOST }}
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SERVICE_ACCOUNT
+              value: {{ .Values.operator.operatorName }}
+            - name: RECONCILIATION_DELAY_SECONDS
+              value: {{ .Values.crProcessingDelaySeconds | quote }}
+            - name: DEPLOYMENT_VERSION
+              value: {{ $deploymentVersion | quote }}
+            - name: DEBUG_LOG
+              value: {{ .Values.debugLog | quote }}
+          {{- if ne (.Values.tls.mode) "disabled"}}
+          volumeMounts: 
+            - name:      root-ca
+              mountPath: /usr/ssl/
+          {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.operator.resources.requests.cpu }}
+              memory: {{ .Values.operator.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.operator.resources.limits.cpu }}
+              memory: {{ .Values.operator.resources.limits.memory }}
+        {{- if (eq .Values.schemaSettings.schemaType "dr") }}
+        - name: mongodb-disaster-recovery
+          image: {{template "find_image" (dict "deployName" "disasterRecoveryImage" "SERVICE_NAME" "disasterRecoveryImage" "vals" .Values "default" .Values.disasterRecovery.image) }}
+          imagePullPolicy: Always
+          {{- if ne .Values.tls.mode "disabled" }}
+          volumeMounts:
+            - name: root-ca
+              mountPath: /tls
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+              name: dr
+          {{- else }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: dr
+          {{- end }}
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: RESOURCE_FOR_DR
+              value: "netcracker.com v1alpha1 mongodbdeployments {{ .Values.operator.operatorName }}"
+            - name: USE_DEFAULT_PATHS
+              value: "true"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: HEALTH_MAIN_SERVICES_ACTIVE
+              value: "{{ trim (include "mongodb.statefulsetNames" .) }}"
+            - name: ADDITIONAL_HEALTH_ENDPOINT
+              value: http://$(POD_IP):8069/healthz
+            - name: EXTERNAL_FULL_HEALTH_ENABLED
+              value: "true"
+            {{- if ne .Values.tls.mode "disabled" }}
+            - name: TLS_ENABLED
+              value: "true"
+            - name: CERTS_PATH
+              value: "/tls/"
+            {{- end  }}
+            {{- if .Values.disasterRecovery.httpAuth.enabled }}
+            - name: SITE_MANAGER_NAMESPACE
+              value: {{ .Values.disasterRecovery.httpAuth.smNamespace | quote }}
+            - name: SITE_MANAGER_SERVICE_ACCOUNT_NAME
+              value: {{ include "disasterRecovery.siteManagerServiceAccount" . }}
+            {{- if .Values.disasterRecovery.httpAuth.smSecureAuth }}
+            - name: SITE_MANAGER_CUSTOM_AUDIENCE
+              value: {{ .Values.disasterRecovery.httpAuth.customAudience }}
+            {{- end }}
+            {{- end }}
+          resources:
+            limits:
+              cpu: {{ default "32m" .Values.disasterRecovery.resources.limits.cpu  }}
+              memory: {{ default "32Mi" .Values.disasterRecovery.resources.limits.memory }}
+            requests:
+              cpu: {{ default "10m" .Values.disasterRecovery.resources.requests.cpu }}
+              memory: {{ default "10Mi" .Values.disasterRecovery.resources.requests.memory }}
+        {{- end }}
+      {{- if ne (.Values.tls.mode) "disabled"}}
+      volumes:
+      - name: root-ca
+        secret:
+          secretName: {{ .Values.tls.certificateSecretName }}
+      {{- end }}
+      {{- if .Values.policies }}
+      tolerations:
+        {{- range $tKey, $t := .Values.policies.tolerations }}
+        - key: {{ $t.key }}
+          operator: {{ $t.operator }}
+          value: {{ $t.value }}
+          effect: {{ $t.effect }}
+          tolerationSeconds: {{ $t.tolerationSeconds }}
+      {{- end }}
+  {{- end }}

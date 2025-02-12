@@ -1,0 +1,25 @@
+waitSeconds: "400"
+disasterRecovery:
+  # note mode changes 
+  mode: active
+schemaSettings:
+  schemaType: dr
+  # note domain name changes 
+  thisDomainName: cluster-1.local
+  otherDomainName: cluster-2.local
+mongodb:
+  install: true
+  storage:
+    waitPvcBound: false
+    size:
+      - 2Gi
+    storageClasses:
+      - managed-nfs-storage
+backup:
+  install: false
+dbaas:
+  install: false
+prometheusExporter:
+  install: false
+robotTests:
+  install: false

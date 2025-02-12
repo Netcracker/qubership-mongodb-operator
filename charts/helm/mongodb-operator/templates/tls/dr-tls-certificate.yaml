@@ -1,0 +1,28 @@
+{{- if and (eq .Values.schemaSettings.schemaType "dr") (and (ne .Values.tls.mode "disabled") .Values.tls.generateCerts.enabled)  }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mongo-dr-tls-certificate
+spec:
+  secretName: {{ .Values.disasterRecovery.tls.drCASecretName }}
+  duration: {{ default 365 .Values.disasterRecovery.tls.duration | mul 24 }}h
+  commonName: mongo-dr-certificate-cn
+  isCA: true
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  dnsNames:
+{{ ( include "mongodr.certDnsNames" . | indent 4 ) }}
+  ipAddresses:
+{{ ( include "common.certIpAddresses" . | indent 4) }}
+  issuerRef:
+    group: cert-manager.io
+  {{- if .Values.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+  {{- else }}
+    name: mongodb-tls-issuer
+    kind: Issuer
+  {{- end }}
+{{- end }}

@@ -1,0 +1,76 @@
+mongodb:
+  arbiterResources:
+    limits:
+      memory: 256Mi
+      cpu: 203m
+    requests:
+      memory: 250Mi
+      cpu: 100m  
+  cnfResources: 
+    limits: 
+      cpu: 205m
+      memory: 256Mi
+    requests: 
+      cpu: 200m
+      memory: 130Mi
+  cnfWiredTigerCacheGb: 0.25
+  dataResources: 
+    limits: 
+      cpu: 205m
+      memory: 255Mi
+    requests: 
+      cpu: 100m
+      memory: 255Mi
+  install: true
+  mongosResources: 
+    limits: 
+      cpu: 506m
+      memory: 259Mi
+  storage: 
+    nodeLabels: 
+      - kubernetes.io/hostname: worker1
+      - kubernetes.io/hostname: worker2
+      - kubernetes.io/hostname: worker3
+    size: 5Gi
+    storageClasses: 
+      - manual
+    volumes: 
+      - mongo1
+      - mongo2
+      - mongo3
+monitoring: 
+  install: false
+podSecurityContext: 
+  fsGroup: 1001
+  runAsUser: 1001
+  supplementalGroups:
+prometheusExporter: 
+  install: true
+recycler: 
+  install: true
+backup: 
+  install: true
+  storage: 
+    nodeLabels: 
+      - kubernetes.io/hostname: worker1
+    size: 5Gi
+    storageClasses: 
+      - manual
+    volumes: 
+      - mongo-backup
+dbaas: 
+  install: true
+schemaSettings:
+  schemaType: "ha"
+robotTests:
+  install: true
+  tags: smoke
+  externalBackupPath:
+  nodeLabels:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 130Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi 

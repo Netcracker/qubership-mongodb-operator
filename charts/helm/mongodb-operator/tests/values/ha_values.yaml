@@ -1,0 +1,44 @@
+schemaSettings:
+  schemaType: "ha"
+  cnfReplicaSize: 3
+  dataReplicaSize: 3
+  shardCount: 3
+
+podSecurityContext:
+  fsGroup:
+  runAsUser:
+
+recycler:
+  install: true
+
+mongodb:
+  install: true
+
+  storage:
+    nodeLabels:
+      - kubernetes.io/hostname: dr311dev-node-left-1
+      - kubernetes.io/hostname: dr311dev-node-left-2
+      - kubernetes.io/hostname: dr311dev-node-left-3
+    size: 5Gi
+    volumes:
+      - mongo-1
+      - mongo-2
+      - mongo-3
+backup:
+  install: true
+
+  storage:
+    size: 1Gi
+    nodeLabels:
+      - kubernetes.io/hostname: dr311dev-node-left-1
+    volumes:
+      - mongo-backup-1
+
+dbaas:
+  install: true
+
+monitoring:
+  install: false
+
+prometheusExporter:
+  install: true
