@@ -10,8 +10,8 @@ github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5/go.mod h1:tT
 github.com/Microsoft/hcsshim v0.8.9/go.mod h1:5692vkUqntj1idxauYlpoINNKeqCiG6Sg38RRsjT5y8=
 github.com/Netcracker/qubership-credential-manager v0.0.3 h1:08QiT/wFo184ac39oabLz6JHALc0a4Qazmv9gN657ZU=
 github.com/Netcracker/qubership-credential-manager v0.0.3/go.mod h1:BAZvlOSDmZ25z8YFLXyI57OCZ63MdQPtGq0/vmiTjuQ=
-github.com/Netcracker/qubership-nosqldb-operator-core v1.0.6 h1:qOnBsCiYXNdIMLdVfHpYt0x5PU7WEgihZBva37OD5oQ=
-github.com/Netcracker/qubership-nosqldb-operator-core v1.0.6/go.mod h1:Cg+K7UxU7zwdG4L2+U0T/DJOgV1tFHforyReeul9xOU=
+github.com/Netcracker/qubership-nosqldb-operator-core v1.0.7 h1:LpRVSfaj3uOGhzSvdOYxk/apBc3qWy0XMHqRJDQDki0=
+github.com/Netcracker/qubership-nosqldb-operator-core v1.0.7/go.mod h1:TXQTs0LbMMjcan++/ArHKOXlA4z72pQ7u+vrf6H2+34=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
