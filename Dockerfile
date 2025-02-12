@@ -1,9 +1,13 @@
 FROM alpine:3.19.1
 
-ENV WORKDIR=/opt/operator/
-ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker
+ENV OPERATOR=/usr/local/bin/mongodb-operator \
+    USER_UID=1001 \
+    USER_NAME=mongodb-operator
 
-# Set up Git access
+ENV WORKDIR=/opt/operator/
+ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker/*
+
+# Set up Git access (optional if you're using private repos)
 RUN --mount=type=secret,id=GH_ACCESS_TOKEN git config --global url."https://$(cat /run/secrets/GH_ACCESS_TOKEN)@github.com/".insteadOf "https://github.com/"
 
 # Install dependencies for Go build and script execution
@@ -16,31 +20,50 @@ RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.19/main/' > /etc/apk/reposito
     go \
     zip
 
-# Set working directory in the container
+# Set working directory
 WORKDIR ${WORKDIR}
 
-# Copy the build script and the necessary files into the container
-COPY build.sh /opt/operator/build.sh
+# Copy necessary source files into the container
 COPY charts /opt/operator/charts
 COPY main.go /opt/operator/main.go
 
-# Make the build.sh script executable
-RUN chmod +x /opt/operator/build.sh
+# Set GOPATH and Go proxy settings
+ENV GOPATH=/home/netcrk/go
+ENV GOPROXY="direct"
+ENV CGO_ENABLED=0
 
-# Run the build script
-RUN /opt/operator/build.sh
+# Build the Go binary
+RUN go build -o ./bin/mongo-operator -gcflags all=-trimpath=${GOPATH} -asmflags all=-trimpath=${GOPATH} ./main.go
 
-# Copy the binary and other required files after the build
-COPY bin/mongo-operator ${OPERATOR}
+# Build Docker image
+RUN docker build -t mongo_operator .
+
+# Tag the Docker image (replace $DOCKER_NAMES with actual Docker IDs)
+RUN for id in $DOCKER_NAMES; do \
+    docker tag mongo_operator $id; \
+done
+
+# Zip migration artifacts (from 'scripts' directory in your build.sh)
+RUN SCRIPTS=scripts && DIST_FILE="${SCRIPTS}/migration-artifacts.zip" && DIST_CONTENT="migration-artifacts" && \
+    rm -rf ./${SCRIPTS} && \
+    mkdir ${SCRIPTS} && \
+    zip -qr "$DIST_FILE" "$DIST_CONTENT"
+
+# Copy files for Helm deployment
+RUN mkdir -p deployments/charts/mongodb-operator && \
+    cp -R ./charts/helm/mongodb-operator/* deployments/charts/mongodb-operator/ && \
+    cp ./charts/deployment-configuration.json deployments/deployment-configuration.json
+
+# Install the Go binary and set up entrypoint
+COPY bin/mongo-operator /usr/local/bin/mongo-operator
 COPY build/bin /usr/local/bin
 
-# Set permissions for entrypoint and user setup scripts
-RUN chmod +x /usr/local/bin/entrypoint
-RUN chmod +x /usr/local/bin/user_setup && /usr/local/bin/user_setup
+# Set permissions for entrypoint and user setup
+RUN chmod +x /usr/local/bin/entrypoint && \
+    chmod +x /usr/local/bin/user_setup && /usr/local/bin/user_setup
 
-# Set the entry point
+# Set entrypoint for the container
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 
-# Set the user for the container
+# Set the user for the container (ensure you have a user setup earlier)
 USER ${USER_UID}
-
