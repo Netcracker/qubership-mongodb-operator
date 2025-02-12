@@ -38,7 +38,7 @@ jobs:
       - name: Checkout a different repository
         uses: actions/checkout@v2
         with:
-          repository: 'Netcracker/qubership-nosqldb-operator-core'  # Specify the repository to checkout
+          repository: 'Netcracker/qubership-mongodb-operator'  # Specify the repository to checkout
           token: ${{ secrets.GITHUB_TOKEN }}  # Use your PAT for authentication
           path: 'test'  # Specify the path where the repository should be checked out
       - name: Validate
