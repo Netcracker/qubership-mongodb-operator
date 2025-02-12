@@ -25,7 +25,6 @@ ENV OPERATOR=/usr/local/bin/mongodb-operator \
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
 COPY build/bin /usr/local/bin
-COPY build/configs/ /opt/operator/
 
 RUN  /usr/local/bin/user_setup
 
