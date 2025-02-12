@@ -6,16 +6,6 @@ RUN apk add --no-cache git
 RUN --mount=type=secret,id=GH_ACCESS_TOKEN \
     git config --global url."https://$(cat /run/secrets/GH_ACCESS_TOKEN)@github.com/".insteadOf "https://github.com/"
 
-# Install dependencies for Go build and script execution
-RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.20/main/' > /etc/apk/repositories \
-    && apk add --no-cache \
-    bash \
-    git \
-    curl \
-    openssl \
-    go \
-    zip
-
 COPY . /workspace
 
 WORKDIR /workspace
