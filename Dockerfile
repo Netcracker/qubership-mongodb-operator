@@ -11,7 +11,7 @@ WORKDIR /workspace
 RUN --mount=type=secret,id=GH_ACCESS_TOKEN \
     # Set the GOPRIVATE variable to tell Go to not use the public proxy for private modules
     # Configure Git to authenticate with GitHub using the token
-    echo "GOPRIVATE=github.com/your-org/*" >> /etc/environment \
+    echo "GOPRIVATE=github.com/Netcracker/*" >> /etc/environment \
     && echo "GITHUB_TOKEN=$(cat /run/secrets/GH_ACCESS_TOKEN)" > /etc/github_token \
     && git config --global url."https://$(cat /run/secrets/GH_ACCESS_TOKEN)@github.com".insteadOf "https://github.com/" \
     # Ensure Go modules can fetch private dependencies

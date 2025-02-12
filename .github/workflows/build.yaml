@@ -35,6 +35,12 @@ jobs:
             context: ""
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout a different repository
+        uses: actions/checkout@v2
+        with:
+          repository: 'Netcracker/qubership-nosqldb-operator-core'  # Specify the repository to checkout
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use your PAT for authentication
+          path: 'test'  # Specify the path where the repository should be checked out
       - name: Validate
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref }}" == refs/tags* ]]; then
