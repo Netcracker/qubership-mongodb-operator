@@ -16,12 +16,6 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o ./build/_output/bin/mongodb-operator \
     -gcflags all=-trimpath=${GOPATH} -asmflags all=-trimpath=${GOPATH} ./main.go
 
-# Zip migration artifacts (from 'scripts' directory in your build.sh)
-RUN SCRIPTS=scripts && DIST_FILE="${SCRIPTS}/migration-artifacts.zip" && DIST_CONTENT="migration-artifacts" && \
-    rm -rf ./${SCRIPTS} && \
-    mkdir ${SCRIPTS} && \
-    zip -qr "$DIST_FILE" "$DIST_CONTENT"
-
 # Copy files for Helm deployment
 RUN mkdir -p deployments/charts/mongodb-operator && \
     cp -R ./charts/helm/mongodb-operator/* deployments/charts/mongodb-operator/ && \
