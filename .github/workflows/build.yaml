@@ -28,7 +28,7 @@ jobs:
       matrix:
         component:
           - name: qubership-mongodb-operator
-            file: build/Dockerfile
+            file: Dockerfile
             context: ""
           - name: qubership-mongodb-operator-transfer
             file: docker-transfer/Dockerfile
