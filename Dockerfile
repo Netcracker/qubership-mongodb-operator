@@ -8,14 +8,7 @@ RUN --mount=type=secret,id=GH_ACCESS_TOKEN \
 COPY . /workspace
 
 WORKDIR /workspace
-RUN --mount=type=secret,id=GH_ACCESS_TOKEN \
-    # Set the GOPRIVATE variable to tell Go to not use the public proxy for private modules
-    # Configure Git to authenticate with GitHub using the token
-    echo "GOPRIVATE=github.com/Netcracker/*" >> /etc/environment \
-    && echo "GITHUB_TOKEN=$(cat /run/secrets/GH_ACCESS_TOKEN)" > /etc/github_token \
-    && git config --global url."https://$(cat /run/secrets/GH_ACCESS_TOKEN)@github.com".insteadOf "https://github.com/" \
-    # Ensure Go modules can fetch private dependencies
-    && GO111MODULE=on go mod tidy
+RUN go mod tidy
 
 # Build
 ARG TARGETOS TARGETARCH
@@ -32,7 +25,8 @@ ENV OPERATOR=/usr/local/bin/mongodb-operator \
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
 COPY build/bin /usr/local/bin
 
-RUN  /usr/local/bin/user_setup
+RUN chmod +x /usr/local/bin/entrypoint
+RUN  chmod +x /usr/local/bin/user_setup && /usr/local/bin/user_setup
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 
