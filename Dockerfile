@@ -26,7 +26,8 @@ FROM alpine:3.20.3
 ENV OPERATOR=/usr/local/bin/mongodb-operator \
     USER_UID=1001 \
     USER_NAME=mongodb-operator
-
+    
+RUN apk add --no-cache openssl curl
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
 COPY build/bin /usr/local/bin
