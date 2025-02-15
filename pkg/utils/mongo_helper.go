@@ -1046,11 +1046,11 @@ func (r *MongoUtilsHelperImpl) SetFeatureCompatibilityVersion(sharded bool, data
 		return err
 	}
 
-	r.Logger.Debug(fmt.Sprintf("db version is %s", rawVersion))
+	r.Logger.Debug(fmt.Sprintf("db version is LOOK HERE: %s", rawVersion))
 
 	version := re.FindString(rawVersion)
 
-	r.Logger.Debug(fmt.Sprintf("minor version is %s", version))
+	r.Logger.Debug(fmt.Sprintf("minor version is LOOK HERE %s", version))
 
 	if version == "" {
 		return errors.New("cannot get major and minor version from mongo version")
