@@ -1,6 +1,7 @@
 {
   "statusPolling":{
-    "resourceType": "mongodbdeployments.netcracker.com",
+    "apiVersion": "qubership.org/v1",
+    "resourceType": "mongodbdeployments.qubership.org",
     "resourceName": "mongodb-operator",
     "statusPath": "$.status.conditions[?(@.type=='Successful')]",
     "statusPathFail": "$.status.conditions[?(@.type=='Failed')]",
