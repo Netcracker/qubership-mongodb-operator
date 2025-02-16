@@ -41,7 +41,7 @@ rules:
       - watch
       - delete
   - apiGroups:
-      - netcracker.com
+      - qubership.org
     resources:
       - '*'
     verbs:
