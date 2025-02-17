@@ -1,16 +1,9 @@
 {{- define "find_image" -}}
   {{- $image := .default -}}
-
-  {{- if .vals.deployDescriptor -}}
-    {{- if index .vals.deployDescriptor .deployName -}}
-      {{- $image = (index .vals.deployDescriptor .deployName "image") -}}
-    {{- else if index .vals.deployDescriptor .SERVICE_NAME -}}
-      {{- $image = (index .vals.deployDescriptor .SERVICE_NAME "image") -}}
-    {{- end -}}
-  {{- end -}}
-
+  
   {{ printf "%s" $image }}
 {{- end -}}
+
 
 {{/*
 Configure MongoDB service 'enableDisasterRecovery' property
@@ -464,18 +457,7 @@ Usage example:
   {{- end -}}
 {{- end -}}
 
-{{- define "mongo.monitoredImages" -}}
-  {{- if .Values.deployDescriptor -}}
-    {{- printf "deployment mongodb-operator mongodb-operator %s, " (include "find_image" (dict "deployName" "mongodb-operator" "SERVICE_NAME" "mongodb-operator" "vals" .Values "default" "not_found")) -}}
-    {{- if and (not (eq .Values.schemaSettings.schemaType "single")) .Values.mongodb.install -}}
-      {{- printf "statefulset datars10 datars10 %s, " (include "find_image" (dict "deployName" "dockerMongodb" "SERVICE_NAME" "dockerMongodb" "vals" .Values "default" "not_found")) -}}
-    {{- end -}}
-    {{- if or (eq .Values.schemaSettings.schemaType "ha") (eq .Values.schemaSettings.schemaType "dr") -}}
-      {{- if .Values.schemaSettings.sharded -}}
-        {{- printf "statefulset cnfrs0 cnfrs0 %s, " (include "find_image" (dict "deployName" "dockerMongodb" "SERVICE_NAME" "dockerMongodb" "vals" .Values "default" "not_found")) -}}
-      {{- end -}}
-    {{- end -}}
-  {{- end -}}
+{{- define "mongodb.monitoredImages" -}}
 {{- end -}}
 
 {{/*
