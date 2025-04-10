@@ -29,7 +29,7 @@ spec:
             drop:
               - ALL
         env:
-          - name: USER_SECRET_NAME
+          - name: SECRET_NAMES
             value: {{ .Values.mongodb.mongoRootSecretName }}
           - name: IS_HOOK
             value: "True"
