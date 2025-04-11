@@ -1,6 +1,6 @@
 {
   "statusPolling":{
-    "apiVersion": "qubership.org/v1",
+    "apiVersion": "qubership.org/v1alpha1",
     "resourceType": "mongodbdeployments.qubership.org",
     "resourceName": "mongodb-operator",
     "statusPath": "$.status.conditions[?(@.type=='Successful')]",
