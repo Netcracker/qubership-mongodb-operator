@@ -65,7 +65,7 @@ disasterRecovery:
       tls_key: 
       tls_crt: 
 
-imagePullPolicy: IfNotPresent
+imagePullPolicy: Always
 
 createIngress: false
 
