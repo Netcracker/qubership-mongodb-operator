@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM artifactorycn.netcracker.com:17003/custom/golang-alpine:1.23.0-custom AS builder
+FROM --platform=$BUILDPLATFORM artifactorycn.netcracker.com:17003/alpine/base-image:3.21.0.01 AS builder
 
 ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker
 
