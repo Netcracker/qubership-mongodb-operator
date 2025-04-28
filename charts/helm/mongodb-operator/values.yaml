@@ -5,7 +5,7 @@
 # Do not change
 DEPLOY_W_HELM: true
 operator:
-  operatorName: mongodb-operator-new
+  operatorName: mongodb-operator
   image: to_replace
   initImage: to_replace
   priorityClassName:
