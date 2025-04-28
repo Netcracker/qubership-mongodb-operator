@@ -286,7 +286,7 @@ spec:
       containers:
         - name: {{ .Values.operator.operatorName }}
           # Replace this with the built image name
-          image: {{template "find_image" (dict "deployName" .Values.operator.operatorName "SERVICE_NAME" .Values.operator.operatorName "vals" .Values "default" .Values.operator.image) }}
+          image: {{template "find_image" (dict "deployName" "dockerMongoOperator" "SERVICE_NAME" "dockerMongoOperator" "vals" .Values "default" .Values.operator.image) }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
