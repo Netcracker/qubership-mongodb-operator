@@ -464,9 +464,6 @@ Usage example:
   {{- end -}}
 {{- end -}}
 
-{{- define "mongodb.monitoredImages" -}}
-{{- end -}}
-
 {{/*
 Service Account for Site Manager depending on smSecureAuth
 */}}
