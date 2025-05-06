@@ -489,7 +489,7 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 
 {{- define "mongo.monitoredImages" -}}
   {{- if .Values.deployDescriptor -}}
-    {{- printf "deployment mongodb-operator mongodb-operator %s, " (include "find_image" (dict "deployName" "mongodb-operator" "SERVICE_NAME" "mongodb-operator" "vals" .Values "default" "not_found")) -}}
+    {{- printf "deployment mongodb-operator mongodb-operator %s, " (include "find_image" (dict "deployName" "dockerMongoOperator" "SERVICE_NAME" "dockerMongoOperator" "vals" .Values "default" "not_found")) -}}
     {{- if and (not (eq .Values.schemaSettings.schemaType "single")) .Values.mongodb.install -}}
       {{- printf "statefulset datars10 datars10 %s, " (include "find_image" (dict "deployName" "dockerMongodb" "SERVICE_NAME" "dockerMongodb" "vals" .Values "default" "not_found")) -}}
     {{- end -}}
