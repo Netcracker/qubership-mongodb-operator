@@ -111,6 +111,8 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .secret.secretName }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 stringData:
   {{- if .vlt.enabled }}
     {{- if .secret.vaultPasswordPath }}

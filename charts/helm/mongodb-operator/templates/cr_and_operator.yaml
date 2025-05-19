@@ -212,6 +212,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.operator.operatorName }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   replicas: 1
   selector:
