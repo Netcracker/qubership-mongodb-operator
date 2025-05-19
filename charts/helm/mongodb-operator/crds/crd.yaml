@@ -7,6 +7,8 @@ metadata:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: mongodbdeployments.qubership.org
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   group: qubership.org
   names:
