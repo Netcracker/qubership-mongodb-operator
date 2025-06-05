@@ -93,6 +93,8 @@ spec:
             mountPath: /data/db
         securityContext:
           runAsUser: 0
+          runAsNonRoot: false
+          allowPrivilegeEscalation: false
     {{- if .Values.mongodb.additionalNodeLabels }}
     additionalNodeLabels:
       {{- range $key, $value := .Values.mongodb.additionalNodeLabels }}
