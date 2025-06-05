@@ -87,7 +87,16 @@ spec:
     initContainers:
       - name: fix-permissions
         image: {{template "find_image" (dict "deployName" "dockerMongodb" "SERVICE_NAME" "dockerMongodb" "vals" .Values "default" .Values.mongodb.dockerImage) }}
-        command: ["sh", "-c", "chown -R 1001:1001 /data/db"]
+        command:
+            - sh
+            - c
+            - |
+              if [ -d "/data/db" ]; then
+                echo "DB present"
+                chmod -R 777 /data/db
+              else
+                echo "/data/db not found"
+              fi
         volumeMounts:
           - name: data
             mountPath: /data/db
