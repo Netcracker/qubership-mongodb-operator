@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/types"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -141,6 +142,7 @@ type MongoDB struct {
 	CustomDataRSParameters  []string                   `json:"customDataRSParameters,omitempty"`
 	PriorityClassName       string                     `json:"priorityClassName,omitempty"`
 	MongoRootSecretName     string                     `json:"mongoRootSecretName,omitempty"`
+	InitContainers          []corev1.Container         `json:"initContainers,omitempty"`
 }
 
 func init() {
