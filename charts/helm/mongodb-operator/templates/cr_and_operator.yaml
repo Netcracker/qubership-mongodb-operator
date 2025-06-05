@@ -89,7 +89,7 @@ spec:
         image: {{template "find_image" (dict "deployName" "dockerMongodb" "SERVICE_NAME" "dockerMongodb" "vals" .Values "default" .Values.mongodb.dockerImage) }}
         command:
             - sh
-            - c
+            - -c
             - |
               if [ -d "/data/db" ]; then
                 echo "DB present"
