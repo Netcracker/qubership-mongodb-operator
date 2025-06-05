@@ -81,8 +81,8 @@ recycler:
       cpu: 50m
 
 podSecurityContext:
-  fsGroup: 999
-  runAsUser: 999
+  fsGroup: 1001
+  runAsUser: 1001
   supplementalGroups:
 
 crProcessingDelaySeconds: 0
