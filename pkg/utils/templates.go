@@ -62,7 +62,8 @@ func MongoSSCommonTemplate(
 	containerTimeoutSeconds int,
 	containerPeriodSeconds int,
 	tls v1alpha1.TLS,
-	priorityClassName string) *v12.StatefulSet {
+	priorityClassName string,
+	initContainers []v1.Container) *v12.StatefulSet {
 
 	statefulSet := MongoSSCommonTemplateWithoutNamesArgs(
 		image,
@@ -98,6 +99,7 @@ func MongoSSCommonTemplate(
 
 	statefulSet.Spec.Template.Spec.SecurityContext = securityContext
 	statefulSet.Spec.Template.Spec.Tolerations = tolerations
+	statefulSet.Spec.Template.Spec.InitContainers = initContainers
 
 	return statefulSet
 }

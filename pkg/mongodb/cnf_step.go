@@ -131,7 +131,8 @@ func (r *CreateCNFStep) Execute(ctx core.ExecutionContext) error {
 			mongoDbSpec.ContainerTimeoutSeconds,
 			mongoDbSpec.ContainerPeriodSeconds,
 			spec.Spec.TLS,
-			spec.Spec.MongoDB.PriorityClassName)
+			spec.Spec.MongoDB.PriorityClassName,
+			spec.Spec.MongoDB.InitContainers)
 
 		err := helperImpl.DeleteStatefulsetAndPods(statefulSet.Name, request.Namespace, spec.Spec.WaitSeconds)
 
