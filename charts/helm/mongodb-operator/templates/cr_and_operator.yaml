@@ -91,9 +91,13 @@ spec:
             - sh
             - -c
             - |
+              ls -ld /data
               if [ -d "/data/db" ]; then
-                echo "DB present"
-                chmod -R 777 /data/db
+                echo "Checking /data/db...";
+                ls -ld /data/db;
+                id;
+                chmod -v 777 /data/db;
+                ls -ld /data/db;
               else
                 echo "/data/db not found"
               fi
