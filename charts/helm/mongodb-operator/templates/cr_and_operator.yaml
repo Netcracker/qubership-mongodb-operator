@@ -93,10 +93,8 @@ spec:
             - |
               if [ -d "/data/db" ]; then
                 echo "Checking /data/db...";
-                ls -ld /data/db;
-                id;
-                chmod -v 777 /data/db;
-                ls -ld /data/db;
+                chown -R 1001:1001 /data/db
+                chmod -R 755 /data/db
               else
                 echo "/data/db not found"
               fi
