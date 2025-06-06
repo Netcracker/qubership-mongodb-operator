@@ -91,7 +91,6 @@ spec:
             - sh
             - -c
             - |
-              ls -ld /data
               if [ -d "/data/db" ]; then
                 echo "Checking /data/db...";
                 ls -ld /data/db;
@@ -101,9 +100,11 @@ spec:
               else
                 echo "/data/db not found"
               fi
+              echo "print data contents"
+              ls /data
         volumeMounts:
           - name: data
-            mountPath: /data/db
+            mountPath: /data
         securityContext:
           runAsUser: 0
           runAsNonRoot: false
