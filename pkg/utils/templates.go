@@ -196,8 +196,10 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 										},
 									},
 								},
-								TimeoutSeconds: timeoutSeconds,
-								PeriodSeconds:  periodSeconds,
+								InitialDelaySeconds: int32(30),
+								FailureThreshold:    int32(10),
+								TimeoutSeconds:      timeoutSeconds,
+								PeriodSeconds:       periodSeconds,
 							},
 							Ports: []v1.ContainerPort{
 								v1.ContainerPort{
