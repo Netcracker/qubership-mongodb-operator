@@ -454,7 +454,7 @@ func MongosRCTemplate(
 									},
 								},
 								FailureThreshold:    int32(10),
-								InitialDelaySeconds: int32(10),
+								InitialDelaySeconds: int32(30),
 								PeriodSeconds:       int32(10),
 								SuccessThreshold:    int32(1),
 								TimeoutSeconds:      int32(10),
