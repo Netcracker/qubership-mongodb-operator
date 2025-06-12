@@ -196,6 +196,7 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 										},
 									},
 								},
+								InitialDelaySeconds: int32(10),
 								TimeoutSeconds: timeoutSeconds,
 								PeriodSeconds:  periodSeconds,
 							},
