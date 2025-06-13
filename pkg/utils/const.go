@@ -223,10 +223,11 @@ func GetSetFeatureCompatibilityVersion(version string) string {
 // TODO drop when 4.4 dropped
 
 func GetMongoImageVersion(dockerImage string) string {
-	re := regexp.MustCompile(`(?:.+/mongo|.+):(?:[a-zA-Z0-9_-]*[-_])?(\d+)\.\d+\.\d+$`)
+	// Match a tag with optional underscore-separated suffix
+	re := regexp.MustCompile(`^(?:.+/)?(?:mongo|.+mongodb):(?:.*_)?(\d+)\.\d+\.\d+$`)
 	version := re.FindStringSubmatch(dockerImage)
 	if len(version) < 2 {
-		return "4"
+		return "4" // default fallback
 	}
 	return version[1]
 }
