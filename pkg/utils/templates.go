@@ -6,6 +6,7 @@ import (
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	cUtils "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
 	v12 "k8s.io/api/apps/v1"
+	corev12 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -418,15 +419,12 @@ func MongosRCTemplate(
 		NodeAffinity: defaultNodeAffinity,
 	}
 
-	//var finalAffinity *corev12.Affinity
+	var finalAffinity *corev12.Affinity
 	// Use user-defined affinity if available; otherwise use default
 	if affinity != nil {
-		// finalAffinity = affinity
-		// finalAffinity.NodeAffinity = defaultNodeAffinity
-		affinity.NodeAffinity = defaultNodeAffinity
+		finalAffinity = affinity
 	} else {
-		//finalAffinity = defaultAffinity
-		affinity = defaultAffinity
+		finalAffinity = defaultAffinity
 	}
 
 	template := &v1.ReplicationController{
@@ -445,7 +443,7 @@ func MongosRCTemplate(
 					SecurityContext:   securityContext,
 					PriorityClassName: priorityClassName,
 					Tolerations:       tolerations,
-					Affinity:          affinity,
+					Affinity:          finalAffinity,
 					Containers: []v1.Container{
 						v1.Container{
 							Name:            mongos,
