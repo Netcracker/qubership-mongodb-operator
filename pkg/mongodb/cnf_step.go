@@ -95,29 +95,39 @@ func (r *CreateCNFStep) Execute(ctx core.ExecutionContext) error {
 			tolerations = spec.Spec.Policies.Tolerations
 		}
 
-		statefulSet := utils.MongoSSCommonTemplate(
-			mongoDbSpec.DockerImage,
-			*mongoDbSpec.CnfResources,
-			v12.Affinity{
-				PodAntiAffinity: &v12.PodAntiAffinity{
-					RequiredDuringSchedulingIgnoredDuringExecution: []v12.PodAffinityTerm{
-						{
-							LabelSelector: &v13.LabelSelector{
-								MatchExpressions: []v13.LabelSelectorRequirement{
-									{
-										Key:      microservice,
-										Operator: "In",
-										Values: []string{
-											nameKey,
-										},
+		defaultAffinity := &v12.Affinity{
+			PodAntiAffinity: &v12.PodAntiAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []v12.PodAffinityTerm{
+					{
+						LabelSelector: &v13.LabelSelector{
+							MatchExpressions: []v13.LabelSelectorRequirement{
+								{
+									Key:      microservice,
+									Operator: "In",
+									Values: []string{
+										nameKey,
 									},
 								},
 							},
-							TopologyKey: utils.KubeHostName,
 						},
+						TopologyKey: utils.KubeHostName,
 					},
 				},
 			},
+		}
+
+		// Use user-defined affinity if available; otherwise use default
+		var affinity *v12.Affinity
+		if spec.Spec.MongoDB.Affinity != nil {
+			affinity = spec.Spec.MongoDB.Affinity
+		} else {
+			affinity = defaultAffinity
+		}
+
+		statefulSet := utils.MongoSSCommonTemplate(
+			mongoDbSpec.DockerImage,
+			*mongoDbSpec.CnfResources,
+			*affinity,
 			nodeSelector,
 			request.Namespace,
 			pvcName,

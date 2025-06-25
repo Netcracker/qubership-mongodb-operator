@@ -197,8 +197,8 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 									},
 								},
 								InitialDelaySeconds: int32(10),
-								TimeoutSeconds: timeoutSeconds,
-								PeriodSeconds:  periodSeconds,
+								TimeoutSeconds:      timeoutSeconds,
+								PeriodSeconds:       periodSeconds,
 							},
 							Ports: []v1.ContainerPort{
 								v1.ContainerPort{
@@ -310,7 +310,8 @@ func SingleMongosRCTemplate(
 	tolerations []v1.Toleration,
 	mongoImagePullPolicy v1.PullPolicy,
 	tls v1alpha1.TLS,
-	priorityClassName string) *v1.ReplicationController {
+	priorityClassName string,
+	affinity *v1.Affinity) *v1.ReplicationController {
 
 	numberOfReplicas := 1
 
@@ -324,7 +325,9 @@ func SingleMongosRCTemplate(
 		mongoImagePullPolicy,
 		numberOfReplicas,
 		tls,
-		priorityClassName)
+		priorityClassName,
+		affinity,
+	)
 
 	template.Spec.Template.Spec.Containers[0].VolumeMounts = append(
 		template.Spec.Template.Spec.Containers[0].VolumeMounts,
@@ -359,7 +362,8 @@ func MongosRCTemplate(
 	mongoImagePullPolicy v1.PullPolicy,
 	numberOfReplicas int,
 	tls v1alpha1.TLS,
-	priorityClassName string) *v1.ReplicationController {
+	priorityClassName string,
+	affinity *v1.Affinity) *v1.ReplicationController {
 
 	selector := map[string]string{
 		Name: Mongos,
@@ -371,6 +375,59 @@ func MongosRCTemplate(
 	secret := MongoSecret
 	mongos := Mongos
 	allowPrivilegeEscalation := false
+
+	defaultNodeAffinity := &v1.NodeAffinity{
+		PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
+			{
+				Weight: 1,
+				Preference: v1.NodeSelectorTerm{
+					MatchExpressions: []v1.NodeSelectorRequirement{
+						{
+							Key:      "mongo",
+							Operator: "In",
+							Values: []string{
+								"mongos",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Default anti-affinity rule (used only if user didn't provide one)
+	defaultAffinity := &v1.Affinity{
+		PodAntiAffinity: &v1.PodAntiAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []v1.PodAffinityTerm{
+				v1.PodAffinityTerm{
+					LabelSelector: &v13.LabelSelector{
+						MatchExpressions: []v13.LabelSelectorRequirement{
+							v13.LabelSelectorRequirement{
+								Key:      Name,
+								Operator: "In",
+								Values: []string{
+									mongos,
+								},
+							},
+						},
+					},
+					TopologyKey: KubeHostName,
+				},
+			},
+		},
+		NodeAffinity: defaultNodeAffinity,
+	}
+
+	//var finalAffinity *corev12.Affinity
+	// Use user-defined affinity if available; otherwise use default
+	if affinity != nil {
+		// finalAffinity = affinity
+		// finalAffinity.NodeAffinity = defaultNodeAffinity
+		affinity.NodeAffinity = defaultNodeAffinity
+	} else {
+		//finalAffinity = defaultAffinity
+		affinity = defaultAffinity
+	}
 
 	template := &v1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -388,42 +445,7 @@ func MongosRCTemplate(
 					SecurityContext:   securityContext,
 					PriorityClassName: priorityClassName,
 					Tolerations:       tolerations,
-					Affinity: &v1.Affinity{
-						PodAntiAffinity: &v1.PodAntiAffinity{
-							RequiredDuringSchedulingIgnoredDuringExecution: []v1.PodAffinityTerm{
-								v1.PodAffinityTerm{
-									LabelSelector: &v13.LabelSelector{
-										MatchExpressions: []v13.LabelSelectorRequirement{
-											v13.LabelSelectorRequirement{
-												Key:      Name,
-												Operator: "In",
-												Values: []string{
-													mongos,
-												},
-											},
-										},
-									},
-									TopologyKey: KubeHostName,
-								},
-							},
-						},
-						NodeAffinity: &v1.NodeAffinity{
-							PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
-								{
-									Weight: 1,
-									Preference: v1.NodeSelectorTerm{
-										MatchExpressions: []v1.NodeSelectorRequirement{
-											{
-												Key:      "mongo",
-												Operator: "In",
-												Values:   []string{"mongos"},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Affinity:          affinity,
 					Containers: []v1.Container{
 						v1.Container{
 							Name:            mongos,

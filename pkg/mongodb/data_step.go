@@ -25,6 +25,12 @@ func (r *CreateDataStep) Validate(ctx core.ExecutionContext) error {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 
 	resultFunc := func(dataShardIndex int, replicaIndex int) v12.Affinity {
+		// If user defined Affinity, use it
+		if spec.Spec.MongoDB.Affinity != nil {
+			return *spec.Spec.MongoDB.Affinity
+		}
+
+		// Fallback to default operator logic
 		affinity := v12.Affinity{
 			PodAntiAffinity: &v12.PodAntiAffinity{
 				RequiredDuringSchedulingIgnoredDuringExecution: []v12.PodAffinityTerm{

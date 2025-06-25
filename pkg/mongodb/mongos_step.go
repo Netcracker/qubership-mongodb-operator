@@ -141,7 +141,8 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 		spec.Spec.ImagePullPolicy,
 		numberOfReplicas,
 		spec.Spec.TLS,
-		spec.Spec.MongoDB.PriorityClassName)
+		spec.Spec.MongoDB.PriorityClassName,
+		spec.Spec.MongoDB.Affinity)
 
 	return commonMongosExecute(ctx, template)
 }
@@ -210,7 +211,8 @@ func (r *CreateSingleMongosStep) Execute(ctx core.ExecutionContext) error {
 		tolerations,
 		spec.Spec.ImagePullPolicy,
 		spec.Spec.TLS,
-		spec.Spec.MongoDB.PriorityClassName)
+		spec.Spec.MongoDB.PriorityClassName,
+		spec.Spec.Affinity)
 
 	return commonMongosExecute(ctx, template)
 }

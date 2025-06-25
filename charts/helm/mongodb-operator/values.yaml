@@ -16,6 +16,7 @@ operator:
     limits:
       cpu: 100m
       memory: 128Mi
+  affinity:
 
 global: 
   profile: ""
@@ -138,6 +139,7 @@ mongodb:
   rootPassword: root
   rootUserRole: "'root', '__system'"
   mongoRootSecretName: mongodb-root-credentials.v1
+  affinity:
 
   # Config, Data and Mongos Resources
   cnfResources:
