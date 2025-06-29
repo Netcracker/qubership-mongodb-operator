@@ -141,6 +141,7 @@ type MongoDB struct {
 	CustomDataRSParameters  []string                   `json:"customDataRSParameters,omitempty"`
 	PriorityClassName       string                     `json:"priorityClassName,omitempty"`
 	MongoRootSecretName     string                     `json:"mongoRootSecretName,omitempty"`
+	Affinity                *v1.Affinity               `json:"affinity,omitempty"`
 }
 
 func init() {
