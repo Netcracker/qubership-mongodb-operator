@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "credentials-saver"
+  name: {{ printf "credentials-saver-%s" (lower (randAlphaNum 5)) }}
   labels:
   annotations:
     "helm.sh/hook": pre-install, pre-upgrade
