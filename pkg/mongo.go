@@ -212,6 +212,7 @@ type DRBuilder struct {
 
 func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
 	//TODO we need to wrap compound so its condition func can be called
 	defaultCompound := &core.DefaultCompound{}
@@ -227,7 +228,7 @@ if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 	} else {
 		// If DR mode is Active, and noWait is false, wait for healthy cluster before reconfiguring
 		if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode && !spec.Spec.DisasterRecovery.NoWait {
-			log.Info("noWait flag is false — performing cluster health check before reconfiguration")
+			log.Debug("noWait flag is false — performing cluster health check before reconfiguration")
 			compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up})
 		}
 
