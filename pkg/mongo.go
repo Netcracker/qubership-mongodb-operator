@@ -212,40 +212,49 @@ type DRBuilder struct {
 
 func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
 	//TODO we need to wrap compound so its condition func can be called
 	defaultCompound := &core.DefaultCompound{}
 	compound := MongoDRCompound{}
 
-	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
-		if spec.Spec.DisasterRecovery.Mode == utils.DisableMode {
-			compound.AddStep(&dr.ScaleMongosStep{Replicas: 0})
-			compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 0})
-			compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 0})
-			compound.AddStep(&dr.ScaleCNFRSStep{Replicas: 0})
-			compound.AddStep(&dr.ScaleDATARSStep{Replicas: 0})
-		} else {
-			compound.AddStep(&dr.ReconfigureCnfrsStep{})
-			compound.AddStep(&dr.ReconfigureDataRSStep{})
-			if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode {
-				// compound.AddStep(&dr.UpdateConfigRSInDATARSStep{})
-				compound.AddStep(&dr.UpdateShardsStep{})
-				compound.AddStep(&dr.RestartConfigRSStep{})
-				compound.AddStep(&dr.ScaleMongosStep{Replicas: spec.Spec.SchemaSettings.MongosReplicas})
-				// compound.AddStep(&dr.RestartDATARSStep{})
-				compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 1})
-				compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 1})
-
-			} else if spec.Spec.DisasterRecovery.Mode == utils.StandbyMode {
-				compound.AddStep(&dr.ScaleMongosStep{Replicas: 0})
-				compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 0})
-				compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 0})
-			}
-			compound.AddStep(&dr.UpdatePrometheusExporterStep{ExportMongos: spec.Spec.DisasterRecovery.Mode == utils.ActiveMode})
+if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
+	if spec.Spec.DisasterRecovery.Mode == utils.DisableMode {
+		compound.AddStep(&dr.ScaleMongosStep{Replicas: 0})
+		compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 0})
+		compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 0})
+		compound.AddStep(&dr.ScaleCNFRSStep{Replicas: 0})
+		compound.AddStep(&dr.ScaleDATARSStep{Replicas: 0})
+	} else {
+		// If DR mode is Active, and noWait is false, wait for healthy cluster before reconfiguring
+		if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode && !spec.Spec.DisasterRecovery.NoWait {
+			log.Debug("noWait flag is false — performing cluster health check before reconfiguration")
 			compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up})
 		}
 
+		compound.AddStep(&dr.ReconfigureCnfrsStep{})
+		compound.AddStep(&dr.ReconfigureDataRSStep{})
+
+		if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode {
+			// compound.AddStep(&dr.UpdateConfigRSInDATARSStep{})
+			compound.AddStep(&dr.UpdateShardsStep{})
+			compound.AddStep(&dr.RestartConfigRSStep{})
+			compound.AddStep(&dr.ScaleMongosStep{Replicas: spec.Spec.SchemaSettings.MongosReplicas})
+			// compound.AddStep(&dr.RestartDATARSStep{})
+			compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 1})
+			compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 1})
+
+		} else if spec.Spec.DisasterRecovery.Mode == utils.StandbyMode {
+			compound.AddStep(&dr.ScaleMongosStep{Replicas: 0})
+			compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 0})
+			compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 0})
+		}
+		compound.AddStep(&dr.UpdatePrometheusExporterStep{
+			ExportMongos: spec.Spec.DisasterRecovery.Mode == utils.ActiveMode,
+		})
+		compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up})
 	}
+}
 	defaultCompound.AddStep(&compound)
 	return defaultCompound
 }
