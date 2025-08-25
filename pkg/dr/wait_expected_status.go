@@ -25,6 +25,7 @@ func (u *WaitExpectedClusterStatusStep) Execute(ctx core.ExecutionContext) error
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment).Spec
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	var downSince *time.Time
 
 	err := wait.Poll(2*time.Second, time.Duration(spec.WaitSeconds)*time.Second, func() (done bool, err error) {
 		status, err := mongoImpl.GetClusterStatus(spec.DisasterRecovery.Mode, spec.SchemaSettings.ThisDomainName, spec.SchemaSettings.CnfReplicaSize,
@@ -33,10 +34,28 @@ func (u *WaitExpectedClusterStatusStep) Execute(ctx core.ExecutionContext) error
 		if err != nil {
 			log.Warn(fmt.Sprintf("Failed to get cluster status, err is %v", err))
 		}
+
+		if status != utils.Up {
+			if downSince == nil {
+				t := time.Now()
+				downSince = &t
+			}
+			log.Info(fmt.Sprintf("Status is not up, STATUS is (%v)", status))
+		}
+
+		if status == utils.Up {
+			if downSince == nil {
+				log.Info("Cluster was never down.")
+			} else {
+				downDuration := time.Since(*downSince)
+				log.Info(fmt.Sprintf("Cluster was down for: %v\n", downDuration))
+			}
+		}
+
 		return status == u.Status, nil
 	})
 
-	log.Debug("Cluster is up")
+	log.Info("Cluster is up")
 
 	return err
 }
