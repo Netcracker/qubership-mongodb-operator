@@ -229,10 +229,10 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			compound.AddStep(&dr.ScaleCNFRSStep{Replicas: 0})
 			compound.AddStep(&dr.ScaleDATARSStep{Replicas: 0})
 		} else {
-
+			log.Info(fmt.Sprint("*************** No wait flag ************** %s", spec.Spec.DisasterRecovery.NoWait))
 			// If DR mode is Active, and noWait is false, wait for healthy cluster before reconfiguring
 			if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode && !spec.Spec.DisasterRecovery.NoWait {
-				log.Debug("noWait flag is false — performing cluster health check before reconfiguration")
+				log.Info("noWait flag is false — performing cluster health check before reconfiguration")
 				compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up})
 			}
 
