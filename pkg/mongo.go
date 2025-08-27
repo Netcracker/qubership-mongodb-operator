@@ -221,7 +221,9 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	t := time.Now()
 	startTime := &t
 
-	log.Info("+++++++++++++++++++++++  New one ++++++++++++++++++++++++")
+	log.Info("+++++++++++++++++++++++  New one Next ++++++++++++++++++++++++")
+
+	spec.Spec.DisasterRecovery.NoWait = false
 
 	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 		if spec.Spec.DisasterRecovery.Mode == utils.DisableMode {
