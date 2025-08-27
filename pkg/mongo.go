@@ -221,6 +221,8 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	t := time.Now()
 	startTime := &t
 
+	log.Info("+++++++++++++++++++++++  New one ++++++++++++++++++++++++")
+
 	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 		if spec.Spec.DisasterRecovery.Mode == utils.DisableMode {
 			compound.AddStep(&dr.ScaleMongosStep{Replicas: 0})
