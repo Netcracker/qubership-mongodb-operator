@@ -505,9 +505,6 @@ Service Account for Site Manager depending on smSecureAuth
 {{- end -}}
 
 {{- define "mongodb.defaultLabels" -}}
-{{- if .Values.ARTIFACT_DESCRIPTOR_VERSION }}
-app.kubernetes.io/version: {{ default "" .Values.ARTIFACT_DESCRIPTOR_VERSION | trunc 63 | trimAll "-_." }}
-{{- end }}
 app.kubernetes.io/part-of: {{ default "mongodb" .Values.PART_OF }}
 app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- end -}}
