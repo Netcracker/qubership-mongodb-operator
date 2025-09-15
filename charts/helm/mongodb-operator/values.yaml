@@ -141,7 +141,7 @@ mongodb:
   mongoRootSecretName: mongodb-root-credentials.v1
   affinity:
 
-  pdb: false
+  pdb: true
 
   # Config, Data and Mongos Resources
   cnfResources:

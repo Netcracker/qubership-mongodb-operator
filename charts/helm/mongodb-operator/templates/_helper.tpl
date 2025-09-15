@@ -160,14 +160,13 @@ type: Opaque
 {{- end -}}
 
 
+
 {{/*
 [NoSQL Operator Core] PodDisruptionBudget
-Dictionary with:
-1. "name" - pdb name
-2. "labels" - label selectors map
-3. "minAvailable" - desired pods count
-{{template "nosql.core.pdb" (dict "name" "mongodb" "labels" $labels "minAvailable" $minAvailable)}}
+Usage:
+{{ template "nosql.core.pdb" (dict "name" "pdb-name" "labels" $labels "minAvailable" 2) }}
 */}}
+
 {{- define "nosql.core.pdb" -}}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -180,10 +179,11 @@ spec:
   minAvailable: {{ .minAvailable }}
   selector:
     matchLabels:
-      {{- range $k, $v := .labels }}
+{{- range $k, $v := .labels }}
       {{ $k | quote }}: {{ $v | quote }}
-      {{- end }}
+{{- end }}
 {{- end -}}
+
 
 {{/*
 [NoSQL Operator Core] External secret template
