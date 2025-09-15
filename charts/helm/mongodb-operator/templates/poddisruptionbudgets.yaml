@@ -1,4 +1,4 @@
-{{- if and (.Values.mongodb.install) (.Values.mongodb.pdb) (.Values.schemaSettings.sharded) }}
+{{- if and (.Values.mongodb.install) (.Values.mongodb.pdb) (eq .Values.schemaSettings.schemaType "ha") }}
 
   {{- /* Dynamic quorum for shards */}}
   {{- $shardCount := .Values.schemaSettings.shardCount | int }}
