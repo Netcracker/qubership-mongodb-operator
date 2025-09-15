@@ -159,6 +159,32 @@ type: Opaque
 {{include "nosql.core.secret.vault" (set . "isInternal" true)}}
 {{- end -}}
 
+
+{{/*
+[NoSQL Operator Core] PodDisruptionBudget
+Dictionary with:
+1. "name" - pdb name
+2. "labels" - label selectors map
+3. "minAvailable" - desired pods count
+{{template "nosql.core.pdb" (dict "name" "mongodb" "labels" $labels "minAvailable" $minAvailable)}}
+*/}}
+{{- define "nosql.core.pdb" -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .name | quote }}
+  labels:
+    app.kubernetes.io/part-of: "mongodb"
+    app.kubernetes.io/managed-by: "operator"
+spec:
+  minAvailable: {{ .minAvailable }}
+  selector:
+    matchLabels:
+      {{- range $k, $v := .labels }}
+      {{ $k | quote }}: {{ $v | quote }}
+      {{- end }}
+{{- end -}}
+
 {{/*
 [NoSQL Operator Core] External secret template
 {{template "nosql.core.secret.external" (dict "vlt" .Values.vaultRegistration "secret" .Values.redis)}}
