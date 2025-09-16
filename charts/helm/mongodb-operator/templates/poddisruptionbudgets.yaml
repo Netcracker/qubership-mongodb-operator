@@ -1,29 +1,30 @@
-{{- if and (.Values.mongodb.install) (.Values.mongodb.pdb) (eq .Values.schemaSettings.schemaType "ha") }}
-
+{{- if and (.Values.mongodb.install) (.Values.mongodb.pdb) (or (eq .Values.schemaSettings.schemaType "ha") (and (eq .Values.schemaSettings.schemaType "dr") (eq .Values.disasterRecovery.mode "active"))) }}
   {{- /* Dynamic quorum for shards */}}
-  {{- $shardCount := .Values.schemaSettings.shardCount | int }}
-  {{- $replicaSize := .Values.schemaSettings.dataReplicaSize | default 3 }}
+  {{- $shardCount := int (default 1 .Values.schemaSettings.shardCount) }}
+  {{- $replicaSize := int (default 3 .Values.schemaSettings.dataReplicaSize) }}
   {{- $minAvailable := add (div $replicaSize 2) 1 }}
 
-  {{- range $i, $ := until $shardCount }}
-    {{- $index := add $i 1 }}
-    {{- $shardName := printf "datars%d" $index }}
-    {{- $labels := dict "app" "mongo-cluster" "microservice" $shardName }}
-    {{- $pdbName := printf "pdb-%s" $shardName }}
-    {{- template "nosql.core.pdb" (dict "name" $pdbName "labels" $labels "minAvailable" $minAvailable) }}
+  {{- range $i, $_ := until $shardCount }}
+---
+{{- $index := add $i 1 }}
+{{- $shardName := printf "datars%d" $index }}
+{{- $labels := dict "app" "mongo-cluster" "microservice" $shardName }}
+{{- $pdbName := printf "pdb-%s" $shardName }}
+{{- template "nosql.core.pdb" (dict "name" $pdbName "labels" $labels "minAvailable" $minAvailable) }}
   {{- end }}
 
   {{- /* Config servers */}}
-  {{- $cnfSize := .Values.schemaSettings.cnfReplicaSize | default 3 }}
+---
+  {{- $cnfSize := int (default 3 .Values.schemaSettings.cnfReplicaSize) }}
   {{- $cnfMinAvailable := add (div $cnfSize 2) 1 }}
   {{- $cnfrLabels := dict "app" "mongo-cluster" "microservice" "cnfrs" }}
   {{- template "nosql.core.pdb" (dict "name" "pdb-cnfrs" "labels" $cnfrLabels "minAvailable" $cnfMinAvailable) }}
 
   {{/* Mongos */}}
-  {{- if (eq .Values.schemaSettings.mongosReplicas 1) }}
+  {{- if and .Values.schemaSettings.mongosReplicas (eq (int .Values.schemaSettings.mongosReplicas) 1) }}
+---
     {{- $mongosLabels := dict "app" "mongo-cluster" "name" "mongos" }}
     {{- template "nosql.core.pdb" (dict "name" "pdb-mongos" "labels" $mongosLabels "minAvailable" 1) }}
   {{- end }}
 
 {{- end }}
-
