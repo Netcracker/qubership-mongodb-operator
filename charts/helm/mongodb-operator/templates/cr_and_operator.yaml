@@ -1,6 +1,6 @@
 {{/* Generating deployment version each time */}}
 {{- $deploymentVersion := randAlphaNum 10 -}}
-apiVersion: qubership.org/v1alpha1
+apiVersion: netcracker.com/v1alpha1
 kind: MongodbDeployment
 metadata:
   name: {{ .Values.operator.operatorName }}
@@ -356,7 +356,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: RESOURCE_FOR_DR
-              value: "qubership.org v1alpha1 mongodbdeployments {{ .Values.operator.operatorName }}"
+              value: "netcracker.com v1alpha1 mongodbdeployments {{ .Values.operator.operatorName }}"
             - name: USE_DEFAULT_PATHS
               value: "true"
             - name: POD_IP

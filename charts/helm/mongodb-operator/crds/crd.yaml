@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: mongodbdeployments.qubership.org
+  name: mongodbdeployments.netcracker.com
 spec:
-  group: qubership.org
+  group: netcracker.com
   names:
     kind: MongodbDeployment
     listKind: MongodbDeploymentList
