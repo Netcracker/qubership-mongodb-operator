@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.24.3-alpine3.20 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24.7-alpine3.22 AS builder
 
 ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker
 
@@ -21,7 +21,7 @@ RUN mkdir -p deployments/charts/mongodb-operator && \
     cp -R ./charts/helm/mongodb-operator/* deployments/charts/mongodb-operator/ && \
     cp ./charts/deployment-configuration.json deployments/deployment-configuration.json
 
-FROM alpine:3.20.3
+FROM alpine:3.22.1
 
 ENV OPERATOR=/usr/local/bin/mongodb-operator \
     USER_UID=1001 \
