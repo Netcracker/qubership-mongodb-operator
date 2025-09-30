@@ -247,12 +247,13 @@ func ShardServiceTemplate(name string, namespace string) *v1.Service {
 	}
 
 	labels := map[string]string{
-		app:                            mongoCluster,
-		microservice:                   name,
-		"app.kubernetes.io/part-of":    "mongodb",
-		"name":                         name,
-		"app.kubernetes.io/name":       name,
-		"app.kubernetes.io/managed-by": "operator",
+		app:                                     mongoCluster,
+		microservice:                            name,
+		"app.kubernetes.io/part-of":             "mongodb",
+		"name":                                  name,
+		"app.kubernetes.io/name":                name,
+		"app.kubernetes.io/managed-by":          "operator",
+		"app.kubernetes.io/managed-by-operator": "mongodb-operator",
 	}
 
 	return &v1.Service{
@@ -281,11 +282,12 @@ func MongosServiceTemplate(name string, selector string, namespace string) *v1.S
 	nameSelector := Name
 
 	labels := map[string]string{
-		app:                            mongoCluster,
-		"app.kubernetes.io/part-of":    "mongodb",
-		"name":                         name,
-		"app.kubernetes.io/name":       name,
-		"app.kubernetes.io/managed-by": "operator",
+		app:                                     mongoCluster,
+		"app.kubernetes.io/part-of":             "mongodb",
+		"name":                                  name,
+		"app.kubernetes.io/name":                name,
+		"app.kubernetes.io/managed-by":          "operator",
+		"app.kubernetes.io/managed-by-operator": "mongodb-operator",
 	}
 
 	selectors := map[string]string{
