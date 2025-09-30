@@ -2,6 +2,9 @@ kind: Service
 apiVersion: v1
 metadata:
   name: mongodb-operator
+  labels:
+    name: mongodb-operator
+    app.kubernetes.io/name: mongodb-operator
 spec:
   ports:
     - name: http
