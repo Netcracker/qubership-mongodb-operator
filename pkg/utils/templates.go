@@ -246,11 +246,20 @@ func ShardServiceTemplate(name string, namespace string) *v1.Service {
 		microservice: name,
 	}
 
+	labels := map[string]string{
+		app:                            mongoCluster,
+		microservice:                   name,
+		"app.kubernetes.io/part-of":    "mongodb",
+		"name":                         name,
+		"app.kubernetes.io/name":       name,
+		"app.kubernetes.io/managed-by": "operator",
+	}
+
 	return &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
-			Labels:    selectors,
+			Labels:    labels,
 		},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
@@ -272,7 +281,11 @@ func MongosServiceTemplate(name string, selector string, namespace string) *v1.S
 	nameSelector := Name
 
 	labels := map[string]string{
-		app: mongoCluster,
+		app:                            mongoCluster,
+		"app.kubernetes.io/part-of":    "mongodb",
+		"name":                         name,
+		"app.kubernetes.io/name":       name,
+		"app.kubernetes.io/managed-by": "operator",
 	}
 
 	selectors := map[string]string{
