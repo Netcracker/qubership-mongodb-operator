@@ -225,6 +225,12 @@ spec:
     metadata:
       labels:
         name: {{ .Values.operator.operatorName }}
+        app.kubernetes.io/name: {{ .Values.operator.operatorName }}
+        app.kubernetes.io/part-of: {{ .Values.operator.operatorName }}
+        app.kubernetes.io/component: "mongodb-operator"
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+        app.kubernetes.io/technology: "go"
     spec:
       serviceAccountName: {{ .Values.operator.operatorName }}
       priorityClassName: {{ .Values.operator.priorityClassName | quote }}
