@@ -515,6 +515,8 @@ func (r *MongoUtilsHelperImpl) RunOnMongoPod(masterPod *v1.Pod, arg string) (str
 	if err != nil {
 		r.Logger.Info("error is not nil: ")
 		r.Logger.Info(masterPod.Name)
+		r.Logger.Info(fmt.Sprintf("r.cmd: %s", r.Cmd))
+		r.Logger.Info(fmt.Sprintf("arg: %s", arg))
 	}
 
 	return resp, err
