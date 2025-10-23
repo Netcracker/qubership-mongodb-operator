@@ -494,49 +494,7 @@ func (r *MongoUtilsHelperImpl) RunOnPrimaryWithJSONResult(label map[string]strin
 	return r.RunOnPrimary(label, arg)
 }
 
-// func (r *MongoUtilsHelperImpl) RunOnMongoPod(masterPod *v1.Pod, arg string) (string, error) {
-// 	resp, err := r.KubernetesHelperImpl.ExecRemote(
-// 		nil,
-// 		r.KubeConfig,
-// 		masterPod.Name,
-// 		masterPod.Namespace,
-// 		masterPod.Spec.Containers[0].Name,
-// 		BashCommand,
-// 		[]string{fmt.Sprintf("%s --eval \"%s\"", r.Cmd, arg)})
-
-// 	const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
-// 	var re = regexp.MustCompile(ansi)
-// 	if err == nil {
-// 		resp = re.ReplaceAllString(resp, "")
-// 		resp = strings.Replace(resp, MongoshBanner7, "", 1)
-// 		resp = strings.Replace(resp, MongoshBanner8, "", 1)
-// 	}
-
-// 	return resp, err
-// }
-
 func (r *MongoUtilsHelperImpl) RunOnMongoPod(masterPod *v1.Pod, arg string) (string, error) {
-	const (
-		maxRetries    = 5
-		retryInterval = 3 * time.Second
-	)
-
-	// Step 1: Wait for Mongo to be ready (ping)
-	for attempt := 1; attempt <= maxRetries; attempt++ {
-		if r.mongoPing(masterPod) {
-			break // Mongo is ready
-		}
-		fmt.Printf("[MongoUtilsHelper] Mongo not ready (ping failed), retrying (%d/%d)...\n", attempt, maxRetries)
-		time.Sleep(retryInterval)
-		if attempt == maxRetries {
-			return "", fmt.Errorf("Mongo not ready after %d attempts", maxRetries)
-		}
-	}
-
-	// Step 2: Run the actual command
-	command := fmt.Sprintf("%s --quiet --eval \"%s\"", r.Cmd, arg)
-	args := []string{command}
-
 	resp, err := r.KubernetesHelperImpl.ExecRemote(
 		nil,
 		r.KubeConfig,
@@ -544,38 +502,22 @@ func (r *MongoUtilsHelperImpl) RunOnMongoPod(masterPod *v1.Pod, arg string) (str
 		masterPod.Namespace,
 		masterPod.Spec.Containers[0].Name,
 		BashCommand,
-		args,
-	)
+		[]string{fmt.Sprintf("%s --eval \"%s\"", r.Cmd, arg)})
 
-	// Step 3: Clean up output
-	const ansi = `[\u001B\u009B][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))`
-	re := regexp.MustCompile(ansi)
-	resp = re.ReplaceAllString(resp, "")
-	resp = strings.Replace(resp, MongoshBanner7, "", 1)
-	resp = strings.Replace(resp, MongoshBanner8, "", 1)
-
-	return resp, err
-}
-
-func (r *MongoUtilsHelperImpl) mongoPing(pod *v1.Pod) bool {
-	cmd := fmt.Sprintf("%s --quiet --eval \"db.runCommand({ ping: 1 })\"", r.Cmd)
-	args := []string{cmd}
-
-	resp, err := r.KubernetesHelperImpl.ExecRemote(
-		nil,
-		r.KubeConfig,
-		pod.Name,
-		pod.Namespace,
-		pod.Spec.Containers[0].Name,
-		BashCommand,
-		args,
-	)
-	if err != nil {
-		return false
+	const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
+	var re = regexp.MustCompile(ansi)
+	if err == nil {
+		resp = re.ReplaceAllString(resp, "")
+		resp = strings.Replace(resp, MongoshBanner7, "", 1)
+		resp = strings.Replace(resp, MongoshBanner8, "", 1)
 	}
 
-	// Check if response contains "ok" : 1
-	return strings.Contains(resp, `"ok" : 1`) || strings.Contains(resp, "\"ok\": 1")
+	if err != nil {
+		r.Logger.Info("error is not nil: ")
+		r.Logger.Info(masterPod.Name)
+	}
+
+	return resp, err
 }
 
 func (r *MongoUtilsHelperImpl) AddReplica(labels map[string]string, host string) error {
