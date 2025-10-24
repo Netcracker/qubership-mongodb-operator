@@ -459,10 +459,10 @@ func (r *MongoUtilsHelperImpl) MongoReplicaSetInit(nameKey string, nameKeyWithIn
 		output = strings.TrimSpace(output)
 		if output == "" {
 			// No output means likely no primary yet — keep retrying
-			fmt.Printf("Empty output from command on pod %s, primary not elected yet\n", pod)
-			r.Logger.Info(fmt.Sprintf("Empty output from command on pod %s, primary not elected yet\n", pod))
+			r.Logger.Info(fmt.Sprintf("Empty output from command on pod %s, primary not elected yet\n", pod.Name))
 			return false, nil
 		}
+
 		output = strings.TrimSuffix(output, "\n") // Workaround
 		i, err := strconv.Atoi(output)
 		if err != nil {
