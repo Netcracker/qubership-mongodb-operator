@@ -159,7 +159,7 @@ func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, 
 		bindOpt = "--bind_ip_all --ipv6"
 	}
 
-	var setParameters string
+	setParameters := "--setParameter diagnosticDataCollectionEnabled=false "
 	if len(customDataRSParams) > 0 {
 		for _, v := range customDataRSParams {
 			setParameters += fmt.Sprintf("--setParameter %s ", v)
