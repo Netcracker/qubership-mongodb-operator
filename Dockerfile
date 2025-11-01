@@ -32,9 +32,9 @@ RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.22/main/' > /etc/apk/reposito
     && apk update \
     && apk upgrade
     
-RUN apk add --no-cache \
-  --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
-  libcurl curl
+# RUN apk add --no-cache \
+#   --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+#   libcurl curl
 
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
