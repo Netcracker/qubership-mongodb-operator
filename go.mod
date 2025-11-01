@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-mongodb-operator
 
-go 1.25.1
+go 1.25.2
 
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.8
