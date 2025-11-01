@@ -28,6 +28,10 @@ ENV OPERATOR=/usr/local/bin/mongodb-operator \
     USER_NAME=mongodb-operator
     
 RUN apk add --no-cache openssl curl
+RUN apk add --no-cache \
+  --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+  libcurl curl
+  
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
 COPY build/bin /usr/local/bin
