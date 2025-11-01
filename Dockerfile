@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.24.7-alpine3.22 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25.1-alpine3.22 AS builder
 
 ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker
 
@@ -26,12 +26,16 @@ FROM alpine:3.22.1
 ENV OPERATOR=/usr/local/bin/mongodb-operator \
     USER_UID=1001 \
     USER_NAME=mongodb-operator
+
+RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.22/main/' > /etc/apk/repositories \
+    && apk add --no-cache openssl curl \
+    && apk update \
+    && apk upgrade
     
-RUN apk add --no-cache openssl curl
 RUN apk add --no-cache \
   --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
   libcurl curl
-  
+
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
 COPY build/bin /usr/local/bin
