@@ -178,8 +178,9 @@ func HAMongosContainerArgs(tmp string, data string, mongoSecret string, mongoSec
 	if ipv6 {
 		bindOpt = "--bind_ip_all --ipv6"
 	}
+	setParameters := "--setParameter diagnosticDataCollectionEnabled=false "
+	return "if [ ! -d /" + tmp + "/" + data + " ]; then mkdir /" + tmp + "/" + data + "; fi && cp /opt/" + mongoSecret + "/" + mongoSecretKeyFile + " /" + tmp + "/" + data + "/" + mongoSecretKeyFile + " && chmod 0600 /" + tmp + "/" + data + "/" + mongoSecretKeyFile + " && mongos " + bindOpt + " --port 27017 " + authOpt2 + " " + authOpt3 + " --configdb " + configNodes + " " + setParameters + getTLSOPtions(tls)
 
-	return "if  [ ! -d /" + tmp + "/" + data + " ]; then  mkdir /" + tmp + "/" + data + "; fi && cp /opt/" + mongoSecret + "/" + mongoSecretKeyFile + " /" + tmp + "/" + data + "/" + mongoSecretKeyFile + " && chmod 0600 /" + tmp + "/" + data + "/" + mongoSecretKeyFile + " && mongos " + bindOpt + " --port 27017 " + authOpt2 + " " + authOpt3 + " --configdb " + configNodes + getTLSOPtions(tls)
 }
 
 func SingleMongosContainerArgs(wiredCacheGb float64, ipv6 bool, tls *v1alpha1.TLS) string {
