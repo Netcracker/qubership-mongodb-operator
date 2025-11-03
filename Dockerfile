@@ -27,19 +27,19 @@ ENV OPERATOR=/usr/local/bin/mongodb-operator \
     USER_UID=1001 \
     USER_NAME=mongodb-operator
 
-# RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.22/main/' > /etc/apk/repositories \
-#     && apk add --no-cache openssl curl \
-#     && apk update \
-#     && apk upgrade
+RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.22/main/' > /etc/apk/repositories \
+    && apk add --no-cache openssl curl \
+    && apk update \
+    && apk upgrade
     
-# RUN apk add --no-cache \
-#   --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
-#   libcurl curl
+RUN apk add --update --upgrade --no-cache \
+  --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+  libcurl curl
 
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --update --upgrade --no-cache \
-        libcurl curl
+# RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+#     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+#     && apk add --update --upgrade --no-cache \
+#         libcurl curl
 
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
