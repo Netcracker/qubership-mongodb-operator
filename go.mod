@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-mongodb-operator
 
-go 1.24.7
+go 1.25.2
 
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.8
@@ -63,7 +63,7 @@ require (
 	github.com/hashicorp/consul/api v1.29.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-hclog v1.5.0 // indirect
+	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
