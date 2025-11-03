@@ -32,14 +32,11 @@ RUN echo 'https://dl-cdn.alpinelinux.org/alpine/v3.22/main/' > /etc/apk/reposito
     && apk update \
     && apk upgrade
     
-RUN apk add --update --upgrade --no-cache \
-  --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
-  libcurl curl
 
-# RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
-#     && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-#     && apk add --update --upgrade --no-cache \
-#         libcurl curl
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories  \
+    && echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk add --update --upgrade --no-cache \
+        libcurl curl
 
 # install operator binary
 COPY --from=builder /workspace/build/_output/bin/mongodb-operator ${OPERATOR}
