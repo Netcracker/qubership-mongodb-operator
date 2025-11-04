@@ -6,6 +6,7 @@ metadata:
     name: mongodb-operator
     app.kubernetes.io/name: mongodb-operator
     app.kubernetes.io/managed-by: operator
+    app.kubernetes.io/managed-by-operator: mongodb-operator
 spec:
   ports:
     - name: http
