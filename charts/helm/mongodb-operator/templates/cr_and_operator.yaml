@@ -221,6 +221,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.operator.operatorName }}
     app.kubernetes.io/part-of: "mongodb"
     app.kubernetes.io/component: "operator"
+    app.kubernetes.io/managed-by: "operator"
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/technology: "go"
@@ -236,6 +237,7 @@ spec:
         app.kubernetes.io/name: {{ .Values.operator.operatorName }}
         app.kubernetes.io/part-of: "mongodb"
         app.kubernetes.io/component: "operator"
+        app.kubernetes.io/managed-by: "operator"
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
         app.kubernetes.io/technology: "go"
