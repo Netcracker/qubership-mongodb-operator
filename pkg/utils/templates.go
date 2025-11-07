@@ -78,6 +78,13 @@ func MongoSSCommonTemplate(
 		tls,
 		priorityClassName)
 
+	hostAlias := []v1.HostAlias{
+		{
+			IP:        "127.0.0.1",
+			Hostnames: []string{"downloads.mongodb.com"},
+		},
+	}
+
 	statefulSet.ObjectMeta.Name = nameWithIndexes
 	statefulSet.Spec.ServiceName = nameKey
 
@@ -98,6 +105,7 @@ func MongoSSCommonTemplate(
 
 	statefulSet.Spec.Template.Spec.SecurityContext = securityContext
 	statefulSet.Spec.Template.Spec.Tolerations = tolerations
+	statefulSet.Spec.Template.Spec.HostAliases = hostAlias
 
 	return statefulSet
 }
@@ -421,6 +429,12 @@ func MongosRCTemplate(
 									},
 								},
 							},
+						},
+					},
+					HostAliases: []v1.HostAlias{
+						{
+							IP:        "127.0.0.1",
+							Hostnames: []string{"downloads.mongodb.com"},
 						},
 					},
 					Containers: []v1.Container{
