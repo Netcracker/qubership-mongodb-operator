@@ -45,4 +45,3 @@ volumes:
 - persistentVolumeClaim
 - projected
 - secret
-{{ end}}
