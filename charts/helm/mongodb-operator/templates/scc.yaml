@@ -1,0 +1,48 @@
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: {{ .Release.Namespace }}-scc-for-sysctl
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: mongodb-operator
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+    kubernetes.io/description: "Custom SCC for sysctl vm.max_map_count operations with minimal privileges"
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities:
+- SYS_ADMIN
+allowedUnsafeSysctls:
+- vm.max_map_count
+- vm.*
+defaultAddCapabilities: []
+defaultAllowPrivilegeEscalation: true
+forbiddenSysctls: []
+fsGroup:
+  type: RunAsAny
+priority: 15  # get high priority
+readOnlyRootFilesystem: false
+requiredDropCapabilities: []
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+seccompProfiles:  # add seccomp support
+- "*"
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:{{ .Release.Namespace }}:mongodb-operator
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- persistentVolumeClaim
+- projected
+- secret
+{{ end}}
