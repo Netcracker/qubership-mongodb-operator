@@ -289,7 +289,7 @@ DNS names used to generate SSL certificate with "Subject Alternative Name" field
   {{- $dnsNames | toYaml -}}
 {{- end -}}
 {{- define "backupDaemon.certDnsNames" -}}
-  {{- $dnsNames := list "localhost" "mongodb-backup-daemon" (printf "%s.%s" "mongodb-backup-daemon" .Release.Namespace) (printf "%s.%s.svc" "mongodb-backup-daemon" .Release.Namespace) -}}
+  {{- $dnsNames := list "localhost" "mongodb-backup-daemon" (printf "%s.%s" "mongodb-backup-daemon" .Release.Namespace) (printf "%s.%s.svc" "mongodb-backup-daemon" .Release.Namespace) (printf "%s.%s.svc.cluster.local" "mongodb-backup-daemon" .Release.Namespace) -}}
   {{- $dnsNames = concat $dnsNames .Values.tls.generateCerts.subjectAlternativeName.additionalDnsNames -}}
   {{- $dnsNames | toYaml -}}
 {{- end -}}
