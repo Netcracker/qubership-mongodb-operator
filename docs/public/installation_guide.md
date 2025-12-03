@@ -467,6 +467,22 @@ The list of Prometheus Exporter parameters is as follows:
 | `prometheusExporter.exporterResources.limits.cpu`      | false     | Quantity | `300m`                                            | The maximum number of CPUs for the Prometheus exporter replica.   |
 | `prometheusExporter.exporterResources.requests.memory` | false     | Quantity | `128Mi`                                           | The minimum amount of memory for the Prometheus exporter replica. |
 | `prometheusExporter.exporterResources.requests.cpu`    | false     | Quantity | `200m`                                            | The minimum number of CPUs for the Prometheus exporter replica.   |
+| `prometheusExporter.alerts.common.podRestartCount`     | false     | int      | `0`                                              | Threshold for pod restart count.                               |
+| `prometheusExporter.alerts.common.podRestartPeriod`    | false     | string   | `6m`                                             | Period to monitor pod restarts.                                |
+| `prometheusExporter.alerts.common.replicationLagSeconds` | false   | int      | `10`                                             | Threshold for replication lag in seconds.                     |
+| `prometheusExporter.alerts.common.cursorTimeoutThreshold` | false  | int      | `100`                                            | Threshold for number of cursors timing out in 10 minutes.     |
+| `prometheusExporter.alerts.common.cpuUsageThreshold`   | false     | int      | `95`                                             | CPU usage threshold in percent.                                |
+| `prometheusExporter.alerts.common.memoryUsageThreshold` | false    | int      | `95`                                             | Memory usage threshold in percent.                             |
+| `prometheusExporter.alerts.common.balancerDisabledFor` | false     | string   | `2m`                                             | Duration to wait before firing balancer disabled alert.       |
+| `prometheusExporter.alerts.common.chunkMigrationThreshold` | false  | int      | `0`                                              | Threshold for failed chunk migrations.                         |
+| `prometheusExporter.alerts.common.chunkUnevenThreshold` | false    | int      | `30`                                             | Stddev/avg % for uneven chunk distribution.                   |
+| `prometheusExporter.alerts.common.chunkUnevenFor`     | false     | string   | `10m`                                            | Duration to wait before firing uneven chunk alert.            |
+| `prometheusExporter.alerts.common.connectionsThreshold` | false    | int      | `90`                                             | Threshold % of connections used.                               |
+| `prometheusExporter.alerts.common.connectionsFor`     | false     | string   | `2m`                                             | Duration to wait before firing too many connections alert.    |
+| `prometheusExporter.alerts.common.cachePressureThreshold` | false  | int      | `85`                                             | WiredTiger cache pressure threshold %.                         |
+| `prometheusExporter.alerts.common.cachePressureFor`   | false     | string   | `3m`                                             | Duration to wait before firing WiredTiger cache pressure alert. |
+| `prometheusExporter.alerts.backup.usedSpaceThreshold` | false     | int      | `80`                                             | Backup used space threshold %.                                 |
+| `prometheusExporter.alerts.backup.usedInodesThreshold` | false    | int      | `80`                                             | Backup used inodes threshold %.                                |
 
 ## Vault Registration Parameters
 
