@@ -6,8 +6,8 @@
 DEPLOY_W_HELM: true
 operator:
   operatorName: mongodb-operator
-  image: to_replace
-  initImage: to_replace
+  image: ghcr.io/netcracker/qubership-mongodb-operator:main
+  initImage: ghcr.io/netcracker/qubership-credential-manager:main
   priorityClassName:
   resources:
     requests:
@@ -38,7 +38,7 @@ schemaSettings:
   arbiterIndex: -1
 
 disasterRecovery:
-  image: to_replace
+  image: ghcr.io/netcracker/qubership-disaster-recovery-daemon:main
   httpAuth:
     enabled: false
     smSecureAuth: false
@@ -122,7 +122,7 @@ mongodb:
   install: true
   # flavor: small
   # Mandatory MongoDB docker image link
-  dockerImage: to_replace
+  dockerImage: ghcr.io/netcracker/qubership-mongodb:main_8.0.15
   priorityClassName:
 
   containerTimeoutSeconds: 10
@@ -225,7 +225,7 @@ tls:
 
 vaultRegistration:
   tokenSecretName: vault-secret
-  dockerImage: to_replace
+  dockerImage: banzaicloud/vault-env:1.19.0
   enabled: false
   path: kv
   url:
