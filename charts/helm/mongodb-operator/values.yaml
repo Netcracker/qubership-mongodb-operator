@@ -122,7 +122,7 @@ mongodb:
   install: true
   # flavor: small
   # Mandatory MongoDB docker image link
-  dockerImage: ghcr.io/netcracker/qubership-mongodb:main_7.0.25
+  dockerImage: ghcr.io/netcracker/qubership-mongodb:main_8.0.15
   priorityClassName:
 
   containerTimeoutSeconds: 10
