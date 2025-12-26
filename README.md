@@ -43,30 +43,7 @@ The information on debug is provided below.
 
 #### Mongodb Operator
 
-To debug Operator in VSCode you can use `Launch Mongodb Operator` configuration which is already defined in 
-`.vscode/launch.json` file. 
-
-The developer should configure environment variables: 
-
-* `KUBECONFIG` - developer **need to define** `KUBECONFIG` environment variable
-  which should contains path to the kube-config file. It can be defined on configuration level
-  or on the level of user's environment variables.
-* `NAMESPACE` - namespace, in which custom resources should be proceeded.
 
 
-### How to Troubleshoot
-
-There are no well-defined rules for troubleshooting, as each task is unique, but there are some tips that can do:
-
-* Deploy parameters.
-* Application manifest.
-* Logs from all Mongodb pods.
-
-Also, developer can take a look on [Troubleshooting guide](/docs/public/troubleshooting.md).
 
 
-## Useful Links
-
-* [Installation guide](/docs/public/installation_guide.md).
-* [Troubleshooting guide](/docs/public/troubleshooting.md).
-* [Architecture Guide](/docs/public/architecture.md).
