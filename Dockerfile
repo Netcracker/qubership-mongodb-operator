@@ -21,7 +21,7 @@ RUN mkdir -p deployments/charts/mongodb-operator && \
     cp -R ./charts/helm/mongodb-operator/* deployments/charts/mongodb-operator/ && \
     cp ./charts/deployment-configuration.json deployments/deployment-configuration.json
 
-FROM alpine:3.22.1
+FROM alpine:3.23
 
 ENV OPERATOR=/usr/local/bin/mongodb-operator \
     USER_UID=1001 \
