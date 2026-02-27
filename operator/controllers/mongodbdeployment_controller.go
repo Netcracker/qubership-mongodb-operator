@@ -124,6 +124,7 @@ func (s *MongodbDeploymentInstanceReconciler) GetStatus() *types.ServiceStatusCo
 	if len(s.Instance.Status.Conditions) > 0 {
 		return &s.Instance.Status.Conditions[0]
 	}
+	log.Println("test")
 	return nil
 }
 
