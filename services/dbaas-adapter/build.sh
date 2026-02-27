@@ -15,5 +15,3 @@ for id in $DOCKER_NAMES
 do
     docker tag dbaas_mongo_adapter $id
 done
-
-echo "test"
