@@ -1,0 +1,128 @@
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.prometheusExporter.install "envVar" .Values.MONITORING_ENABLED "default" true )) "true" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/managed-by: monitoring-operator
+    app.kubernetes.io/name: "mongodb-prometheus-exporter-service-monitor"
+    k8s-app: "mongodb-prometheus-exporter-service-monitor"
+  name: "mongodb-prometheus-exporter-service-monitor"
+spec:
+  endpoints:
+    - basicAuth:
+        password:
+          key: password
+          name: {{ .Values.prometheusExporter.prometheusExporterSecretName }}
+        username:
+          key: username
+          name: {{ .Values.prometheusExporter.prometheusExporterSecretName }}
+      interval: {{ .Values.prometheusExporter.collectionInterval }}s
+      scrapeTimeout: {{ .Values.prometheusExporter.collectionScrapeTimeout }}s
+      metricRelabelings:
+        {{- if eq .Values.schemaSettings.schemaType "dr" }}
+        - action: drop
+          regex: '(.*{{ .Values.schemaSettings.otherDomainName }}.*)'
+          sourceLabels:
+            - member_idx
+        {{- end }}
+        - sourceLabels:
+            - namespace
+          targetLabel: mongo_cluster_namespace
+        - regex: (.*:9216)
+          replacement: mongos
+          sourceLabels:
+            - instance
+          targetLabel: instance
+        - regex: (.*:9217)
+          replacement: cnfrs
+          sourceLabels:
+            - instance
+          targetLabel: instance
+        - regex: (.*:9218)
+          replacement: datars1
+          sourceLabels:
+            - instance
+          targetLabel: instance
+        - regex: (.*:9219)
+          replacement: datars2
+          sourceLabels:
+            - instance
+          targetLabel: instance
+        - regex: (.*:9220)
+          replacement: datars3
+          sourceLabels:
+            - instance
+          targetLabel: instance
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - {{ default "mongo-cluster" .Release.Namespace }}
+  selector:
+    matchLabels:
+      microservice: mongodb-prometheus-exporter
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true )) "true" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/managed-by: monitoring-operator
+    app.kubernetes.io/name: "mongo-dbaas-exporter-service-monitor"
+    k8s-app: "mongo-dbaas-exporter-service-monitor"
+  name: "mongo-dbaas-exporter-service-monitor"
+spec:
+  endpoints:
+    - interval: {{ .Values.prometheusExporter.collectionInterval }}s
+      path: /metrics
+      port: http
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - {{ default "mongodb" .Release.Namespace }}
+  selector:
+    matchLabels:
+      microservice: dbaas-mongo-adapter
+{{- end }}
+{{- if and (.Values.backup.install) }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/managed-by: monitoring-operator
+    app.kubernetes.io/name: "mongo-backup-exporter-service-monitor"
+    k8s-app: "mongo-backup-exporter-service-monitor"
+  name: "mongo-backup-exporter-service-monitor"
+spec:
+  endpoints:
+    - interval: {{ .Values.prometheusExporter.collectionInterval }}s
+      path: /health/prometheus
+      port: http
+      {{- if eq .Values.tls.mode "requireTLS" }}
+      scheme: {{ if eq .Values.tls.mode "requireTLS" }}https{{ else }}http{{ end }}
+      tlsConfig:
+        serverName: mongodb-backup-daemon
+        ca:
+          secret:
+            key: ca.crt
+            name: {{ .Values.backup.tls.backupDaemonCASecretName }}
+        cert:
+          secret:
+            key: tls.crt
+            name: {{ .Values.backup.tls.backupDaemonCASecretName }}
+        keySecret:
+          key: tls.key
+          name: {{ .Values.backup.tls.backupDaemonCASecretName }}
+      {{- end }}
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+      - {{ default "mongo" .Release.Namespace }}
+  selector:
+    matchLabels:
+      microservice: mongodb-backup-daemon
+{{- end }}
+{{ end }}

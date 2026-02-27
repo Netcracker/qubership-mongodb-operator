@@ -1,0 +1,10 @@
+{
+  "statusPolling":{
+    "resourceType": "mongodbsupplservices.netcracker.com",
+    "resourceName": "mongodb-services-operator",
+    "statusPath": "$.status.conditions[?(@.type=='Successful')]",
+    "statusPathFail": "$.status.conditions[?(@.type=='Failed')]",
+    "timeout": "${ CUSTOM_TIMEOUT_MIN ? CUSTOM_TIMEOUT_MIN : '20' }",
+    "delay": "${ DELAY_BEFORE_STATUS_POLL ? DELAY_BEFORE_STATUS_POLL : '15' }"
+  }
+}

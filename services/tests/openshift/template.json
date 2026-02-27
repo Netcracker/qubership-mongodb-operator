@@ -1,0 +1,195 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "mongo-tests-template",
+    "annotations": {
+      "openshift.io/display-name": "Cassandra test template",
+      "description": "Template for mongo test"
+    }
+  },
+  "labels": {
+    "template": "mongo-tests-template"
+  },
+  "parameters": [
+    {
+      "name": "TEST_IMAGE"
+    },
+    {
+      "name": "OPENSHIFT_WORKSPACE_WA",
+      "required": false
+    },
+    {
+      "name": "MONGO_ROOT_USER",
+      "required": true,
+      "value": "root"
+    },
+    {
+      "name": "MONGO_ROOT_PASSWORD",
+      "required": true,
+      "value": "root"
+    },
+    {
+      "name": "BACKUP_DAEMON_API_CREDENTIALS_USERNAME",
+      "required": false
+    },
+    {
+      "name": "BACKUP_DAEMON_API_CREDENTIALS_PASSWORD",
+      "required": false
+    },
+    {
+      "name": "DBAAS_AGGREGATOR_USERNAME",
+      "required": true,
+      "value": "dbaas-aggregator"
+    },
+    {
+      "name": "DBAAS_AGGREGATOR_PASSWORD",
+      "required": true,
+      "value": "dbaas-aggregator"
+    },
+    {
+      "name": "TAGS",
+      "required": false,
+      "value": "smoke"
+    },
+    {
+      "name": "REPLICAS",
+      "required": true,
+      "value": "0"
+    },
+    {
+      "name": "EXTERNAL_BACKUP_PATH",
+      "required": false,
+      "value": "external"
+    },
+    {
+      "name": "DATARS_HOST",
+      "required": false,
+      "value": "datars1"
+    },
+    {
+      "name": "WAIT_TIMEOUT",
+      "required": false,
+      "value": "200"
+    }
+  ],
+  "objects": [
+    {
+      "apiVersion": "v1",
+      "kind": "DeploymentConfig",
+      "metadata": {
+        "name": "mongo-tests",
+        "labels": {
+          "app": "mongo-tests"
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 120
+          }
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": "${REPLICAS}",
+        "selector": {
+          "app": "mongo-tests",
+          "deploymentconfig": "mongo-tests",
+          "name": "mongo-tests"
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "mongo-tests",
+              "deploymentconfig": "mongo-tests",
+              "name": "mongo-tests"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "mongo-tests",
+                "image": "${TEST_IMAGE}",
+                "imagePullPolicy": "Always",
+                "env": [
+                  {
+                    "name": "MONGO_HOST",
+                    "value": "mongos.${OPENSHIFT_WORKSPACE_WA}.svc"
+                  },
+                  {
+                    "name": "OPENSHIFT_WORKSPACE_WA",
+                    "value": "${OPENSHIFT_WORKSPACE_WA}"
+                  },
+                  {
+                    "name": "MONGO_ROOT_USER",
+                    "value": "${MONGO_ROOT_USER}"
+                  },
+                  {
+                    "name": "MONGO_ROOT_PASSWORD",
+                    "value": "${MONGO_ROOT_PASSWORD}"
+                  },
+                  {
+                    "name": "BACKUP_HOST",
+                    "value": "mongodb-backup-daemon.${OPENSHIFT_WORKSPACE_WA}.svc"
+                  },
+                  {
+                    "name": "BACKUP_DAEMON_API_CREDENTIALS_USERNAME",
+                    "value": "${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}"
+                  },
+                  {
+                    "name": "BACKUP_DAEMON_API_CREDENTIALS_PASSWORD",
+                    "value": "${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}"
+                  },
+                  {
+                    "name": "DBAAS_HOST",
+                    "value": "dbaas-mongo-adapter.${OPENSHIFT_WORKSPACE_WA}.svc"
+                  },
+                  {
+                    "name": "DBAAS_AGGREGATOR_USERNAME",
+                    "value": "${DBAAS_AGGREGATOR_USERNAME}"
+                  },
+                  {
+                    "name": "DBAAS_AGGREGATOR_PASSWORD",
+                    "value": "${DBAAS_AGGREGATOR_PASSWORD}"
+                  },
+                  {
+                    "name": "TAGS",
+                    "value": "${TAGS}"
+                  },
+                  {
+                    "name": "EXTERNAL_BACKUP_PATH",
+                    "value": "${EXTERNAL_BACKUP_PATH}"
+                  },
+                  {
+                    "name": "DATARS_HOST",
+                    "value": "${DATARS_HOST}"
+                  },
+                  {
+                    "name": "WAIT_TIMEOUT",
+                    "value": "${WAIT_TIMEOUT}"
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "100m",
+                    "memory": "200Mi"
+                  },
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "200Mi"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.prometheusExporter.install "envVar" .Values.MONITORING_ENABLED "default" true )) "true" }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    prometheus: mongodb-prometheus-exporter
+    role: alert-rules
+  name: prometheus-mongodb-rules.v1
+spec:
+  groups:
+  - name: {{ .Release.Namespace }}-{{ .Release.Name}}
+    rules:
+    - alert: MongoDB replication lag
+      annotations:
+        summary: MongoDB replication lag
+        description: Mongodb replication lag is more than {{ .Values.prometheusExporter.alerts.common.replicationLagSeconds | default 10 }}s
+      expr: 'avg(mongodb_mongod_replset_member_optime_date{namespace="{{ .Release.Namespace }}", state="PRIMARY"}) - avg(mongodb_mongod_replset_member_optime_date{namespace="{{ .Release.Namespace }}", state="SECONDARY"}) > {{ .Values.prometheusExporter.alerts.common.replicationLagSeconds | default 10 }}'
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+    - alert: MongoDB replication Status 3 (RECOVERING)
+      annotations:
+        summary: MongoDB replication Status 3
+        description: MongoDB Replication set member either perform startup self-checks, or transition from completing a rollback or resync
+      expr: 'mongodb_mongod_replset_member_state{namespace="{{ .Release.Namespace }}"} == 3'
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDBRecoveringTooLong
+      expr: mongodb_mongod_replset_member_state{namespace="{{ .Release.Namespace }}"} == 3
+      for: 15m
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+      annotations:
+        summary: "MongoDB node stuck in RECOVERING"
+        description: "A MongoDB node remains in RECOVERING (state 3) for more than 15 minutes."
+
+    - alert: MongoDB replication Status 6 (UNKNOWN)
+      annotations:
+        summary: MongoDB replication Status 6
+        description: MongoDB Replication set member as seen from another member of the set, is not yet known
+      expr: 'mongodb_mongod_replset_member_state{namespace="{{ .Release.Namespace }}"} == 6'
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDB replication Status 8 (DOWN)
+      annotations:
+        summary: MongoDB replication Status 8
+        description: MongoDB Replication set member as seen from another member of the set, is unreachable
+      expr: 'mongodb_mongod_replset_member_state{namespace="{{ .Release.Namespace }}"} == 8'
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDB replication Status 9 (ROLLBACK)
+      annotations:
+        summary: MongoDB replication Status 9
+        description: MongoDB Replication set member is actively performing a rollback. Data is not available for reads
+      expr: 'mongodb_mongod_replset_member_state{namespace="{{ .Release.Namespace }}"} == 9'
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDB replication Status 10 (REMOVED)
+      annotations:
+        summary: MongoDB replication Status 10
+        description: MongoDB Replication set member was once in a replica set but was subsequently removed
+      expr: 'mongodb_mongod_replset_member_state{namespace="{{ .Release.Namespace }}"} == 10'
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDB cursors timeouts
+      annotations:
+        summary: MongoDB cursors timeouts
+        description: Too many cursors are timing out
+      expr: 'increase(mongodb_mongos_metrics_cursor_timed_out_total{namespace="{{ .Release.Namespace }}"}[10m]) > {{ .Values.prometheusExporter.alerts.common.cursorTimeoutThreshold | default 100 }}'
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDB CPU Usage
+      annotations:
+        summary: Some of MongoDB pods CPU load is higher than {{ .Values.prometheusExporter.alerts.common.cpuUsageThreshold | default 95 }}%
+        description: MongoDB CPU load is higher than {{ .Values.prometheusExporter.alerts.common.cpuUsageThreshold | default 95 }}%
+      expr: '(max by(pod, namespace, container) (
+                 rate(container_cpu_usage_seconds_total{container!~"POD|",image!="",namespace="{{ .Release.Namespace }}",pod=~".*"}[1m])
+             )) / on(pod, container) (
+                 kube_pod_container_resource_limits_cpu_cores{namespace="{{ .Release.Namespace }}",pod=~".*"}
+            ) > {{ (.Values.prometheusExporter.alerts.common.cpuUsageThreshold | default 95) }} / 100'
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoDB Memory Usage
+      annotations:
+        summary: Some of MongoDB pods memory usage is higher than {{ .Values.prometheusExporter.alerts.common.memoryUsageThreshold | default 95 }}%
+        description: MongoDB memory usage is higher than {{ .Values.prometheusExporter.alerts.common.memoryUsageThreshold | default 95 }}%
+      expr: '(
+               label_replace(
+                 sum(container_memory_working_set_bytes{pod=~".*",namespace="{{ .Release.Namespace }}",image!="",container!~"POD|"}) by (pod),
+                "needed_pod", "$1", "pod", "(.*)")
+             )
+                / on(needed_pod)
+             (
+                label_replace(avg(kube_pod_container_resource_limits_memory_bytes{exported_namespace="{{ .Release.Namespace }}",exported_pod=~".*"}) by (exported_pod), "needed_pod", "$1", "exported_pod", "(.*)")
+             ) > {{ (.Values.prometheusExporter.alerts.common.memoryUsageThreshold | default 95) }} / 100'
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+
+    - alert: MongoBalancerDisabled
+      expr: 'mongodb_mongos_sharding_balancer_enabled == 0'
+      for: {{ .Values.prometheusExporter.alerts.common.balancerDisabledFor | default "2m" }}
+      labels:
+        severity: warning
+      annotations:
+        summary: "MongoDB balancer is disabled"
+        description: "Sharded cluster balancer disabled for more than {{ .Values.prometheusExporter.alerts.common.balancerDisabledFor | default "2m" }}"
+
+    - alert: MongoChunkMigrationFailures
+      expr: 'increase(mongodb_ss_metrics_commands_configsvrCommitChunkMigration_failed[5m]) > {{ .Values.prometheusExporter.alerts.common.chunkMigrationThreshold | default 0 }}'
+      labels:
+        severity: warning
+      annotations:
+        summary: "Chunk migrations are failing"
+        description: "One or more chunk migrations failed in the last 5 minutes."
+
+    - alert: MongoUnevenChunkDistribution
+      expr: stddev(mongodb_mongos_sharding_shard_chunks_total) / avg(mongodb_mongos_sharding_shard_chunks_total) > {{ (.Values.prometheusExporter.alerts.common.chunkUnevenThreshold | default 30) }} / 100
+      for: {{ .Values.prometheusExporter.alerts.common.chunkUnevenFor | default "10m" }}
+      labels:
+        severity: warning
+      annotations:
+        summary: "Uneven chunk distribution"
+        description: "Standard deviation of chunk counts across shards is high."
+
+    - alert: MongoTooManyConnections
+      expr: 'mongodb_connections{state="current"} > ({{ .Values.prometheusExporter.alerts.common.connectionsThreshold | default 90 }} / 100) * mongodb_connections{state="available"}'
+      for: {{ .Values.prometheusExporter.alerts.common.connectionsFor | default "2m" }}
+      labels:
+        severity: warning
+      annotations:
+        summary: "MongoDB is running out of connections"
+
+    - alert: MongoWiredTigerCachePressure
+      expr: 'mongodb_ss_wt_cache_bytes_currently_in_the_cache / mongodb_ss_wt_cache_maximum_bytes_configured > ({{ .Values.prometheusExporter.alerts.common.cachePressureThreshold | default 85 }} / 100)'
+      for: {{ .Values.prometheusExporter.alerts.common.cachePressureFor | default "3m" }}
+      labels:
+        severity: critical
+      annotations:
+        summary: "WiredTiger cache pressure high"
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true )) "true" }}
+    - alert: MongoDB DBaaS Adapter is down
+      expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", container=~"dbaas-mongo-adapter"}[{{ .Values.prometheusExporter.alerts.common.podRestartPeriod }}]) > {{ .Values.prometheusExporter.alerts.common.podRestartCount }}
+      labels:
+        severity: high
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+      annotations:
+        description: "MongoDB DBaaS Adapter is down"
+{{- end }}
+{{- if and (.Values.backup.install) }}
+    - alert: MongoDB Backup Daemon is down
+      expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", container=~"mongodb-backup-daemon"}[{{ .Values.prometheusExporter.alerts.common.podRestartPeriod }}]) > {{ .Values.prometheusExporter.alerts.common.podRestartCount }}
+      labels:
+        severity: high
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+      annotations:
+        description: "MongoDB Backup Daemon is down"
+    - alert: MongoDB Backup Daemon uses more than {{ .Values.prometheusExporter.alerts.backup.usedSpaceThreshold }} % of disk space
+      annotations:
+        summary: MongoDB Backup Daemon disk space usage is higher than {{ .Values.prometheusExporter.alerts.backup.usedSpaceThreshold }} percents
+        description: MongoDB Backup Daemon disk space usage is higher than {{ .Values.prometheusExporter.alerts.backup.usedSpaceThreshold }} percent
+      expr: backup_storage_size{namespace="{{ .Release.Namespace }}",job=~"mongodb-backup-daemon"} / backup_storage_space_total{namespace="{{ .Release.Namespace }}",job=~"mongodb-backup-daemon"} > {{ .Values.prometheusExporter.alerts.backup.usedSpaceThreshold | default 90 }} / 100
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+    - alert: MongoDB Backup Daemon uses more than {{ .Values.prometheusExporter.alerts.backup.usedInodesThreshold }} % of available inodes
+      annotations:
+        summary: MongoDB Backup Daemon inodes usage is higher than {{ .Values.prometheusExporter.alerts.backup.usedInodesThreshold }} percents
+        description: MongoDB Backup Daemon inodes usage is higher than {{ .Values.prometheusExporter.alerts.backup.usedInodesThreshold }} percent
+      expr: '(
+          label_replace(
+            backup_storage_used_inodes{pod=~".*",namespace="{{ .Release.Namespace }}"},
+            "needed_pod", "$1", "pod", "(.*)")
+        )
+          / on(needed_pod)
+        (
+          label_replace(
+            avg(backup_storage_inodes_total{namespace="{{ .Release.Namespace }}",pod=~".*"}) by (pod),
+            "needed_pod", "$1", "pod", "(.*)")
+        ) > {{ .Values.prometheusExporter.alerts.backup.usedInodesThreshold | default 90 }} / 100'
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+    - alert: MongoDB last backup failed
+      expr: backup_storage_last_failed{job="mongodb-backup-daemon",namespace="{{ .Release.Namespace }}"} > 0
+      labels:
+        severity: high
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+      annotations:
+        description: "MongoDB Last backup status is Failed"
+{{- end }}
+{{- end }}

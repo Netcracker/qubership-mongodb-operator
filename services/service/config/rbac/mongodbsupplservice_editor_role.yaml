@@ -1,0 +1,27 @@
+# permissions for end users to edit mongodbsupplservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: mongodb-services
+    app.kubernetes.io/managed-by: kustomize
+  name: mongodbsupplservice-editor-role
+rules:
+- apiGroups:
+  - netcracker.com
+  resources:
+  - mongodbsupplservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - mongodbsupplservices/status
+  verbs:
+  - get

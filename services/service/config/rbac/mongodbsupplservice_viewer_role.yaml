@@ -1,0 +1,23 @@
+# permissions for end users to view mongodbsupplservices.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: mongodb-services
+    app.kubernetes.io/managed-by: kustomize
+  name: mongodbsupplservice-viewer-role
+rules:
+- apiGroups:
+  - netcracker.com
+  resources:
+  - mongodbsupplservices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - netcracker.com
+  resources:
+  - mongodbsupplservices/status
+  verbs:
+  - get
