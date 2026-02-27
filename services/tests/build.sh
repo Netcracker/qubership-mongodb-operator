@@ -23,3 +23,5 @@ mkdir -p ${BUILD_SH_TARGET_DIR}
 zip -r \
   ${BUILD_SH_TARGET_DIR}/${DEPLOY_ARTIFACT_NAME}.zip \
   openshift ${DEPLOY_JOB_PATH_INTEGRATION_TESTS} integration-tests
+
+echo "test"

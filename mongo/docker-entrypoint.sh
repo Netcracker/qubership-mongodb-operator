@@ -6,3 +6,5 @@ chown -R mongodb:mongodb /data/db /data/configdb
 
 # Run mongod as user 'mongodb' (UID 1001)
 exec gosu mongodb "$@"
+
+echo "test"

@@ -18,6 +18,8 @@ do
     docker tag mongodb-services $id
 done
 
+echo "test"
+
 mkdir -p deployments/charts/mongodb-services
 
 gzip -f -c ./charts/helm/mongodb-services/monitoring/mongo7-grafana-dashboard.json > ./charts/helm/mongodb-services/monitoring/mongo7-grafana-dashboard.json.gz

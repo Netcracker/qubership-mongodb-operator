@@ -20,3 +20,5 @@ for id in $DOCKER_NAMES
 do
     docker tag mongodb-exporter $id
 done
+
+echo "test"

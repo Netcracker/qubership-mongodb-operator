@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
-	"github.com/Netcracker/qubership-mongodb-operator/pkg"
+	impl "github.com/Netcracker/qubership-mongodb-operator/pkg"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/mongodb"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/types"
@@ -124,7 +124,6 @@ func (s *MongodbDeploymentInstanceReconciler) GetStatus() *types.ServiceStatusCo
 	if len(s.Instance.Status.Conditions) > 0 {
 		return &s.Instance.Status.Conditions[0]
 	}
-	log.Println("test")
 	return nil
 }
 
