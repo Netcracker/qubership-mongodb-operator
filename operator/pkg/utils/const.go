@@ -233,10 +233,5 @@ func GetMongoImageVersion(dockerImage string) string {
 }
 
 func MongoBinary(dockerImage string) string {
-	version := GetMongoImageVersion(dockerImage)
-	if version == "4" {
-		return "mongo"
-	} else {
-		return "mongosh"
-	}
+	return "mongosh"
 }
