@@ -1,0 +1,14 @@
+{{- if .Values.robotTests.install -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supplementary-tests-config
+  labels:
+    app: mongo-tests
+data:
+  {{- if include "mongodbSupplementary.monitoredImages" . }}
+  dd_images: {{ include "mongodbSupplementary.monitoredImages" . }}
+  {{ else }}
+  dd_images: ""
+  {{ end }}
+{{ end }}

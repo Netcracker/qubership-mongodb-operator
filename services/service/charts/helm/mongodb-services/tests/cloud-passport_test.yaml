@@ -1,0 +1,77 @@
+suite: Test Cloud Passport templating
+templates:
+  - cr_and_operator.yaml
+tests:
+  - it: should render CR from default values
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: spec.dbaas.install
+          value: true
+      - equal:
+          path: spec.dbaas.dbaasAggregatorRegistrationAddress
+          value: "http://dbaas-aggregator.dbaas:8080"
+      - equal:
+          path: spec.prometheusExporter.install
+          value: true
+  - it: should render CR from values ignoring env vars
+    documentIndex: 0
+    set:
+      DBAAS_ENABLED: false
+      MONITORING_ENABLED: false
+      dbaas:
+        install: true
+      prometheusExporter:
+        install: true
+      API_DBAAS_ADDRESS: "http://dbaas-aggregator.custom-namespace:8080"
+    asserts:
+      - equal:
+          path: spec.dbaas.install
+          value: true
+      - equal:
+          path: spec.dbaas.dbaasAggregatorRegistrationAddress
+          value: "http://dbaas-aggregator.custom-namespace:8080"
+      - equal:
+          path: spec.prometheusExporter.install
+          value: true
+  - it: should render CR from cloud passport
+    documentIndex: 0
+    set:
+      DBAAS_ENABLED: false
+      MONITORING_ENABLED: false
+    asserts:
+      - equal:
+          path: spec.dbaas.install
+          value: false
+      - equal:
+          path: spec.prometheusExporter.install
+          value: false
+  - it: should use .Values storage class
+    documentIndex: 0
+    set:
+      mongodb:
+        storage:
+          storageClasses:
+            - testSc
+      backup:
+        storage:
+          storageClasses:
+            - testBackupSc
+    asserts:
+       - equal:
+          path: spec.backup.storage.storageClasses
+          value: ["testBackupSc"]
+  - it: should use STORAGE_RWO_CLASS storage class
+    documentIndex: 0
+    set:
+      STORAGE_RWO_CLASS: testCPSC
+    asserts:
+       - equal:
+          path: spec.backup.storage.storageClasses
+          value: ["testCPSC"]
+  - it: should use default "" value for SC
+    documentIndex: 0
+    asserts:
+       - equal:
+          path: spec.backup.storage.storageClasses
+          value: [""]

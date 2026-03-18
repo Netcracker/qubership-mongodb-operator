@@ -1,0 +1,11 @@
+{{- if and (.Values.backup.install) (.Values.backup.pdb) (or (eq .Values.schemaSettings.schemaType "ha") (and (eq .Values.schemaSettings.schemaType "dr") (eq .Values.disasterRecovery.mode "active"))) }}
+{{- $nameAndSelector := "mongodb-backup-daemon" }}
+{{ template "nosql.core.pdb" (dict "name" $nameAndSelector "labels" (dict "name" $nameAndSelector) "minAvailable" 1) }}
+---
+{{- end }}
+
+{{- if and (.Values.dbaas.install) (.Values.dbaas.pdb) (or (eq .Values.schemaSettings.schemaType "ha") (and (eq .Values.schemaSettings.schemaType "dr") (eq .Values.disasterRecovery.mode "active"))) }}
+{{- $nameAndSelector := "dbaas-mongo-adapter" }}
+{{ template "nosql.core.pdb" (dict "name" $nameAndSelector "labels" (dict "name" $nameAndSelector) "minAvailable" 1) }}
+---
+{{- end }}

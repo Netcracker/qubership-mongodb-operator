@@ -1,0 +1,29 @@
+suite: Test Prometheus Service Monitor
+templates:
+  - service_monitor.yaml
+tests:
+  - it: should render prometheus SM if monitoring ENABLED in Cloud Passport
+    set:
+      MONITORING_ENABLED: true
+    asserts:
+      - containsDocument:
+          apiVersion: monitoring.coreos.com/v1
+          kind: ServiceMonitor
+  - it: should render prometheus SM for DBAAS if dbaas ENABLED in Cloud Passport
+    set:
+      DBAAS_ENABLED: true
+    documentIndex: 1
+    asserts:
+      - containsDocument:
+          apiVersion: monitoring.coreos.com/v1
+          kind: ServiceMonitor
+          name: "mongo-dbaas-exporter-service-monitor"
+  - it: should NOT render prometheus SM for DBAAS if dbaas DISABLED in Cloud Passport
+    set:
+      DBAAS_ENABLED: false
+    asserts:
+      - containsDocument:
+          apiVersion: monitoring.coreos.com/v1
+          kind: ServiceMonitor
+          name: "mongo-dbaas-exporter-service-monitor"
+        not: true

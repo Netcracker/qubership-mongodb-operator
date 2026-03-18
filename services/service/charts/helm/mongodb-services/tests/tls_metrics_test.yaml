@@ -1,0 +1,96 @@
+suite: Test  Metrics added or not
+templates:
+  - tls/tls_metrics.yaml
+tests:
+  - it: should test application is enabled
+    set:
+      prometheusExporter:
+        install: true
+    asserts:
+       - equal:
+          path: metadata.labels.role
+          value: record-rules
+  - it: dbaas is ENABLED and using HTTP, tls is DISABLED. must result in DISABLED metric
+    set:
+      prometheusExporter:
+        install: true
+      dbaas:
+        install: true
+        dbaasAggregatorRegistrationAddress: http://dbaas-aggregator.dbaas:8080
+      tls:
+        mode: disabled
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[2].expr
+          value: 0
+  - it: dbaas is ENABLED and using HTTPS, tls is ENABLED. must result in ENABLED metric, dbaas flag is taken from Cloud Passport
+    set:
+      DBAAS_ENABLED: true
+      dbaas:
+        dbaasAggregatorRegistrationAddress: https://dbaas-aggregator.dbaas:8080
+      tls:
+        mode: requireTLS
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[2].expr
+          value: 1
+  - it: dbaas is DISABLED and using HTTPS, tls is ENABLED. must result in EMPTY metric, dbaas flag is taken from Cloud Passport
+    set:
+      DBAAS_ENABLED: false
+      dbaas:
+        dbaasAggregatorRegistrationAddress: https://dbaas-aggregator.dbaas:8080
+      tls:
+        mode: requireTLS
+    asserts:
+       - exists:
+          path: spec.groups[0].rules[2].expr
+         not: true
+  - it: dbaas is ENABLED and using HTTPS, tls is ENABLED. must result in ENABLED metric
+    set:
+      dbaas:
+        install: true
+        dbaasAggregatorRegistrationAddress: https://dbaas-aggregator.dbaas:8080
+      tls:
+        mode: requireTLS
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[2].expr
+          value: 1
+  - it: dbaas is ENABLED and using HTTP, tls is ENABLED. must result in DISABLED metric
+    set:
+      dbaas:
+        install: true
+        dbaasAggregatorRegistrationAddress: http://dbaas-aggregator.dbaas:8080
+      tls:
+        mode: requireTLS
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[2].expr
+          value: 0
+  - it: dbaas is ENABLED and using HTTPS, tls is DISABLED. must result in DISABLED metric
+    set:
+      dbaas:
+        install: true
+        dbaasAggregatorRegistrationAddress: https://dbaas-aggregator.dbaas:8080
+      tls:
+        mode: disabled
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[2].expr
+          value: 0
+  - it: backup is ENABLED, tls is ENABLED. must result in ENABLED metric
+    set:
+      tls:
+        mode: requireTLS
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[1].expr
+          value: 1
+  - it: backup is ENABLED, tls is DISABLED. must result in DISABLED metric
+    set:
+      tls:
+        mode: disabled
+    asserts:
+       - equal:
+          path: spec.groups[0].rules[1].expr
+          value: 0
