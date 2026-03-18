@@ -21,4 +21,3 @@ do
     docker tag mongodb-exporter $id
 done
 
-echo "test"

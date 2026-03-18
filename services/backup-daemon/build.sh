@@ -20,4 +20,3 @@ do
     docker tag myimage $id
 done
 
-echo "test
