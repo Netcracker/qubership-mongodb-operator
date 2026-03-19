@@ -61,7 +61,7 @@ Check Connection To TLS Backup Daemon By HTTP Protocol
     [Tags]  tls  mongo
     Skip If  "${TLS_ENABLED}" == "false"  TLS_ENABLED = False, not possible to check case!
     Create Session  wrongprotocolsession  http://${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}:${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}@${BACKUP_HOST}:${port}  verify=${verify}  timeout=10
-    Run Keyword And Expect Error  *ProtocolError*  GET On Session  wrongprotocolsession  /backup
+    Run Keyword And Expect Error  *HTTPError*  GET On Session  wrongprotocolsession  /backup
 
 Check Connection To TLS Backup Daemon By Not Correct Port
     [Tags]  tls  mongo
