@@ -1,0 +1,21 @@
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.prometheusExporter.install "envVar" .Values.MONITORING_ENABLED "default" true )) "true" }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    prometheus: {{ .Release.Namespace }}-tls-static-metrics-rules
+    role: record-rules
+  name: {{ .Release.Namespace }}-services-tls-static-metrics-rules
+spec:
+  groups:
+    - name: {{ .Release.Namespace }}-{{ .Release.Name }}
+      rules:
+        {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" "mongodb" "service" "Mongodb" "enabledSsl" (ne .Values.tls.mode "disabled") "secret" .Values.tls.rootCASecretName "certProvider" "cert-manager" "certificate" "mongodb-tls-certificate") | nindent 8 }}
+        {{- if .Values.backup.install }}
+        {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" "mongodb" "service" "Mongodb Backup Daemon" "enabledSsl" (ne .Values.tls.mode "disabled") "secret" .Values.backup.tls.backupDaemonCASecretName "certProvider" "cert-manager" "certificate" "backup-daemon-tls-certificate") | nindent 8 }}
+        {{- end }}
+        {{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true )) "true" }}
+        {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" "mongodb" "service" "Mongodb Dbaas Adapter" "enabledSsl" (and (ne .Values.tls.mode "disabled") (hasPrefix "https" .Values.dbaas.dbaasAggregatorRegistrationAddress)) "secret" .Values.dbaas.tls.dbaasAdapterCASecretName "certProvider" "cert-manager" "certificate" "dbaasAdapter-tls-certificate") | nindent 8 }}
+        {{- end }}
+{{- end }}

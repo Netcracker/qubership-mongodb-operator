@@ -1,0 +1,11 @@
+suite: Test Prometheus Alerts
+templates:
+  - prometheus-alerts.yaml
+tests:
+  - it: should render prometheus alerts if monitoring ENABLED in Cloud Passport
+    set:
+      MONITORING_ENABLED: true
+    asserts:
+      - containsDocument:
+          apiVersion: monitoring.coreos.com/v1
+          kind: PrometheusRule

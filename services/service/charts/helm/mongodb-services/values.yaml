@@ -1,0 +1,389 @@
+## Default values for helm-chart.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
+#
+# Do not change
+DEPLOY_W_HELM: true
+operator:
+  operatorName: mongodb-services-operator
+  image: ghcr.io/netcracker/qubership-mongodb-supplementary:main
+  initImage: ghcr.io/netcracker/qubership-credential-manager:main
+  priorityClassName:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  affinity:
+
+global: 
+  profile: ""
+
+schemaSettings:
+  sharded: true
+  schemaType: "ha"
+  # Replicas' settings
+  cnfReplicaSize: 3
+  dataReplicaSize: 3
+  mongosReplicas: 1
+  shardCount: 3
+  dcName: mongodb-na
+  publicCloud:
+  thisDomainName: cluster.local
+  otherDomainName:
+  # Starts from 0.
+  # -1 = middle node is selected as arbiter automatically
+  arbiterIndex: -1
+
+disasterRecovery:
+  mode: "active"
+
+imagePullPolicy: Always
+
+createIngress: false
+
+# PV recycler settings
+recycler:
+  install: false
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 50m
+    requests:
+      memory: 64Mi
+      cpu: 50m
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+  supplementalGroups:
+
+crProcessingDelaySeconds: 0
+#tolerations example
+# policies:
+#   tolerations:
+#   - key: "key"
+#     operator: "Equal"
+#     value: "value"
+#     effect: "NoSchedule"
+
+# Specifies behavior of operator when resource update fails
+# Specifies pvc deletion using helm
+deletePVConUninstall: false
+# Specifies timeouts for resources operations
+waitSeconds: 300
+drTimeoutSeconds: 360
+
+# Specifies log level of operator pod
+debugLog: false
+
+authDb: admin
+
+# Enables IPv6 support (true or false)
+#
+# Note: If IPv6 is enabled then any ip address used in parameters (except DNS names) should be enclosed in square brackets
+# Examples:
+# [2001:db8::1b]
+# https://[2001:db8::1b]:443/
+# etc.
+#
+ipV6: false
+
+mongodb:
+  install: true
+  mongoRootSecretName: mongodb-root-credentials.v1
+
+
+tls:
+  mode: disabled
+  certificateSecretName: root-ca
+  rootCAFileName: ca.crt
+  privateKeyFileName: tls.key
+  signedCRTFileName: tls.crt
+  combinedKeyAndCRTFileName: tls-combined.pem
+  generateCerts:
+    enabled: false
+    clusterIssuerName: ""
+    duration: 365
+    subjectAlternativeName:
+      additionalDnsNames: []
+      additionalIpAddresses: []
+  certificates:
+    tls_key: 
+    tls_crt: 
+    ca_crt: 
+
+backup:
+  install: true
+  pdb: false
+  storageDirectory: /backup-storage
+  s3:
+    enabled: false
+    secretName: "mongo-backup-s3-credentials"
+    sslVerify: false
+    sslSecretName: "backup-daemon-s3-tls-secret"
+    sslCert: ""
+    bucketName:
+    accessKeyId:
+    accessKeySecret:
+    endpointUrl:
+  tls:
+    backupDaemonCASecretName: backup-daemon-certificate
+    duration: 365
+    subjectAlternativeName:
+      additionalDnsNames: [ ]
+      additionalIpAddresses: [ ]
+    certificates:
+      tls_key: 
+      tls_crt: 
+
+  # Mandatory Backup docker image link
+  dockerImage: ghcr.io/netcracker/qubership-mongodb-backup-daemon:main
+  priorityClassName:
+
+  # Key-value node labels for backup.
+  # Example:
+  # additionalNodeLabels:
+  #   label-name: value
+  #   second-label: another-value
+  # Schedule settings
+  backupSchedule: "0 * * * *"
+  granularBackupScheduledDbs: ''
+  granularBackupSchedule: '"0 3 * * *"'
+  incBackupSchedule: ""
+  evictionPolicy: "0/1h,3d/7d,1m/1m,1y/delete"
+  incEvicitionPolicy: ""
+
+  # Mongo DBs prefix pattern to be backup up during incremental backup
+  mongoDatabasePrefixPattern: ".*"
+
+  # Credentials
+  backupUser: backup
+  backupPassword: backup
+  backupUserRole: '{"roles": [{"role":"backup", "db":"admin"}]}'
+  restoreUser: restore
+  restorePassword: restore
+  restoreUserRole: '{"roles": [{"role":"restore", "db":"admin"}]}'
+  apiUser: backup
+  apiPassword: backup
+  backupApiSecretName: mongodb-backup-api-credentials.v1
+  restoreUserSecretName: mongodb-restore-credentials.v1
+  backupSecretName: mongodb-backup-credentials.v1
+
+  storage:
+    emptyDir: false
+    waitPvcBound: false
+    size:
+      - "5Gi"
+    #     List of PV names
+    #     Example:
+    #    volumes:
+    #      - node-left-1-mongo-1
+    #      - node-left-2-mongo-2
+    #      - node-left-3-mongo-3
+    #     List of key-value maps.
+    #     Should be set as different maps to apply it for each replica differently.
+    #     To set node name, use kubernetes.io/hostname label
+    #     Example:
+    #    nodeLabels:
+    #      - "kubernetes.io/hostname": dr311qa-arbiter-node-left-1
+    #      - "kubernetes.io/hostname": dr311qa-arbiter-node-left-2
+    #      - "kubernetes.io/hostname": dr311qa-arbiter-node-left-3
+    # List of volumes' storage classes.
+    # Could be set as list of classes to apply it for each PVC differently
+    # Example:
+    #     storageClasses:
+    #       - class-1
+    #       - class-2
+    #       - class-3
+    # matchLabelSelectors:
+    
+
+  backupResources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  numParallelConnections: 4
+  granularNumParallelConnections: 4
+  enableFullRestore: false
+  configCollections:
+  affinity:
+
+dbaas:
+  # Mandatory Dbaas docker image link
+  pdb: false
+  dockerImage: ghcr.io/netcracker/qubership-dbaas-mongo:main
+  priorityClassName:
+  # apiVersion: v1
+  multiUsers: true
+
+  tls:
+    dbaasAdapterCASecretName: dbaas-adapter-certificate
+    duration: 365
+    subjectAlternativeName:
+      additionalDnsNames: [ ]
+      additionalIpAddresses: [ ]
+    certificates:
+      tls_key: 
+      tls_crt: 
+
+  # Key-value node labels for dbaas.
+  # Example:
+  # additionalNodeLabels:
+  #   "kubernetes.io/hostname": "node-1"
+
+  # Credentials
+  dbaasUser: dbaas
+  dbaasPassword: dbaas
+  dbaasUserRole: '{"roles": [{"role":"userAdminAnyDatabase", "db":"admin"},{"role":"readAnyDatabase", "db":"admin"},{"role":"clusterMonitor", "db":"admin"}]}'
+  dbaasStreamingRoleName: "streaming"
+  dbaasStreamingRoles: '{"roles":[{"role": "read", "db": "admin"}, {"role": "read", "db": "config"}, { "role": "read", "db": "local" }]}'
+  dbaasStreamingPrivileges: '{"privileges":[{"resource": { "db": "", "collection": "" }, "actions": ["find", "changeStream"] }]}'
+
+  dbaasAggregatorUser: dbaas-aggregator
+  dbaasAggregatorPassword: dbaas-aggregator
+
+  dbaasAggregatorRegistrationAddress: "http://dbaas-aggregator.dbaas:8080"
+  dbaasAggregatorRegistrationUser: cluster-dba
+  dbaasAggregatorRegistrationPassword: Bnmq5567_PO
+  dbaasAggregatorRegistrationFixedDelayMS: 150000
+  dbaasAggregatorRegistrationRetryDelayMS: 5000
+  dbaasAggregatorRegistrationRetryTimeMS: 60000
+
+  dbaasAdminSecretName: mongo-dbaas-admin-credentials-secret.v1
+  dbaasAggregatorSecretName: dbaas-aggregator-credentials.v1
+  dbaasRegistrationSecretName: dbaas-aggregator-registration-credentials.v1
+  dbaasAdminRoleSecretName: dbaas-streaming-role.v1
+
+  # String value
+  # Key-value dbaas physical databases custom labels.
+  # Example:
+  # dbaasPhysicalDatabasesCustomLabels:
+  #   label-name: value
+  #   second-label: another-value
+
+  dbaasResources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 20m
+      memory: 64Mi
+  affinity:
+
+prometheusExporter:
+  # Mandatory Monitoring docker image link
+  dockerImage:  ghcr.io/netcracker/qubership-mongodb-prometheus-exporter:main
+  alerts:
+    common:
+      podRestartCount: 0
+      podRestartPeriod: 6m
+      replicationLagSeconds: 10          # Threshold for replication lag in seconds
+      cursorTimeoutThreshold: 100        # Threshold for number of cursors timing out in 10 minutes
+      cpuUsageThreshold: 95              # CPU usage threshold in percent
+      memoryUsageThreshold: 95           # Memory usage threshold in percent
+      balancerDisabledFor: "2m"          # Duration to wait before firing balancer disabled alert
+      chunkMigrationThreshold: 0         # Threshold for failed chunk migrations
+      chunkUnevenThreshold: 30           # Stddev/avg % for uneven chunk distribution
+      chunkUnevenFor: "10m"              # Duration to wait before firing uneven chunk alert
+      connectionsThreshold: 90           # Threshold % of connections used
+      connectionsFor: "2m"               # Duration to wait before firing too many connections alert
+      cachePressureThreshold: 85         # WiredTiger cache pressure threshold %
+      cachePressureFor: "3m"             # Duration to wait before firing WiredTiger cache pressure alert
+    backup:
+      usedSpaceThreshold: 80
+      usedInodesThreshold: 80
+
+  priorityClassName:
+  # Key-value node labels for monitoring.
+  # Example:
+  #   additionalNodeLabels:
+  #     "kubernetes.io/hostname": "node-1"
+  additionalNodeLabels:
+
+  # MongoDB Credentials
+  monitoringUser: monitoring
+  monitoringPassword: monitoring
+  monitoringUserRole: '{"roles": [{"role":"readWrite", "db":"test"}, {"role":"clusterMonitor", "db":"admin"}]}'
+  # Prometheus exporter Credentials
+  exporterUser: admin
+  exporterPassword: admin
+  monitoringSecretName: mongodb-monitoring-credentials.v1
+  prometheusExporterSecretName: mongodb-prom-exporter-credentials.v1
+
+  # collection interval in seconds
+  collectionInterval: 30
+
+  # Timeout in seconds after which the scrape is ended If not specified.
+  collectionScrapeTimeout: 30
+
+  exporterResources:
+    limits:
+      memory: 256Mi
+      cpu: 300m
+    requests:
+      memory: 128Mi
+      cpu: 200m
+
+vaultRegistration:
+  tokenSecretName: vault-secret-services
+  dockerImage: banzaicloud/vault-env:1.19.0
+  enabled: false
+  path: kv
+  url:
+  role: mongodb-role
+  method: kubernetes
+  rotationPeriod: 8640
+  initContainerResources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 20m
+      memory: 64Mi
+
+vaultDBEngine:
+  name: mongodb-db-engine
+  enabled: false
+  pluginName: mongodb-database-plugin
+  allowedRoles: nc*
+
+robotTests:
+  install: false
+  dockerImage:  ghcr.io/netcracker/qubership-mongodb-tests:main
+  priorityClassName:
+  tags:
+  mainSide: left
+  leftNodesPattern: left
+  rightNodesPattern: right
+  externalBackupPath:
+  nodeLabels:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  affinity:
+
+role:
+  # Specifies whether a role should be created
+  create: yes
+
+roleBinding:
+  # Specifies whether a roleBinding should be created
+  create: yes
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: yes
+
+crd:
+  # Specifies whether a CRD should be created
+  create: yes

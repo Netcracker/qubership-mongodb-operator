@@ -1,0 +1,11 @@
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.prometheusExporter.install "envVar" .Values.MONITORING_ENABLED "default" true )) "true" }}
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata:
+  name: mongodb8-{{ .Release.Namespace }}.json
+  labels:
+    app: grafana
+  annotations:
+spec:
+  gzipJson: {{ .Files.Get "monitoring/mongo8-grafana-dashboard.json.gz" | b64enc | quote }}
+{{ end }}

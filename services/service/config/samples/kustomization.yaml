@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- netcracker.com_v1alpha1_mongodbsupplservice.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

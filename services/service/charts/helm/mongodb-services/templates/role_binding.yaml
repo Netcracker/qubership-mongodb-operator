@@ -1,0 +1,13 @@
+{{ if .Values.roleBinding.create }}
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Values.operator.operatorName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.operator.operatorName }}
+roleRef:
+  kind: Role
+  name: {{ .Values.operator.operatorName }}
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}

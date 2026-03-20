@@ -1,0 +1,30 @@
+suite: Test Cloud Passport templating
+templates:
+  - secrets/dbaas_streaming_role.yaml
+tests:
+  - it: should render secret from default values
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: Secret
+          name: dbaas-streaming-role.v1
+  - it: should render secret from values ignoring env vars
+    documentIndex: 0
+    set:
+      DBAAS_ENABLED: false
+      dbaas:
+        install: true
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: Secret
+          name: dbaas-streaming-role.v1
+  - it: should render secret from env var
+    documentIndex: 0
+    set:
+      DBAAS_ENABLED: true
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: Secret
+          name: dbaas-streaming-role.v1

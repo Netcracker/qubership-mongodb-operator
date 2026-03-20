@@ -1,0 +1,5031 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "MongoDB Prometheus Exporter Dashboard.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 469,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 291,
+      "panels": [],
+      "title": "Cluster overview",
+      "type": "row"
+    },
+    {
+      "columns": [],
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PC3E95692D54ABCC0"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fontSize": "100%",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "hideTimeOverride": true,
+      "id": 465,
+      "options": {},
+      "pluginVersion": "11.6.5",
+      "showHeader": true,
+      "sort": {
+        "col": 0,
+        "desc": true
+      },
+      "styles": [
+        {
+          "alias": "Time",
+          "align": "auto",
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "pattern": "Time",
+          "type": "hidden"
+        },
+        {
+          "alias": "Service Name",
+          "align": "auto",
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "link": true,
+          "linkTargetBlank": true,
+          "linkTooltip": "MongoDB Instance Summary - ${__cell}",
+          "linkUrl": "/graph/d/mongodb-instance-summary/mongodb-instance-summary?var-service_name=${__cell}",
+          "mappingType": 1,
+          "pattern": "service_name",
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
+        },
+        {
+          "alias": "Version",
+          "align": "auto",
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "mongodb",
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
+        },
+        {
+          "alias": "",
+          "align": "auto",
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "Value",
+          "thresholds": [],
+          "type": "hidden",
+          "unit": "short"
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "avg by (instance,mongodb) (mongodb_version_info{namespace=\"$namespace\"})",
+          "format": "table",
+          "instant": true,
+          "interval": "5m",
+          "legendFormat": "{{mongodb}}",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": "1m",
+      "title": "MongoDB Versions",
+      "transform": "table",
+      "type": "table-old"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Total # of Shards in the Cluster",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
+      "id": 303,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.5",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "exemplar": true,
+          "expr": "avg(mongodb_mongos_sharding_shards_total{namespace=\"$namespace\"}) by (instance)",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Shards",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Total # of Databases in the Cluster",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 9,
+        "x": 9,
+        "y": 1
+      },
+      "hiddenSeries": false,
+      "id": 301,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "11.6.5",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "exemplar": true,
+          "expr": "avg(mongodb_mongos_sharding_databases_total{namespace=\"$namespace\"}) by (type)",
+          "interval": "",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Sharding databases",
+      "tooltip": {
+        "shared": false,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "series",
+        "show": true,
+        "values": [
+          "current"
+        ]
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:265",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:266",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "id": 321,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.5",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "exemplar": true,
+          "expr": "sum(mongodb_mongos_db_collections_total{namespace=\"$namespace\"})",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Collections",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Total # of Collections with Sharding enabled",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "id": 299,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.5",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "exemplar": true,
+          "expr": "avg(mongodb_mongos_sharding_collections_total{namespace=\"$namespace\"}) by (instance)",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Sharded collections",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Show status of mongos",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 9,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "DOWN"
+                },
+                "1": {
+                  "text": "UP"
+                },
+                "DOWN": {
+                  "color": "#E02F44"
+                },
+                "N/A": {
+                  "color": "#CCC"
+                },
+                "UP": {
+                  "color": "#56A64B"
+                },
+                "null": {
+                  "text": "N/A"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 400,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.5",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "exemplar": true,
+          "expr": "mongodb_up{cluster=~\"$cluster\", namespace=\"$namespace\", instance=\"mongos\"}",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{instance}} - {{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Mongos status",
+      "type": "state-timeline"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 458,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Primary of the Shard",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 3,
+            "x": 0,
+            "y": 45
+          },
+          "id": 390,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "name"
+          },
+          "pluginVersion": "9.5.2",
+          "repeat": "replica_sets",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "label_replace(avg(mongodb_members_state{cluster=\"$cluster\", namespace=\"$namespace\", instance=\"$replica_sets\"} == 1) by (instance, member_idx),\"short_name\", \"$1\", \"member_idx\", \"(.*)-0.*\")",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "{{short_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "$replica_sets Primary",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "The Shard Replicas statuses",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "fixedColor": "transparent",
+                "mode": "fixed"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 6,
+                "spanNulls": false
+              },
+              "fieldMinMax": false,
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "index": 23,
+                      "text": "STARTUP"
+                    },
+                    "1": {
+                      "color": "green",
+                      "index": 22,
+                      "text": "PRIMARY"
+                    },
+                    "2": {
+                      "color": "green",
+                      "index": 21,
+                      "text": "SECONDARY"
+                    },
+                    "3": {
+                      "index": 20,
+                      "text": "RECOVERING"
+                    },
+                    "5": {
+                      "index": 19,
+                      "text": "STARTUP2"
+                    },
+                    "6": {
+                      "index": 18,
+                      "text": "UNKNOWN"
+                    },
+                    "7": {
+                      "index": 17,
+                      "text": "ARBITER"
+                    },
+                    "8": {
+                      "color": "dark-red",
+                      "index": 16,
+                      "text": "DOWN"
+                    },
+                    "9": {
+                      "index": 15,
+                      "text": "ROLLBACK"
+                    },
+                    "10": {
+                      "color": "#ffffff",
+                      "index": 14,
+                      "text": "REMOVED"
+                    },
+                    "ARBITER": {
+                      "color": "#56A64B",
+                      "index": 8
+                    },
+                    "DOWN": {
+                      "color": "#E02F44",
+                      "index": 11
+                    },
+                    "N/A": {
+                      "color": "#CCC",
+                      "index": 13
+                    },
+                    "PRIMARY": {
+                      "color": "dark-green",
+                      "index": 9
+                    },
+                    "RECOVERING": {
+                      "color": "#F2CC0C",
+                      "index": 6
+                    },
+                    "REMOVED": {
+                      "color": "#CCC",
+                      "index": 2
+                    },
+                    "ROLLBACK": {
+                      "color": "#F2CC0C",
+                      "index": 3
+                    },
+                    "SECONDARY": {
+                      "color": "dark-green",
+                      "index": 10
+                    },
+                    "STARTUP": {
+                      "color": "#F2CC0C",
+                      "index": 5
+                    },
+                    "STARTUP2": {
+                      "color": "#F2CC0C",
+                      "index": 4
+                    },
+                    "UNKNOWN": {
+                      "color": "#a30a0a",
+                      "index": 7
+                    },
+                    "UP": {
+                      "color": "dark-green",
+                      "index": 12
+                    },
+                    "null": {
+                      "index": 1,
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "value"
+                },
+                {
+                  "options": {
+                    "from": 0,
+                    "result": {
+                      "index": 0,
+                      "text": "N/A"
+                    },
+                    "to": 0
+                  },
+                  "type": "range"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 21,
+            "x": 3,
+            "y": 62
+          },
+          "id": 391,
+          "options": {
+            "alignValue": "right",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.1.1",
+          "repeat": "replica_sets",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "label_replace(avg(mongodb_rs_members_state{cluster=~\"$cluster\", namespace=\"$namespace\", instance=\"$replica_sets\"}) by (instance, member_idx),\"short_name\", \"$1\", \"member_idx\", \"(.*)-0.*\")",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "legendFormat": "{{short_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "$replica_sets status",
+          "type": "state-timeline"
+        }
+      ],
+      "repeat": "cluster",
+      "title": "$cluster",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 406,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows data read/write in bytes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 130
+          },
+          "id": 412,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum (rate(container_fs_reads_bytes_total{namespace=~\"$namespace\", container!~\"POD|\"}[5m])) by (namespace)",
+              "interval": "$inter",
+              "legendFormat": "Reads",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum (rate(container_fs_writes_bytes_total{namespace=~\"$namespace\", container!=\"\"}[5m])) by (namespace)",
+              "interval": "$inter",
+              "legendFormat": "Writes",
+              "refId": "B"
+            }
+          ],
+          "title": "Disk I/O Utilization",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "${datasource}"
+          },
+          "description": "Shows data read/write in bytes by pods",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 130
+          },
+          "id": 414,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+              "format": "time_series",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "reads: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_writes_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "writes: {{pod}}",
+              "refId": "B"
+            }
+          ],
+          "title": "Disk I/O Utilization By Pods",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows data read/write in bytes by pods",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "left",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false
+              },
+              "decimals": 1,
+              "mappings": [],
+              "noValue": "-",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "Bps"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pod"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Pod"
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "Pod Details",
+                        "url": "./d/uaHNcPvMz/kubernetes-pod-resources?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.pod}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Reads"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Reads"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Writes"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Writes"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 137
+          },
+          "id": 416,
+          "options": {
+            "showHeader": true,
+            "sortBy": []
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "Reads"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_writes_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "legendFormat": "",
+              "refId": "Writes"
+            }
+          ],
+          "title": "Disk I/O Utilization By Pods",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {
+                "reducers": []
+              }
+            },
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "pod",
+                    "Value #Reads",
+                    "Value #Writes"
+                  ]
+                }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Count of writes/reads completed",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 144
+          },
+          "id": 418,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_reads_total{namespace=\"$namespace\", container!~\"POD|\"}[5m])) ",
+              "interval": "$inter",
+              "legendFormat": "Reads",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_writes_total{namespace=\"$namespace\", container!~\"POD|\"}[5m]))",
+              "interval": "$inter",
+              "legendFormat": "Writes",
+              "refId": "B"
+            }
+          ],
+          "title": "IOps",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "${datasource}"
+          },
+          "description": "Count of writes/reads completed by pods",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 144
+          },
+          "id": 420,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_reads_total{namespace=\"$namespace\", container!~\"POD|\"}[5m])) by (pod)",
+              "format": "time_series",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "reads: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_writes_total{namespace=\"$namespace\", container!~\"POD|\"}[5m])) by (pod)",
+              "hide": false,
+              "interval": "$inter",
+              "legendFormat": "writes: {{pod}}",
+              "refId": "B"
+            }
+          ],
+          "title": "IOps By Pods",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Count of writes/reads completed by pods",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "left",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false
+              },
+              "decimals": 3,
+              "mappings": [],
+              "noValue": "-",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Writes"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Writes"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Reads"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Reads"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pod"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Pod"
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "Pod Details",
+                        "url": "./d/uaHNcPvMz/kubernetes-pod-resources?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.pod}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 151
+          },
+          "id": 422,
+          "options": {
+            "showHeader": true,
+            "sortBy": []
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_reads_total{namespace=\"$namespace\", container!~\"POD|\"}[5m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Reading",
+              "refId": "Reads"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_writes_total{namespace=\"$namespace\", container!~\"POD|\"}[5m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Writing",
+              "refId": "Writes"
+            }
+          ],
+          "title": "IOps By Pods",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {
+                "reducers": []
+              }
+            },
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "pod",
+                    "Value #Reads",
+                    "Value #Writes"
+                  ]
+                }
+              }
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "title": "All Pods: Disk",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 424,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows the overall incoming and outgoing network traffic in bytes per second",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 135
+          },
+          "id": 430,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_bytes_total{namespace=\"$namespace\"}[1m]))",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "Received",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_bytes_total{namespace=\"$namespace\"}[1m]))",
+              "interval": "$inter",
+              "legendFormat": "Transmitted",
+              "refId": "B"
+            }
+          ],
+          "title": "Receive/Transmit Bandwidth",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "${datasource}"
+          },
+          "description": "Shows the overall incoming and outgoing network traffic in bytes per second by pods",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 135
+          },
+          "id": 432,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_bytes_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "time_series",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "receive: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_bytes_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "hide": false,
+              "interval": "$inter",
+              "legendFormat": "transmit: {{pod}}",
+              "refId": "B"
+            }
+          ],
+          "title": "Receive/Transmit Bandwidth Usage By Pods",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows the overall incoming and outgoing network traffic in bytes per second by pods",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "left",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false
+              },
+              "decimals": 1,
+              "mappings": [],
+              "noValue": "-",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "Bps"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Received"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Received"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Transmitted"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Transmitted"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pod"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Pod"
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "Pod Details",
+                        "url": "./d/uaHNcPvMz/kubernetes-pod-resources?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.pod}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Pod"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 329
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Transmitted"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 589
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 142
+          },
+          "id": 434,
+          "options": {
+            "showHeader": true,
+            "sortBy": []
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_bytes_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "Received"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_bytes_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "Transmitted"
+            }
+          ],
+          "title": "Receive/Transmit Bandwidth Usage By Pods",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {
+                "reducers": []
+              }
+            },
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "pod",
+                    "Value #Received",
+                    "Value #Transmitted"
+                  ]
+                }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows the overall incoming and outgoing packets per second for the namespace",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 149
+          },
+          "id": 436,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_packets_total{namespace=\"$namespace\"}[1m]))",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "Received",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_packets_total{namespace=\"$namespace\"}[1m]))",
+              "interval": "$inter",
+              "legendFormat": "Transmitted",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\"}[1m]))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Received Drops",
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\"}[1m]))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Transmitted Drops",
+              "refId": "D"
+            }
+          ],
+          "title": "Rate of Received/Transmitted Packets",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "${datasource}"
+          },
+          "description": "Shows the overall incoming and outgoing packets per second by pods for the namespace",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "pps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 149
+          },
+          "id": 438,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_packets_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "time_series",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "receive: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_packets_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "hide": false,
+              "interval": "$inter",
+              "legendFormat": "transmit: {{pod}}",
+              "refId": "B"
+            }
+          ],
+          "title": "Rate of Received/Transmitted Packets By Pods",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows overall incoming and outgoing network traffic in bytes per second by pods",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "left",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false
+              },
+              "decimals": 1,
+              "mappings": [],
+              "noValue": "-",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "pps"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Received"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Received"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #Transmitted"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Transmitted"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "pod"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Pod"
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "Pod Details",
+                        "url": "./d/uaHNcPvMz/kubernetes-pod-resources?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.pod}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #ReceivedDrops"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Received Drops"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #TransmittedDrops"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Transmitted Drops"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 156
+          },
+          "id": 440,
+          "options": {
+            "showHeader": true,
+            "sortBy": []
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_packets_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "Received"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_packets_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "Transmitted"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "$inter",
+              "legendFormat": "",
+              "refId": "ReceivedDrops"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=\"$namespace\"}[1m])) by (pod)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "TransmittedDrops"
+            }
+          ],
+          "title": "Rate of Received/Transmitted/Drops Packets By Pods",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {
+                "reducers": []
+              }
+            },
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "pod",
+                    "Value #Received",
+                    "Value #Transmitted",
+                    "Value #ReceivedDrops",
+                    "Value #TransmittedDrops"
+                  ]
+                }
+              }
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "title": "All Pods: Network",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 313,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FADE2A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 69
+          },
+          "id": 479,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(rate(container_cpu_usage_seconds_total{container=\"mongos\",namespace=\"$namespace\"}[$inter])) by (pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Usage: {{pod}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "kube_pod_container_resource_limits_cpu_cores{exported_namespace=\"$namespace\", exported_pod=~\"mongos.*\"}",
+              "interval": "",
+              "legendFormat": "Limits: {{exported_pod}}",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(kube_pod_container_resource_requests_cpu_cores{exported_pod=~\"mongos.*\", exported_namespace=\"$namespace\"}) by (container, exported_pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Requests: {{exported_pod}}",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Mongos CPU Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FADE2A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 69
+          },
+          "id": 480,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\",container=\"mongos\"}) by (pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Usage: {{pod}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(kube_pod_container_resource_limits_memory_bytes{exported_namespace=\"$namespace\", exported_pod=~\"mongos.*\"}) by (exported_pod)",
+              "format": "time_series",
+              "interval": "",
+              "legendFormat": "Limits: {{exported_pod}}",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum(kube_pod_container_resource_requests_memory_bytes{exported_pod=~\"mongos.*\", exported_namespace=\"$namespace\"}) by (exported_pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Requests: {{exported_pod}}",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Mongos RAM Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 77
+          },
+          "id": 359,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "repeat": "instances_all",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_cpu_usage_seconds_total{image!=\"\",io_kubernetes_container_name!=\"POD\",pod=~\"$instances_all.*\",namespace=\"$namespace\"}[$inter])) by (pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Usage: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "kube_pod_container_resource_limits_cpu_cores{exported_namespace=\"$namespace\", exported_pod=~\"$instances_all.*\"}",
+              "interval": "",
+              "legendFormat": "Limits: {{exported_pod}}",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(kube_pod_container_resource_requests_cpu_cores{exported_pod=~\"$instances_all.*\", exported_namespace=\"$namespace\"}) by (container, exported_pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Requests: {{exported_pod}}",
+              "refId": "C"
+            }
+          ],
+          "title": "$instances_all CPU Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 77
+          },
+          "id": 357,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "repeat": "instances_all",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\", pod=~\"$instances_all.*\", image!=\"\", container!=\"POD\"}) by (pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Usage: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(kube_pod_container_resource_limits_memory_bytes{exported_namespace=\"$namespace\", exported_pod=~\"$instances_all.*\"}) by (exported_pod)",
+              "format": "time_series",
+              "interval": "",
+              "legendFormat": "Limits: {{exported_pod}}",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(kube_pod_container_resource_requests_memory_bytes{exported_pod=~\"$instances_all.*\", exported_namespace=\"$namespace\"}) by (exported_pod)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "Requests: {{exported_pod}}",
+              "refId": "C"
+            }
+          ],
+          "title": "$instances_all RAM Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 93
+          },
+          "id": 4,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(mongodb_memory{namespace=\"$namespace\", type=~\"resident|virtual\"}) by (instance, type)",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "{{instance}}: {{type}}",
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Memory",
+          "type": "graph"
+        }
+      ],
+      "title": "CPU/RAM usage",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 289,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 14
+          },
+          "id": 287,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "max by (db,shard) (mongodb_mongos_db_collections_total{namespace=\"$namespace\", shard=~\"$data_set\"})",
+              "interval": "",
+              "legendFormat": "{{shard}}: {{db}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Amount of Collections in Shards",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 21
+          },
+          "id": 469,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "topk(10, avg by (db, shard) (mongodb_mongos_db_data_size_bytes{namespace=\"$namespace\", shard=~\"$data_set\"} ))",
+              "interval": "",
+              "legendFormat": "{{shard}}: {{db}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Top 10 largest DBs by data size",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "description": "Sum of the space allocated to all collections in the database for document storage, including free space.\n\nThe \nstorageSize\n does not decrease as you remove or shrink documents.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 28
+          },
+          "id": 468,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "topk( 10, avg by (instance,database) (mongodb_dbstats_storageSize{namespace=\"$namespace\", instance=~\"$data_set\"}))",
+              "interval": "",
+              "legendFormat": "{{instance}}: {{database}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Top 10 largest DBs by storage size",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Total size of the uncompressed data held in the database. The \ndataSize decreases when you remove documents.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 0,
+            "y": 35
+          },
+          "id": 285,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.5",
+          "repeat": "data_set",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "mongodb_mongos_db_data_size_bytes{namespace=\"$namespace\", shard=\"$data_set\"}",
+              "interval": "",
+              "legendFormat": "{{db}}",
+              "refId": "A"
+            }
+          ],
+          "title": "DB data size $data_set",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Sum of the space allocated to all indexes in the database, including free index space.",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 35
+          },
+          "id": 295,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "repeat": "data_set",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "mongodb_mongos_db_index_size_bytes{namespace=\"$namespace\", shard=\"$data_set\"}",
+              "interval": "",
+              "legendFormat": "{{db}}",
+              "refId": "A"
+            }
+          ],
+          "title": "DB index size $data_set",
+          "type": "graph"
+        }
+      ],
+      "title": "Data size",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 20,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "description": "Average latency of operations (classified by read, write, or (other) command)",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "µs"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 71
+          },
+          "id": 459,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance,type) (rate(mongodb_mongod_op_latencies_latency_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) / (rate(mongodb_mongod_op_latencies_ops_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) > 0) or irate(mongodb_mongod_op_latencies_latency_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) / (irate(mongodb_mongod_op_latencies_ops_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) > 0))",
+              "legendFormat": "{{instance}}: {{type}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Latency Detail",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "description": "Ratio of Documents returned or Index entries scanned / full documents scanned\"",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 79
+          },
+          "id": 461,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "(sum(rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned\"}[$__interval])) by (instance)/\r\nsum(rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned_objects\"}[$__interval])) by (instance) \r\nor\r\nsum(irate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned\"}[5m])) by (instance)/\r\nsum(irate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned_objects\"}[5m])) by (instance))",
+              "hide": false,
+              "legendFormat": "Index {{instance}}",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"returned\"}[$__interval]))  by (instance)/\r\nsum(rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned_objects\"}[$__interval]))  by (instance) \r\nor\r\nsum(irate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"returned\"}[5m]))  by (instance)/\r\nsum(irate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned_objects\"}[5m]))  by (instance)",
+              "hide": false,
+              "legendFormat": "Document  {{instance}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Query Efficiency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "description": "This panel shows the number of objects (both data (scanned_objects) and index (scanned))",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 88
+          },
+          "id": 463,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance, state) (rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "hide": false,
+              "legendFormat": "{{instance}}: {{state}}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Scanned Objects",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "description": "Docs per second inserted, updated, deleted or returned.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 97
+          },
+          "id": 462,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance,state) (rate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "hide": false,
+              "legendFormat": "{{state}}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Document Operations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 105
+          },
+          "id": 283,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(mongodb_connections{namespace=\"$namespace\", state=\"current\"}) by (instance, state)",
+              "interval": "",
+              "legendFormat": "{{instance}}: {{state}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(mongodb_connections{namespace=\"$namespace\", state=\"available\"}) by (instance, state)",
+              "interval": "",
+              "legendFormat": "{{instance}}: {{state}}",
+              "refId": "B"
+            }
+          ],
+          "title": "Connections",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 113
+          },
+          "id": 7,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "repeat": "data_set",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_op_counters_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "{{type}}",
+              "range": true,
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Query Operations $data_set[$inter rate]",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 113
+          },
+          "id": 293,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "repeat": "data_set",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_extra_info_page_faults_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$inter])) by (instance)",
+              "interval": "",
+              "legendFormat": "{{instance}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Page faults $data_set[$inter rate]",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "description": "MongoDB Assertions rate",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 1,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 120
+          },
+          "id": 470,
+          "options": {
+            "legend": {
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Max",
+              "sortDesc": true,
+              "width": 250
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "rate(mongodb_asserts_total{namespace=\"$namespace\"}[$inter])",
+              "legendFormat": "{{instance}}:{{type}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "MongoDB Assertions per [$inter rate]",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Query Metrics",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 23,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 0,
+            "y": 72
+          },
+          "id": 6,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(mongodb_oplog_stats_storageStats_count{namespace=\"$namespace\", cluster=~\"$cluster\"}) by (instance, cluster)",
+              "format": "time_series",
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "{{instance}} - {{cluster}}",
+              "metric": "mongodb_locks_time_acquiring_global_microseconds_total",
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Oplog Size",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 72
+          },
+          "id": 16,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg by (instance,cluster) (mongodb_mongod_replset_oplog_head_timestamp{namespace=\"$namespace\",cluster=~\"$cluster\"}-mongodb_mongod_replset_oplog_tail_timestamp{namespace=\"$namespace\",cluster=~\"$cluster\"})",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "{{instance}} - {{cluster}}",
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Oplog Recovery Window",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "description": "Count of elections. Usually zero; 1 count by each healthy node will appear in each election. Happens when the primary role changes due to either normal maintenance or trouble events.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 2,
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 0,
+            "y": 78
+          },
+          "id": 374,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "max by (instance) (changes(mongodb_mongod_replset_member_election_date{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]))",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "{{instance}}",
+              "range": true,
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Elections",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 78
+          },
+          "id": 464,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg by (instance,cluster) (mongodb_mongod_replset_oplog_head_timestamp{namespace=\"$namespace\",cluster=~\"$cluster\"}-mongodb_mongod_replset_oplog_tail_timestamp{namespace=\"$namespace\",cluster=~\"$cluster\"})",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "{{instance}} - {{cluster}}",
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Oplog Recovery Window",
+          "type": "graph"
+        }
+      ],
+      "title": "Replication Metrics",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 337,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows DBaaS Adapter status",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 5,
+                "spanNulls": false
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "1": {
+                      "text": "UP"
+                    },
+                    "DOWN": {
+                      "color": "#E02F44"
+                    },
+                    "N/A": {
+                      "color": "#CCC"
+                    },
+                    "UP": {
+                      "color": "#56A64B"
+                    },
+                    "null": {
+                      "text": "DOWN"
+                    }
+                  },
+                  "type": "value"
+                },
+                {
+                  "options": {
+                    "from": 0.99,
+                    "result": {
+                      "text": "DOWN"
+                    },
+                    "to": 0
+                  },
+                  "type": "range"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 24,
+            "x": 0,
+            "y": 56
+          },
+          "id": 325,
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(min(container_start_time_seconds{namespace=\"$namespace\", container!=\"POD\", container=~\"dbaas-mongo-adapter\"}) by (pod)/min(container_start_time_seconds{namespace=\"$namespace\", container!=\"POD\", container=~\"dbaas-mongo-adapter\"}) by (pod))",
+              "interval": "",
+              "legendFormat": "{{replica}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Status",
+          "type": "state-timeline"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows CPU usage per container in pod against resource requests and limits",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 76
+          },
+          "id": 327,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "11.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(sum by (namespace, pod, container)(\rrate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container=~\"dbaas-mongo-adapter\"}[$inter]))) by (container, pod)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Usage: {{ pod }}",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(kube_pod_container_resource_requests_cpu_cores{exported_namespace=\"$namespace\", container=~\"dbaas-mongo-adapter\"}) by (container, exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Requests: {{ exported_pod }}",
+              "refId": "B",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(kube_pod_container_resource_limits_cpu_cores{exported_namespace=\"$namespace\", container=~\"dbaas-mongo-adapter\"}) by (container, exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Limits: {{ exported_pod }}",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "CPU Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows memory usage per container in pod against resource requests and limits",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 76
+          },
+          "id": 329,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "11.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\", container=~\"dbaas-mongo-adapter\", image!=\"\"}) by (container, pod)",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Usage: {{pod}}",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n    kube_pod_container_resource_requests_memory_bytes{exported_namespace=\"$namespace\", container=~\"dbaas-mongo-adapter\"}) by (exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "Requests: {{ exported_pod }}",
+              "refId": "B",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n    kube_pod_container_resource_limits_memory_bytes{exported_namespace=\"$namespace\", container=~\"dbaas-mongo-adapter\"}) by (exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Limits: {{exported_pod}}",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "Memory Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Time spent in GC pause",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 84
+          },
+          "id": 323,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "11.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "go_gc_duration_seconds{namespace=\"$namespace\",job=~\"dbaas-mongo-adapter\",quantile=\"0.75\"}",
+              "interval": "",
+              "legendFormat": "{{pod}}",
+              "refId": "B"
+            }
+          ],
+          "title": "GC Duration",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "The current number of threads",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 84
+          },
+          "id": 331,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "11.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "go_threads{namespace=\"$namespace\",job=~\"dbaas-mongo-adapter\"}",
+              "interval": "",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Threads",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "default": false,
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "description": "The total number of requests DBaaS Adapter received per response status",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 91
+          },
+          "id": 333,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "11.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "sum(sum by (pod, status_code)(\r\nincrease(requests_total{namespace=\"$namespace\",job=~\"dbaas-mongo-adapter\"}[1m]))) by (pod, status_code)",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Status: {{status_code}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Requests Count",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "default": false,
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "description": "The requests duration per each DBaaS Adapter endpoint",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 91
+          },
+          "id": 335,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "11.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "max(label_replace(rate(request_duration_seconds_sum{namespace=\"$namespace\"}[$inter]) / rate(request_duration_seconds_count{namespace=\"$namespace\"}[$inter]),\"urit\",\"$1\",\"path\",\".*mongo(\\\\/\\\\w+).*\")) by (method, urit)",
+              "interval": "",
+              "legendFormat": "{{method}}: {{urit}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "DBaaS API Requests Duration",
+          "type": "graph"
+        }
+      ],
+      "title": "DBaaS adapter",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 355,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows Backup Adapter status",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 5,
+                "spanNulls": false
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "1": {
+                      "text": "UP"
+                    },
+                    "DOWN": {
+                      "color": "#E02F44"
+                    },
+                    "N/A": {
+                      "color": "#CCC"
+                    },
+                    "UP": {
+                      "color": "#56A64B"
+                    },
+                    "null": {
+                      "text": "DOWN"
+                    }
+                  },
+                  "type": "value"
+                },
+                {
+                  "options": {
+                    "from": 0.99,
+                    "result": {
+                      "text": "DOWN"
+                    },
+                    "to": 0
+                  },
+                  "type": "range"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 24,
+            "x": 0,
+            "y": 56
+          },
+          "id": 455,
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(min(container_start_time_seconds{namespace=\"$namespace\", container!=\"POD\", container=~\"mongodb-backup-daemon\"}) by (pod)/min(container_start_time_seconds{namespace=\"$namespace\", container!=\"POD\", container=~\"mongodb-backup-daemon\"}) by (pod))",
+              "interval": "",
+              "legendFormat": "{{replica}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Status",
+          "type": "state-timeline"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows CPU usage per container in pod against resource requests and limits",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 101
+          },
+          "id": 341,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(sum by (namespace, pod, container)(\rrate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container=~\"mongodb-backup-daemon\"}[$inter]))) by (container, pod)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Usage: {{ pod }}",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(kube_pod_container_resource_requests_cpu_cores{exported_namespace=\"$namespace\", container=~\"mongodb-backup-daemon\"}) by (container, exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Requests: {{ exported_pod }}",
+              "refId": "B",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(kube_pod_container_resource_limits_cpu_cores{exported_namespace=\"$namespace\", container=~\"mongodb-backup-daemon\"}) by (container, exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Limits: {{ exported_pod }}",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "CPU Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows memory usage per container in pod against resource requests and limits",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 101
+          },
+          "id": 343,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\", container=~\"mongodb-backup-daemon\", image!=\"\"}) by (pod)",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Usage: {{pod}}",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n    kube_pod_container_resource_requests_memory_bytes{exported_namespace=\"$namespace\", container=~\"mongodb-backup-daemon\"}) by (exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "Requests: {{ exported_pod }}",
+              "refId": "B",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n    kube_pod_container_resource_limits_memory_bytes{exported_namespace=\"$namespace\", container=~\"mongodb-backup-daemon\"}) by (exported_pod)\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Limits: {{exported_pod}}",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "Memory Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Size of last successful backup ",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 0,
+            "y": 112
+          },
+          "id": 347,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_last_successful_size{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "ID: {{id}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Last Backup Size",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Current number of dumps",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 6,
+            "y": 112
+          },
+          "id": 349,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_dump_count{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Count",
+              "refId": "A"
+            }
+          ],
+          "title": "Dumps count",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows used by backups space against total space",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 12,
+            "y": 112
+          },
+          "id": 351,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_size{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Usage",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_space_total{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Limits",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "Storage Space Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows inodes usage",
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 18,
+            "y": 112
+          },
+          "id": 353,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "9.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_used_inodes{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Usage",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_inodes_total{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Limits",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "Storage Inodes Usage",
+          "type": "graph"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows Last Backup status",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 4,
+                "spanNulls": false
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "text": "OK"
+                    },
+                    "1": {
+                      "text": "FAILED"
+                    },
+                    "FAILED": {
+                      "color": "#E02F44"
+                    },
+                    "N/A": {
+                      "color": "#CCC"
+                    },
+                    "OK": {
+                      "color": "#56A64B"
+                    },
+                    "null": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "value"
+                },
+                {
+                  "options": {
+                    "from": 1,
+                    "result": {
+                      "text": "DOWN"
+                    },
+                    "to": 999
+                  },
+                  "type": "range"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 24,
+            "x": 0,
+            "y": 314
+          },
+          "id": 456,
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.1.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(backup_storage_last_failed{namespace=\"$namespace\", job=~\"mongodb-backup-daemon\"})",
+              "interval": "",
+              "legendFormat": "{{replica}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Status",
+          "type": "state-timeline"
+        }
+      ],
+      "title": "Backup daemon",
+      "type": "row"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 41,
+  "tags": [
+    "prometheus"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Platform Monitoring Prometheus",
+          "value": "PC3E95692D54ABCC0"
+        },
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(up, cluster)",
+        "includeAll": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values(up, cluster)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "mongodb",
+          "value": "mongodb"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource"
+        },
+        "definition": "label_values(mongo_cluster_namespace)",
+        "includeAll": false,
+        "label": "namespace",
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(mongo_cluster_namespace)",
+          "refId": "Platform Monitoring Prometheus-namespace-Variable-Query"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 30,
+        "auto_min": "1m",
+        "current": {
+          "text": "$__auto",
+          "value": "$__auto"
+        },
+        "label": "interval",
+        "name": "inter",
+        "options": [
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "selected": false,
+            "text": "12h",
+            "value": "12h"
+          },
+          {
+            "selected": false,
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "selected": false,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "14d",
+            "value": "14d"
+          },
+          {
+            "selected": false,
+            "text": "30d",
+            "value": "30d"
+          }
+        ],
+        "query": "1m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
+        "refresh": 2,
+        "type": "interval"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(mongodb_members_uptime, instance)",
+        "hide": 2,
+        "includeAll": true,
+        "label": "Replica Set",
+        "multi": true,
+        "name": "instances_all",
+        "options": [],
+        "query": {
+          "query": "label_values(mongodb_members_uptime, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(mongodb_members_uptime{instance=~\"$instances_all\"}, instance)",
+        "includeAll": true,
+        "label": "Shards",
+        "multi": true,
+        "name": "data_set",
+        "options": [],
+        "query": {
+          "query": "label_values(mongodb_members_uptime{instance=~\"$instances_all\"}, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/.*datars.*/",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(mongodb_members_uptime{instance=~\"$instances_all\"}, instance)",
+        "hide": 2,
+        "includeAll": true,
+        "label": "Replica Set",
+        "multi": true,
+        "name": "replica_sets",
+        "options": [],
+        "query": {
+          "query": "label_values(mongodb_members_uptime{instance=~\"$instances_all\"}, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/.*datars|cnfrs.*/",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "MongoDB 7 Prometheus",
+  "uid": "663104bf16155344f440d1a6379a942134ca382f",
+  "version": 3
+}

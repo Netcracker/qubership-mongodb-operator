@@ -1,0 +1,104 @@
+package prometheus_exporter
+
+import (
+	"os"
+
+	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
+	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/types"
+	cUtils "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
+	v12 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+)
+
+func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSelector map[string]string, serviceAccountName string,
+	resources v1.ResourceRequirements, env []v1.EnvVar, securityContext *v1.PodSecurityContext, tolerations []v1.Toleration, prometheusExporterImagePullPolicy v1.PullPolicy,
+	tls types.TLS, priorityClassName, instance string, healthzPort int) *v12.Deployment {
+	var replicas int32 = 1
+	allowPrivilegeEscalation := false
+	dc := &v12.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      utils.MongoPrometheusExporter,
+			Namespace: namespace,
+			Labels: map[string]string{
+				utils.Name:                 utils.MongoPrometheusExporter,
+				utils.AppPartOf:            "mongodb-services",
+				utils.AppName:              utils.MongoPrometheusExporter,
+				utils.AppInstance:          os.Getenv("RELEASE_NAME"),
+				utils.AppVersion:           os.Getenv("APP_VERSION"),
+				utils.AppComponent:         "backend",
+				utils.AppManagedBy:         "operator",
+				utils.AppManagedByOperator: "mongodb-services-operator",
+				utils.AppTechnology:        "go",
+			},
+		},
+		Spec: v12.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					utils.Name: utils.MongoPrometheusExporter,
+				},
+			},
+			Replicas: &replicas,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: namespace,
+					Labels: map[string]string{
+						utils.Name: utils.MongoPrometheusExporter,
+					},
+				},
+				Spec: v1.PodSpec{
+					ServiceAccountName: serviceAccountName,
+					SecurityContext:    securityContext,
+					PriorityClassName:  priorityClassName,
+					Tolerations:        tolerations,
+					Containers: []v1.Container{
+						v1.Container{
+							Name:            utils.MongoPrometheusExporter,
+							Image:           image,
+							ImagePullPolicy: prometheusExporterImagePullPolicy,
+							Command:         []string{"bash", "-c", "/opt/run.sh"},
+							Env:             env,
+							Resources:       resources,
+							SecurityContext: &v1.SecurityContext{
+								Capabilities: &v1.Capabilities{
+									Drop: []v1.Capability{"ALL"},
+								},
+								AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+							},
+							LivenessProbe: &v1.Probe{
+								ProbeHandler: v1.ProbeHandler{
+									TCPSocket: &v1.TCPSocketAction{
+										Port: intstr.IntOrString{Type: intstr.Int, IntVal: int32(healthzPort)},
+									},
+								},
+								InitialDelaySeconds: 5,
+								TimeoutSeconds:      30,
+								PeriodSeconds:       5,
+								SuccessThreshold:    1,
+								FailureThreshold:    12,
+							},
+							ReadinessProbe: &v1.Probe{
+								ProbeHandler: v1.ProbeHandler{
+									TCPSocket: &v1.TCPSocketAction{
+										Port: intstr.IntOrString{Type: intstr.Int, IntVal: int32(healthzPort)},
+									},
+								},
+								InitialDelaySeconds: 5,
+								TimeoutSeconds:      30,
+								PeriodSeconds:       5,
+								SuccessThreshold:    1,
+								FailureThreshold:    12,
+							},
+						},
+					},
+					NodeSelector: nodeSelector,
+				},
+			},
+		},
+	}
+
+	cUtils.TLSSpecUpdate(&dc.Spec.Template.Spec, utils.RootCertPath, tls)
+
+	return dc
+}

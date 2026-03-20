@@ -1,0 +1,168 @@
+package backup
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
+	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
+	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
+	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
+	coreUtils "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
+	"go.uber.org/zap"
+	v12 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+)
+
+type BackupDeployment struct {
+	core.DefaultExecutable
+}
+
+func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
+	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
+	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbSupplService)
+	backup := spec.Spec.Backup
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	mongoHost := ctx.Get(utils.ContextMongoHost).(string)
+	credsManager := ctx.Get(utils.ContextCredsManager).(utils.CredsManagerI)
+
+	log.Info("Backup Deployment initialization step started")
+
+	// configNodesCount := ctx.Get(utils.BackupConfigNodes).(int)
+
+	// configNodes := utils.MongosRegisterNodesString(utils.CnfNameKey, configNodesCount, request.Namespace)
+	// log.Debug(fmt.Sprintf("Config nodes: %s", configNodes))
+
+	configCollections := strings.Join(backup.ConfigCollections[:], " ")
+	log.Debug(fmt.Sprintf("Config collections: %s", configCollections))
+
+	mongoBackupDb := backup.MongoBackupDB
+	mongoSourceDb := backup.MongoSourceDB
+
+	if mongoBackupDb == "" {
+		mongoBackupDb = mongoHost
+	}
+	if mongoSourceDb == "" {
+		mongoSourceDb = mongoHost
+	}
+
+	var envs []v12.EnvVar
+
+	envs = append(envs,
+		coreUtils.GetPlainTextEnvVar("INC_BACKUP_SCHEDULE", backup.IncrementalBackupSchedule),
+		coreUtils.GetPlainTextEnvVar("BACKUP_SCHEDULE", backup.BackupSchedule),
+		coreUtils.GetPlainTextEnvVar("EVICTION_POLICY", backup.EvictionPolicy),
+		coreUtils.GetPlainTextEnvVar("INC_EVICTION_POLICY", backup.IncrementalEvictionPolicy),
+		coreUtils.GetPlainTextEnvVar("MONGO_DATABASE_PREFIX_PATTERN", backup.MongoDatabasePrefixPattern),
+		coreUtils.GetPlainTextEnvVar("CONFIG_NODES", fmt.Sprintf("cnfrs.%s", request.Namespace)),
+		coreUtils.GetPlainTextEnvVar("CONFIG_COLLECTIONS", configCollections), //TODO this parameter is not used in backup daemon src
+		coreUtils.GetPlainTextEnvVar("ENABLE_FULL_RESTORE", strconv.FormatBool(backup.EnableFullRestore)),
+		coreUtils.GetPlainTextEnvVar("MONGO_BACKUP_DB", mongoBackupDb),
+		coreUtils.GetPlainTextEnvVar("MONGO_SOURCE_DB", mongoSourceDb),
+		coreUtils.GetPlainTextEnvVar("NUM_PARALLEL_CONNECTIONS", fmt.Sprintf("%v", backup.NumParallelConnections)),
+		coreUtils.GetPlainTextEnvVar("GRANULAR_NUM_PARALLEL_CONNECTIONS", fmt.Sprintf("%v", backup.GranularNumParallelConnections)),
+		coreUtils.GetPlainTextEnvVar("MONGO_AUTH_DB", "admin"),
+		coreUtils.GetPlainTextEnvVar("STORAGE", backup.StorageDirectory),
+		coreUtils.GetSecretEnvVar("MONGO_BACKUP_USER", spec.Spec.Backup.BackupSecretName, utils.Username),
+		coreUtils.GetSecretEnvVar("MONGO_BACKUP_PASSWORD", spec.Spec.Backup.BackupSecretName, utils.Password),
+		coreUtils.GetSecretEnvVar("MONGO_RESTORE_USER", spec.Spec.Backup.RestoreUserSecretName, utils.Username),
+		coreUtils.GetSecretEnvVar("MONGO_RESTORE_PASSWORD", spec.Spec.Backup.RestoreUserSecretName, utils.Password),
+		coreUtils.GetSecretEnvVar("BACKUP_DAEMON_API_CREDENTIALS_USERNAME", spec.Spec.Backup.BackupApiSecretName, utils.Username),
+		coreUtils.GetSecretEnvVar("BACKUP_DAEMON_API_CREDENTIALS_PASSWORD", spec.Spec.Backup.BackupApiSecretName, utils.Password),
+		coreUtils.GetPlainTextEnvVar("GRANULAR_SCHEDULE", backup.GranularBackupSchedule),
+		coreUtils.GetPlainTextEnvVar("SCHEDULED_DBS", strings.Join(backup.GranularBackupScheduledDbs[:], ",")),
+	)
+
+	if spec.Spec.IpV6 {
+		envs = append(envs, coreUtils.GetPlainTextEnvVar("BROADCAST_ADDRESS", "::"))
+	}
+
+	if backup.S3.Enabled {
+		envs = append(envs,
+			coreUtils.GetPlainTextEnvVar("S3_ENABLED", strconv.FormatBool(backup.S3.Enabled)),
+			coreUtils.GetPlainTextEnvVar("S3_BUCKET", backup.S3.BucketName),
+			coreUtils.GetPlainTextEnvVar("S3_URL", backup.S3.EndpointUrl),
+			coreUtils.GetSecretEnvVar("S3_KEY_ID", backup.S3.SecretName, utils.Username),
+			coreUtils.GetSecretEnvVar("S3_KEY_SECRET", backup.S3.SecretName, utils.Password),
+		)
+		if backup.S3.SslVerify {
+			envs = append(envs, coreUtils.GetPlainTextEnvVar("S3_CERTS_PATH", "/s3Certs"))
+
+		}
+	}
+
+	// Environment variable End
+	nodeSelector := map[string]string{}
+	var pvcName string
+	if !backup.Storage.EmptyDir {
+		nodeLabels := ctx.Get(fmt.Sprintf(utils.BackupPVNodes)).([]map[string]string)
+
+		if len(nodeLabels) > 0 {
+			nodeSelector = nodeLabels[0]
+		}
+	}
+
+	if !backup.Storage.EmptyDir {
+		pvcName = ctx.Get(utils.BackupPvcNames).([]string)[0]
+	}
+
+	var tolerations []v12.Toleration
+	if spec.Spec.Policies != nil {
+		tolerations = spec.Spec.Policies.Tolerations
+	}
+
+	var numberOfReplicas int32
+	if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode {
+		numberOfReplicas = 1
+	} else {
+		numberOfReplicas = 0
+	}
+
+	dc := BackupDeploymentTemplate(
+		&spec.Spec,
+		pvcName,
+		request.Namespace,
+		core.ConcatMaps(
+			spec.Spec.Backup.AdditionalNodeLabels, // TODO
+			nodeSelector),
+		// utils.MongoReplicaNodeSelector(nodeLabels, 1, 0, 1, 0)),
+		envs,
+		tolerations,
+		backup.StorageDirectory,
+		backup.Storage.EmptyDir,
+		numberOfReplicas,
+		spec.Spec.Backup.PriorityClassName,
+		spec.Spec.Backup.Affinity)
+
+	err := credsManager.AddCredHashToPodTemplate([]string{spec.Spec.MongoDB.MongoRootSecretName}, &dc.Spec.Template)
+	if err != nil {
+		log.Error(fmt.Sprintf("can't add secret HASH to annotations for %s", dc.Name), zap.Error(err))
+		return err
+	}
+
+	coreUtils.VaultPodSpec(&dc.Spec.Template.Spec, []string{"python3", "/opt/backup/backup-daemon.py"}, spec.Spec.VaultRegistration)
+
+	err = utils.CreateRuntimeObjectContextWrapper(ctx, dc, dc.ObjectMeta)
+
+	if err != nil {
+		return &core.ExecutionError{Msg: "Error happened on processing backup deployment config. Error: " + err.Error()}
+	}
+
+	log.Debug("Waiting for backup is ready")
+	podLabelSelector := map[string]string{
+		utils.Name: utils.BackupDaemon,
+	}
+	err = utils.WaitForDeploymentReady(
+		ctx,
+		podLabelSelector,
+		request.Namespace,
+		int(numberOfReplicas),
+		spec.Spec.WaitSeconds)
+
+	if err != nil {
+		return &core.ExecutionError{Msg: "Error happened while waiting backup pod is ready. Error: " + err.Error()}
+	}
+
+	return nil
+}
