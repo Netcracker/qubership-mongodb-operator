@@ -28,5 +28,3 @@ VOLUME /run/cryptsetup
 VOLUME /etc
 VOLUME /opt/backup
 VOLUME /tmp
-
-CMD ["sh", "-c", "$MONGO_HOME/run.sh"]
