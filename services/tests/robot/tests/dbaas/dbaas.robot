@@ -136,6 +136,37 @@ Check Meta Values With ${col1} And ${col2} In ${db}
 Backup Data And Check
     [Arguments]  ${document}  ${attempts}
 
+    Log To Console  \n=== Starting backup collect API call ===
+    Log To Console  Request document: ${document}
+
+    ${response}=  Post Request With ${document} Data To /api/${dbaas_api_version}/dbaas/adapter/mongodb/backups/collect
+
+    Log To Console  Response status: ${response.status_code}
+    Log To Console  Response headers: ${response.headers}
+    Log To Console  Raw response content: ${response.content}
+
+    Run Keyword If  '${response.status_code}' != '202'
+    ...  Fail  Collect API failed with status ${response.status_code}\nResponse: ${response.content}
+
+    ${resultjson}=    Evaluate     json.loads("""${response.content}""")    json
+    Log To Console  Parsed JSON response: ${resultjson}
+
+    ${backupId}=  Set Variable  ${resultjson['trackId']}
+    Log To Console  Extracted backupId: ${backupId}
+
+    Log To Console  Waiting for backup job completion...
+
+    ${response}=  Wait For /api/${dbaas_api_version}/dbaas/adapter/mongodb/backups/track/backup/${backupId} Job Completion With ${attempts} Attempts
+
+    Log To Console  Track API response status: ${response.status_code}
+    Log To Console  Track API response content: ${response.content}
+
+    Run Keyword If  '${response.status_code}' != '200'
+    ...  Fail  Track API failed with status ${response.status_code}\nResponse: ${response.content}
+
+    Set Suite Variable  ${backupId}
+    [Arguments]  ${document}  ${attempts}
+
     Log  Starting backup collect API call
     Log  Request document: ${document}
 
