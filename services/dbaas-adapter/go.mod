@@ -3,7 +3,7 @@ module github.com/Netcracker/qubership-dbaas-mongo
 go 1.25.5
 
 require (
-	github.com/Netcracker/qubership-dbaas-adapter-core v0.11.2-0.20260326094957-bd9c8d5d8a75
+	github.com/Netcracker/qubership-dbaas-adapter-core v0.11.2-0.20260326102850-9f395c3c0308
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
