@@ -135,12 +135,32 @@ Check Meta Values With ${col1} And ${col2} In ${db}
 
 Backup Data And Check
     [Arguments]  ${document}  ${attempts}
+
+    Log  Starting backup collect API call
+    Log  Request document: ${document}
+
     ${response}=  Post Request With ${document} Data To /api/${dbaas_api_version}/dbaas/adapter/mongodb/backups/collect
+
+    Log  Response status: ${response.status_code}
+    Log  Response headers: ${response.headers}
+    Log  Raw response content: ${response.content}
+
     Should Be Equal As Strings  ${response.status_code}  202
+
     ${resultjson}=    Evaluate     json.loads("""${response.content}""")    json
+    Log  Parsed JSON response: ${resultjson}
+
     ${backupId}=  Set Variable  ${resultjson['trackId']}
+    Log  Extracted backupId: ${backupId}
+
+    Log  Waiting for backup job completion...
     ${response}=  Wait For /api/${dbaas_api_version}/dbaas/adapter/mongodb/backups/track/backup/${backupId} Job Completion With ${attempts} Attempts
+
+    Log  Track API response status: ${response.status_code}
+    Log  Track API response content: ${response.content}
+
     Should Be Equal As Strings  ${response.status_code}  200
+
     Set Suite Variable  ${backupId}
 
 Restore Data And Check
