@@ -1,6 +1,8 @@
 package dbaas
 
 import (
+	"os"
+
 	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
 	v12 "k8s.io/api/apps/v1"
@@ -19,8 +21,17 @@ func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace s
 			Name:      utils.DbaasName,
 			Namespace: namespace,
 			Labels: map[string]string{
-				utils.App:          utils.MongoCluster,
-				utils.Microservice: utils.DbaasName,
+				utils.App:                  utils.MongoCluster,
+				utils.Microservice:         utils.DbaasName,
+				utils.Name:                 utils.DbaasName,
+				utils.AppName:              utils.DbaasName,
+				utils.AppInstance:          os.Getenv("RELEASE_NAME"),
+				utils.AppVersion:           os.Getenv("APP_VERSION"),
+				utils.AppComponent:         "backend",
+				utils.AppPartOf:            "mongodb-services",
+				utils.AppManagedBy:         "operator",
+				utils.AppManagedByOperator: "mongodb-services-operator",
+				utils.AppTechnology:        "go",
 			},
 		},
 		Spec: v12.DeploymentSpec{

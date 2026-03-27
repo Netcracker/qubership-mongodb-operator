@@ -69,9 +69,9 @@ func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName st
 					},
 				},
 				Spec: v1.PodSpec{
-					ServiceAccountName:            spec.ServiceAccountName,
-					SecurityContext:               spec.PodSecurityContext,
-					PriorityClassName:             priorityClassName,
+					ServiceAccountName: spec.ServiceAccountName,
+					SecurityContext:    spec.PodSecurityContext,
+					PriorityClassName:  priorityClassName,
 					Containers: []v1.Container{
 						v1.Container{
 							Name:            utils.BackupDaemon,
