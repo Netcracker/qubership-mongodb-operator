@@ -1,11 +1,11 @@
 module github.com/Netcracker/qubership-mongodb-operator
 
-go 1.25.5
+go 1.26.1
 
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.8
 	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.7
-	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/gofiber/fiber/v2 v2.52.11
 	github.com/gofiber/swagger v1.1.0
 	github.com/swaggo/swag v1.16.3
 	go.uber.org/zap v1.27.0
