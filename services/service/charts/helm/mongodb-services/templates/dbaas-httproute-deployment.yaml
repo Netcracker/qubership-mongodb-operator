@@ -1,0 +1,26 @@
+{{- if and (.Values.createIngress) (eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true)) "true") (.Values.CLOUD_PUBLIC_HOST) }}
+{{- if and (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (eq (.Values.PAAS_PLATFORM | default "KUBERNETES") "KUBERNETES") }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  labels:
+    {{- include "mongodb.defaultLabels" . | nindent 4 }}
+  name: mongodb-swagger
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ include "gateway.name" . }}
+      namespace: {{ include "gateway.namespace" . }}
+  hostnames:
+    - {{ printf "%s-dbaas-adapter-swagger.%s" .Release.Namespace .Values.CLOUD_PUBLIC_HOST | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: dbaas-mongo-adapter
+          port: 8080
+{{- end }}
+{{- end }}

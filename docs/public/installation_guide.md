@@ -446,6 +446,8 @@ The list of DBaaS Adapter parameters is as follows:
 | `dbaas.tls.duration`                                     | false     | int            | 365 | The certificate validity period.|
 | `dbaas.tls.subjectAlternativeName.additionalDnsNames`    | false     | list of string | [ ]                                                                                            | The list of additional DNS names.|
 | `dbaas.tls.subjectAlternativeName.additionalIpAddresses` | false     | list of string | [ ]                                                                                            | The list of additional IP addresses.|
+| `dbaas.gatewayAPI.gatewayName`                        | false     | string | default-external-gateway           | Chart default for Gateway name.                   |
+| `dbaas.gatewayAPI.gatewayNamespace`                   | false     | string | gateway-system                     | Chart default for Gateway namespace.            |
 
 ## Prometheus Exporter Parameters
 
