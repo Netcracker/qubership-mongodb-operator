@@ -20,6 +20,7 @@ operator:
 
 global: 
   profile: ""
+  cloudIntegrationEnabled: true
 
 schemaSettings:
   sharded: true
@@ -221,6 +222,8 @@ dbaas:
   priorityClassName:
   # apiVersion: v1
   multiUsers: true
+  gatewayAPI:
+    enabled: false
 
   tls:
     dbaasAdapterCASecretName: dbaas-adapter-certificate

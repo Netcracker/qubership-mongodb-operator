@@ -479,6 +479,28 @@ Usage example:
 {{- end -}}
 
 {{/*
+Return name for gateway
+*/}}
+{{- define "gateway.name" -}}
+{{- if and .Values.GATEWAY_SYSTEM_NAME .Values.global.cloudIntegrationEnabled }}
+{{- .Values.GATEWAY_SYSTEM_NAME }}
+{{- else }}
+{{- default "default-external-gateway" .Values.dbaas.gatewayAPI.gatewayName }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return namespace for gateway
+*/}}
+{{- define "gateway.namespace" -}}
+{{- if and .Values.GATEWAY_SYSTEM_NAMESPACE .Values.global.cloudIntegrationEnabled }}
+{{- .Values.GATEWAY_SYSTEM_NAMESPACE }}
+{{- else }}
+{{- default "gateway-system" .Values.dbaas.gatewayAPI.gatewayNamespace }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Backup Daemon SSL secret name
 */}}
 {{- define "getBackupSslSecretName" -}}
