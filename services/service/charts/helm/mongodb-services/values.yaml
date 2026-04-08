@@ -222,8 +222,6 @@ dbaas:
   priorityClassName:
   # apiVersion: v1
   multiUsers: true
-  gatewayAPI:
-    enabled: false
 
   tls:
     dbaasAdapterCASecretName: dbaas-adapter-certificate

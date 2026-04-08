@@ -1,0 +1,22 @@
+{{- if and (.Values.createIngress) (eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true )) "true") (.Values.CLOUD_PUBLIC_HOST) }}
+apiVersion: {{ if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}"networking.k8s.io/v1"{{ else }}"networking.k8s.io/v1beta1"{{ end }}
+kind: Ingress
+metadata:
+  annotations:
+    gateway-api-converter.netcracker.com/ignore: "true"
+  labels:
+    {{- include "mongodb.defaultLabels" . | nindent 4 }}
+  name: mongodb-swagger
+spec:
+  rules:
+    - host: {{ printf "%s-dbaas-adapter-swagger.%s" .Release.Namespace  .Values.CLOUD_PUBLIC_HOST }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dbaas-mongo-adapter
+                port:
+                  number: 8080
+{{ end }}
