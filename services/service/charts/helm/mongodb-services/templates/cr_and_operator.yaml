@@ -39,6 +39,10 @@ spec:
   podSecurityContext:
     fsGroup: {{ .Values.podSecurityContext.fsGroup }}
     runAsUser: {{ .Values.podSecurityContext.runAsUser }}
+    {{- if .Values.podSecurityContext.seLinuxOptions }}
+    seLinuxOptions:
+  {{ toYaml .Values.podSecurityContext.seLinuxOptions | nindent 4 }}
+    {{- end }}
     {{- if .Values.supplementalGroups }}
     supplementalGroups:
       {{- range $key, $value := .Values.podSecurityContext.supplementalGroups }}
