@@ -21,7 +21,6 @@ app.kubernetes.io/version: {{ default "" .Values.ARTIFACT_DESCRIPTOR_VERSION | t
 {{- end }}
 app.kubernetes.io/part-of: {{ default "mongodb-services" .Values.PART_OF }}
 app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
-app.kubernetes.io/managed-by-operator: "mongodb-services-operator"
 {{- end -}}
 
 {{/*
