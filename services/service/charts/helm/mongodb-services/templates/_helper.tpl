@@ -13,6 +13,18 @@
 {{- end -}}
 
 {{/*
+Common Mongodb resources labels
+*/}}
+{{- define "mongodb.defaultLabels" -}}
+{{- if .Values.ARTIFACT_DESCRIPTOR_VERSION }}
+app.kubernetes.io/version: {{ default "" .Values.ARTIFACT_DESCRIPTOR_VERSION | trunc 63 | trimAll "-_." }}
+{{- end }}
+app.kubernetes.io/part-of: {{ default "mongodb-services" .Values.PART_OF }}
+app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
+app.kubernetes.io/managed-by-operator: "mongodb-services-operator"
+{{- end -}}
+
+{{/*
 Configure MongoDB service 'enableDisasterRecovery' property
 */}}
 {{- define "mongodb.enableDisasterRecovery" -}}
