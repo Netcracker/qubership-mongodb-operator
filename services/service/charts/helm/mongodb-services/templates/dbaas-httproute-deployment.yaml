@@ -20,7 +20,10 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: dbaas-mongo-adapter
+        - group: ""
+          kind: Service
+          name: dbaas-mongo-adapter
           port: 8080
+          weight: 1
 {{- end }}
 {{- end }}
