@@ -136,6 +136,8 @@ type MongoDB struct {
 	Storage                 *types.StorageRequirements `json:"storage,omitempty"`
 	CnfWiredTigerCacheGb    string                     `json:"cnfWiredTigerCacheGb,omitempty"`
 	DataWiredTigerCacheGb   string                     `json:"dataWiredTigerCacheGb,omitempty"`
+	CnfOpLogSizeMb          int                        `json:"cnfOpLogSizeMb,omitempty"`
+	DataOpLogSizeMb         int                        `json:"dataOpLogSizeMb,omitempty"`
 	SingleWiredTigerCacheGb string                     `json:"singleWiredTigerCacheGb,omitempty"`
 	AdditionalNodeLabels    map[string]string          `json:"additionalNodeLabels,omitempty"`
 	CustomDataRSParameters  []string                   `json:"customDataRSParameters,omitempty"`
