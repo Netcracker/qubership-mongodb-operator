@@ -1051,7 +1051,7 @@ spec:
                         type: object
                     type: object
                   cnfOpLogSizeMb:
-                    type: integer
+                    type: string
                   cnfResources:
                     description: ResourceRequirements describes the compute resource
                       requirements.
@@ -1123,7 +1123,7 @@ spec:
                       type: string
                     type: array
                   dataOpLogSizeMb:
-                    type: integer
+                    type: string
                   dataResources:
                     description: ResourceRequirements describes the compute resource
                       requirements.
