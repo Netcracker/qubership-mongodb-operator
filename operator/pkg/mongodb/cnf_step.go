@@ -86,7 +86,7 @@ func (r *CreateCNFStep) Execute(ctx core.ExecutionContext) error {
 			utils.MongoReplicaNodeSelector(nodeLabels, cnfSize, i, 1, 0))
 
 		containerArgs := utils.MongoReplicaContainerArgs("--configsvr", utils.Data, nameKey, nameWithIndex, utils.MongoSecret,
-			utils.MongoSecretKeyFile, wiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS)
+			utils.MongoSecretKeyFile, wiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.CnfOpLogSizeMb)
 
 		log.Debug("Cnfrs container args: " + containerArgs)
 

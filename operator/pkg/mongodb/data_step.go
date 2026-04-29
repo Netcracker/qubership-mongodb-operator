@@ -140,7 +140,7 @@ func (r *CreateDataStep) Execute(ctx core.ExecutionContext) error {
 				replicaType = ""
 			}
 
-			containerArgs := utils.MongoReplicaContainerArgs(replicaType, utils.Data, nameKey, nameWithIndexes, utils.MongoSecret, utils.MongoSecretKeyFile, dataWiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS)
+			containerArgs := utils.MongoReplicaContainerArgs(replicaType, utils.Data, nameKey, nameWithIndexes, utils.MongoSecret, utils.MongoSecretKeyFile, dataWiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.DataOpLogSizeMb)
 			log.Debug("Datars container args: " + containerArgs)
 
 			var tolerations []v12.Toleration
