@@ -168,7 +168,7 @@ func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, 
 
 	cmd := "if  [ ! -d /" + data + "/" + nameWithIndexes + " ]; then  mkdir /" + data + "/" + nameWithIndexes + "; fi && cp /opt/" + mongoSecret + "/" + mongoSecretKeyFile + " /" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + " && chmod 0600 /" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + " && mongod " + bindOpt + " --port 27017 --dbpath  /" + data + "/" + nameWithIndexes + " --replSet " + nameKey + " " + replicaType + " --wiredTigerCacheSizeGB " + fmt.Sprintf("%f", wiredCacheGb) + " " + authOpt1 + " " + authOpt2 + " " + authOpt3 + " " + setParameters + getTLSOPtions(tls)
 	if v, _ := strconv.Atoi(OpLogSizeMb); v > 0 {
-		cmd += " --oplogSizeMB " + OpLogSizeMb
+		cmd += " --oplogSize " + OpLogSizeMb
 	}
 
 	return cmd
