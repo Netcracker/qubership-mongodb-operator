@@ -69,6 +69,7 @@ type MongoHelper interface {
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
 	CheckFCV(shardsCount int) (bool, error)
 	GetOplogSizes(ctx core.ExecutionContext, shardsCount int, creds *v1.Secret) (*OplogSizeReport, error)
+	UpdateOplogSize(ctx core.ExecutionContext, oplogSize int64, report OplogSizeReport) error
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -97,6 +98,38 @@ type OplogSizeInfo struct {
 	PodName    string
 	IsPrimary  bool
 	MaxSizeMB  int64
+	Pod        *v1.Pod
+}
+
+func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, oplogSize int64, report OplogSizeReport) error {
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	cmd := fmt.Sprintf(JsOpLogResize, oplogSize)
+
+	log.Sugar().Infof("CMD running for resize is : ", cmd)
+
+	//Secondaries
+	for _, item := range report.Items {
+		if !item.IsPrimary {
+			result, err := r.RunWithJSONResult(item.Pod, cmd)
+			if err != nil {
+				return err
+			}
+			log.Sugar().Infof("result of running on [%s] secondary %s", item.PodName, result)
+		}
+	}
+
+	//Primaries
+	for _, item := range report.Items {
+		if item.IsPrimary {
+			result, err := r.RunWithJSONResult(item.Pod, cmd)
+			if err != nil {
+				return err
+			}
+			log.Sugar().Infof("result of running on [%s] primary %s", item.PodName, result)
+		}
+	}
+
+	return nil
 }
 
 func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCount int, creds *v1.Secret) (*OplogSizeReport, error) {
@@ -158,6 +191,7 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCo
 				PodName:    pod.Name,
 				IsPrimary:  isPrimary,
 				MaxSizeMB:  sizeBytes / (1024 * 1024),
+				Pod:        &pod,
 			})
 		}
 	}

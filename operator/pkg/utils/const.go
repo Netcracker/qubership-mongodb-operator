@@ -180,6 +180,8 @@ const shardHostsTemplate = "JSON.stringify(db.getSiblingDB('config').shards.upda
 
 const JsOpLogSize = "db.getSiblingDB('%s').oplog.rs.stats().maxSize"
 
+const JsOpLogResize = "db.adminCommand({ replSetResizeOplog: 1, size: %v })"
+
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
 	"adminDB.dropDatabase();" +

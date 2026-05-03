@@ -13,16 +13,11 @@ type UpdateDataOplogStep struct {
 	core.DefaultExecutable
 	desiredMB   int64
 	needsResize bool
+	oplogReport *utils.OplogSizeReport
 }
 
 func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	log.Info("======== RUNNING CONDITION ===========")
-
-	log.Sugar().Infof("Needs resize : %v ", u.needsResize)
-	log.Sugar().Infof("desired mb : %v ", u.desiredMB)
-
 	return core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != "" && u.needsResize, nil
 }
 
@@ -33,7 +28,6 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	shardCount := spec.Spec.SchemaSettings.ShardCount
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	log.Info("======== RUNNING VALIDATE ===========")
 
 	creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
 	core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
@@ -45,24 +39,30 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 
 	oplogReport, err := mongoImpl.GetOplogSizes(ctx, shardCount, creds)
 	if err != nil {
-		log.Sugar().Infof("error for oplog is : %s", err)
 		return err
 	}
 
 	needsResize := false
 	for _, replicaSetInfo := range oplogReport.Items {
-
 		currentSizeMb := replicaSetInfo.MaxSizeMB
-
 		if currentSizeMb < u.desiredMB {
 			needsResize = true
 		}
 	}
 
 	u.needsResize = needsResize
+	u.oplogReport = oplogReport
+	return nil
+}
 
-	log.Sugar().Infof("Oplog Report : %v ", oplogReport)
-	log.Sugar().Infof("Desire MB : %v", u.desiredMB)
+func (u *UpdateDataOplogStep) Execute(ctx core.ExecutionContext) error {
+	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	err := mongoImpl.UpdateOplogSize(ctx, u.desiredMB, *u.oplogReport)
+	if err != nil {
+		log.Sugar().Debugf("Error resize: ", err)
+		return err
+	}
 
 	return nil
 }
