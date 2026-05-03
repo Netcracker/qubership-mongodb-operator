@@ -67,7 +67,7 @@ type MongoHelper interface {
 	GetRSStatus(labels map[string]string) string
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
 	CheckFCV(shardsCount int) (bool, error)
-	GetOplogSizes(shardsCount int) (*OplogSizeReport, error)
+	GetOplogSizes(ctx core.ExecutionContext, shardsCount int) (*OplogSizeReport, error)
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -98,7 +98,8 @@ type OplogSizeInfo struct {
 	MaxSizeMB  int64
 }
 
-func (r *MongoUtilsHelperImpl) GetOplogSizes(shardsCount int) (*OplogSizeReport, error) {
+func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCount int) (*OplogSizeReport, error) {
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
 	report := &OplogSizeReport{
 		Items: make([]OplogSizeInfo, 0),
@@ -126,6 +127,8 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(shardsCount int) (*OplogSizeReport,
 			if err != nil {
 				return nil, fmt.Errorf("failed oplog fetch for pod %s: %w", pod.Name, err)
 			}
+
+			log.Sugar().Infof("output is : %s", output)
 
 			sizeBytes, err := strconv.ParseInt(strings.TrimSpace(output), 10, 64)
 			if err != nil {
