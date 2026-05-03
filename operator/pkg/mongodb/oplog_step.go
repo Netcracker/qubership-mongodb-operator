@@ -33,7 +33,7 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 		return err
 	}
 
-	oplogReport, err := mongoImpl.GetOplogSizes(shardCount)
+	oplogReport, err := mongoImpl.GetOplogSizes(ctx, shardCount)
 	if err != nil {
 		log.Sugar().Infof("error for oplog is : %s", err)
 		return err
