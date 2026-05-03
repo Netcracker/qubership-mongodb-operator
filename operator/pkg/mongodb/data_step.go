@@ -263,6 +263,7 @@ func (r *DataStepBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	step.AddStep(&CreateDataStep{})
 	step.AddStep(&InitDataStep{}) //DR
+	step.AddStep(&UpdateDataOplogStep{})
 
 	return step
 }
