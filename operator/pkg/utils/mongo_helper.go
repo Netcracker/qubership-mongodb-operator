@@ -127,7 +127,7 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCo
 			if err != nil {
 				return nil, fmt.Errorf("failed oplog fetch for pod %s: %w", pod.Name, err)
 			}
-
+			log.Sugar().Infof("nAME : %s", pod.Name)
 			log.Sugar().Infof("output is : %s", output)
 
 			sizeBytes, err := strconv.ParseInt(strings.TrimSpace(output), 10, 64)
