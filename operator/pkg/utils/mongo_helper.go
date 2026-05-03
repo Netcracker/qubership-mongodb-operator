@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 	"go.uber.org/zap"
@@ -67,7 +68,7 @@ type MongoHelper interface {
 	GetRSStatus(labels map[string]string) string
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
 	CheckFCV(shardsCount int) (bool, error)
-	GetOplogSizes(ctx core.ExecutionContext, shardsCount int) (*OplogSizeReport, error)
+	GetOplogSizes(ctx core.ExecutionContext, shardsCount int, creds *v1.Secret) (*OplogSizeReport, error)
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -98,8 +99,9 @@ type OplogSizeInfo struct {
 	MaxSizeMB  int64
 }
 
-func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCount int) (*OplogSizeReport, error) {
+func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCount int, creds *v1.Secret) (*OplogSizeReport, error) {
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 
 	report := &OplogSizeReport{
 		Items: make([]OplogSizeInfo, 0),
@@ -122,6 +124,13 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCo
 
 		for _, pod := range podList.Items {
 			opLogCmd := fmt.Sprintf(JsOpLogSize, "local")
+			r.Cmd = fmt.Sprintf(
+				MongoCMDAuthTemplate,
+				MongoBinary(spec.Spec.MongoDB.DockerImage),
+				string(creds.Data[Username]),
+				string(creds.Data[Password]),
+				spec.Spec.AuthDb,
+			)
 
 			log.Sugar().Infof("cmd being passed: %s", r.Cmd)
 
