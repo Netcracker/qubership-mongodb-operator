@@ -123,6 +123,8 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCo
 		for _, pod := range podList.Items {
 			opLogCmd := fmt.Sprintf(JsOpLogSize, "local")
 
+			log.Sugar().Infof("cmd being passed: %s", r.Cmd)
+
 			output, err := r.RunOnMongoPod(&pod, opLogCmd)
 			if err != nil {
 				return nil, fmt.Errorf("failed oplog fetch for pod %s: %w", pod.Name, err)
