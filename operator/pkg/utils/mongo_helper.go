@@ -66,7 +66,8 @@ type MongoHelper interface {
 	CompactAll(shardsCount int, dbName string) error
 	GetRSStatus(labels map[string]string) string
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
-	CheckFCV(shardCount int) (bool, error)
+	CheckFCV(shardsCount int) (bool, error)
+	GetOplogSizes(shardsCount int) (*OplogSizeReport, error)
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -83,6 +84,71 @@ type MongoUtilsHelperImpl struct {
 	WaitSeconds          int
 	Sharded              bool
 	Single               bool
+}
+
+type OplogSizeReport struct {
+	Items []OplogSizeInfo
+}
+
+type OplogSizeInfo struct {
+	ShardName  string
+	ReplicaSet string
+	PodName    string
+	IsPrimary  bool
+	MaxSizeMB  int64
+}
+
+func (r *MongoUtilsHelperImpl) GetOplogSizes(shardsCount int) (*OplogSizeReport, error) {
+
+	report := &OplogSizeReport{
+		Items: make([]OplogSizeInfo, 0),
+	}
+
+	for i := 0; i < shardsCount; i++ {
+		dKey := fmt.Sprintf(DataNameKey, i+1)
+
+		label := map[string]string{
+			Microservice: dKey,
+		}
+
+		// list ALL pods in shard (primary + secondaries)
+		podList, err := checkListPodsResult(
+			r.KubernetesHelperImpl.ListPods(r.Namespace, label),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pod := range podList.Items {
+			opLogCmd := fmt.Sprintf(JsOpLogSize, "local")
+
+			output, err := r.RunOnMongoPod(&pod, opLogCmd)
+			if err != nil {
+				return nil, fmt.Errorf("failed oplog fetch for pod %s: %w", pod.Name, err)
+			}
+
+			sizeBytes, err := strconv.ParseInt(strings.TrimSpace(output), 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("parse oplog failed for pod %s: %w", pod.Name, err)
+			}
+
+			// detect primary (optional safety: do not assume helper is already used)
+			isPrimary := false
+			if primary, err := r.GetMongoPrimaryReplica(label); err == nil {
+				isPrimary = primary.Name == pod.Name
+			}
+
+			report.Items = append(report.Items, OplogSizeInfo{
+				ShardName:  dKey,
+				ReplicaSet: dKey,
+				PodName:    pod.Name,
+				IsPrimary:  isPrimary,
+				MaxSizeMB:  sizeBytes / (1024 * 1024),
+			})
+		}
+	}
+
+	return report, nil
 }
 
 func (r *MongoUtilsHelperImpl) RunOnShards(command string, shardCount int) ([]string, error) {

@@ -1,9 +1,6 @@
 package mongodb
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
@@ -36,37 +33,14 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 		return err
 	}
 
-	var needsAnyResize bool
-	cmd := `db.getSiblingDB("local").oplog.rs.stats().maxSize`
-	sizeOutputs, err := mongoImpl.RunOnShards(cmd, shardCount)
+	oplogReport, err := mongoImpl.GetOplogSizes(shardCount)
 	if err != nil {
+		log.Sugar().Infof("error for oplog is : %s", err)
 		return err
 	}
 
-	log.Info("Size outputs are like this : ===========")
-	log.Sugar().Infof("%s", sizeOutputs)
-
-	log.Info("Size outputs are like this : ===========")
-
-	return nil
-
-	for _, size := range sizeOutputs {
-		currentBytes, err := strconv.ParseInt(strings.TrimSpace(size), 10, 64)
-		if err != nil {
-			//return fmt.Errorf("failed to parse oplog size for shard %s: %v", dKey, err)
-		}
-
-		currentMB := currentBytes / (1024 * 1024)
-
-		if currentMB < u.desiredMB {
-			needsAnyResize = true
-		}
-	}
-
-	// 4. Skip Execute if nothing to do
-	if !needsAnyResize {
-
-	}
+	log.Sugar().Infof("Oplog Report : %v ", oplogReport)
+	log.Sugar().Infof("Desire MB : %v", u.desiredMB)
 
 	return nil
 }

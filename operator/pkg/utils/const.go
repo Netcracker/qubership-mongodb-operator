@@ -178,6 +178,8 @@ const JsReplicasWithStateAndName = "rs.status().members.map(function(m) { return
 
 const shardHostsTemplate = "JSON.stringify(db.getSiblingDB('config').shards.updateOne( {'_id' : '%s'}, {\\$set:{ host: '%s/%s', state: 1}}))"
 
+const JsOpLogSize = "db.getSiblingDB(\"%s\").oplog.rs.stats().maxSize"
+
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
 	"adminDB.dropDatabase();" +
