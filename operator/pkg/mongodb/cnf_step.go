@@ -217,31 +217,21 @@ type UpdateCnfOplogStep struct {
 }
 
 func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
+	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	shardCount := spec.Spec.SchemaSettings.ShardCount
+
+	log.Sugar().Infof("============ Inside Condition Cnf ===========", core.GetCurrentDeployType(ctx) == core.Update)
+	log.Sugar().Infof("deploy type %s", core.GetCurrentDeployType(ctx))
+
 	if core.GetCurrentDeployType(ctx) == core.Update {
 		status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
 			spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
 		if err != nil {
 			return false, err
 		}
-		return spec.Spec.MongoDB.CnfOpLogSizeMb != 0 && u.needsResize && status == utils.Up, nil
-	}
-
-	return false, nil
-}
-
-func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
-	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
-	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
-	shardCount := spec.Spec.SchemaSettings.ShardCount
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-
-	log.Sugar().Infof("============ cnf Inside Validate ===========", core.GetCurrentDeployType(ctx) == core.Update)
-	log.Sugar().Infof("deploy type cnf %s", core.GetCurrentDeployType(ctx))
-
-	if core.GetCurrentDeployType(ctx) == core.Update {
 
 		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
 		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
@@ -249,7 +239,7 @@ func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
 		u.desiredMB = spec.Spec.MongoDB.CnfOpLogSizeMb
 		oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameKey, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		needsResize := false
@@ -262,7 +252,14 @@ func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
 
 		u.needsResize = needsResize
 		u.oplogReport = oplogReport
+
+		return spec.Spec.MongoDB.CnfOpLogSizeMb != 0 && u.needsResize && status == utils.Up, nil
 	}
+
+	return false, nil
+}
+
+func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
 	return nil
 }
 
