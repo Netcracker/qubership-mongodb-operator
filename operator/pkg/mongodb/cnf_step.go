@@ -238,6 +238,9 @@ func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
 	shardCount := spec.Spec.SchemaSettings.ShardCount
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
+	log.Sugar().Infof("============ cnf Inside Validate ===========", core.GetCurrentDeployType(ctx) == core.Update)
+	log.Sugar().Infof("deploy type cnf %s", core.GetCurrentDeployType(ctx))
+
 	if core.GetCurrentDeployType(ctx) == core.Update {
 
 		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
