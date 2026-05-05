@@ -510,20 +510,3 @@ func GetHTTPProtocol(tlsEnabled bool) string {
 func IsTLSEnableForDBAAS(aggregatorRegistrationAddress string, tlsEnabled bool) bool {
 	return strings.Contains(aggregatorRegistrationAddress, "https") && tlsEnabled
 }
-
-func ParseOplogSizeMB(val string) (int64, error) {
-	if strings.TrimSpace(val) == "" {
-		return 0, fmt.Errorf("oplog size cannot be empty")
-	}
-
-	size, err := strconv.ParseInt(val, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("invalid oplog size '%s': must be a valid integer", val)
-	}
-
-	if size <= 0 {
-		return 0, fmt.Errorf("invalid oplog size '%d': must be greater than 0", size)
-	}
-
-	return size, nil
-}
