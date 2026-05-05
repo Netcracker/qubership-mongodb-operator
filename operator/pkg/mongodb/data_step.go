@@ -273,7 +273,7 @@ func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error)
 
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 
-	if core.GetCurrentDeployType(ctx) == core.Update {
+	if core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != 0 {
 		status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
 			spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
 		if err != nil {
@@ -300,7 +300,7 @@ func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error)
 		u.needsResize = needsResize
 		u.oplogReport = oplogReport
 
-		return spec.Spec.MongoDB.DataOpLogSizeMb != 0 && u.needsResize && status == utils.Up, nil
+		return u.needsResize && status == utils.Up, nil
 	}
 
 	return false, nil

@@ -226,7 +226,7 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 	log.Sugar().Infof("============ Inside Condition Cnf ===========", core.GetCurrentDeployType(ctx) == core.Update)
 	log.Sugar().Infof("deploy type %s", core.GetCurrentDeployType(ctx))
 
-	if core.GetCurrentDeployType(ctx) == core.Update {
+	if core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.CnfOpLogSizeMb != 0 {
 		status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
 			spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
 		if err != nil {
@@ -237,7 +237,7 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
 		u.desiredMB = spec.Spec.MongoDB.CnfOpLogSizeMb
-		oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameKey, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
+		oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameWithIndexFormat, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
 		if err != nil {
 			return false, err
 		}
@@ -253,7 +253,7 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 		u.needsResize = needsResize
 		u.oplogReport = oplogReport
 
-		return spec.Spec.MongoDB.CnfOpLogSizeMb != 0 && u.needsResize && status == utils.Up, nil
+		return u.needsResize && status == utils.Up, nil
 	}
 
 	return false, nil
