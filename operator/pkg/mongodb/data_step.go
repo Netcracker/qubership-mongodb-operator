@@ -8,6 +8,7 @@ import (
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
+	"github.com/gofiber/fiber/v2/log"
 	"go.uber.org/zap"
 	v12 "k8s.io/api/core/v1"
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -263,6 +264,9 @@ type UpdateDataOplogStep struct {
 
 func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+
+	log.Info(" ======= Inside condition ==========")
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	if core.GetCurrentDeployType(ctx) == core.Update {
 		status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
@@ -270,8 +274,15 @@ func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error)
 		if err != nil {
 			return false, err
 		}
+
+		log.Sugar().Infof("data oplog size mb ", spec.Spec.MongoDB.DataOpLogSizeMb)
+		log.Sugar().Infof("needs resize : ", u.needsResize)
+		log.Sugar().Infof("status : ", status)
+
 		return spec.Spec.MongoDB.DataOpLogSizeMb != 0 && u.needsResize && status == utils.Up, nil
 	}
+
+	log.Info("reached here so false")
 
 	return false, nil
 }
@@ -282,6 +293,8 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	shardCount := spec.Spec.SchemaSettings.ShardCount
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+
+	log.Sugar().Infof("============ Inside Validate ===========", core.GetCurrentDeployType(ctx) == core.Update)
 
 	if core.GetCurrentDeployType(ctx) == core.Update {
 		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
@@ -309,6 +322,7 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 }
 
 func (u *UpdateDataOplogStep) Execute(ctx core.ExecutionContext) error {
+	log.Info("======== Execute resize ===========")
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 	err := mongoImpl.UpdateOplogSize(u.desiredMB, *u.oplogReport)
