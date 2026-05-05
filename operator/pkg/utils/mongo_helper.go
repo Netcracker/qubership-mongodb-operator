@@ -133,6 +133,8 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desire
 				return err
 			}
 
+			log.Sugar().Infof("check lag cmd : ", checkLagCmd)
+
 			log.Sugar().Infof("lagResult: ", memberHealthy)
 			if memberHealthy == "false" {
 				return fmt.Errorf("replication lag present")
@@ -155,6 +157,8 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desire
 			if err != nil {
 				return err
 			}
+
+			log.Sugar().Infof("check health cmd : ", checkHealthCmd)
 
 			log.Sugar().Infof("primary health Result: ", memberHealthy)
 			if memberHealthy == "false" {
