@@ -67,7 +67,7 @@ type MongoHelper interface {
 	GetRSStatus(labels map[string]string) string
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
 	CheckFCV(shardsCount int) (bool, error)
-	GetOplogSizes(shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
+	GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
 	UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error
 }
 
@@ -156,13 +156,13 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report Op
 	return nil
 }
 
-func (r *MongoUtilsHelperImpl) GetOplogSizes(shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error) {
+func (r *MongoUtilsHelperImpl) GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error) {
 	report := &OplogSizeReport{
 		Items: make([]OplogSizeInfo, 0),
 	}
 
 	for i := 0; i < shardsCount; i++ {
-		dKey := fmt.Sprintf(DataNameKey, i+1)
+		dKey := fmt.Sprintf(replKey, i+1)
 		label := map[string]string{
 			Microservice: dKey,
 		}
