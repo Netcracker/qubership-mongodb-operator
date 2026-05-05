@@ -61,7 +61,7 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 	needsResize := false
 	for _, replicaSetInfo := range oplogReport.Items {
 		currentSizeMb := replicaSetInfo.MaxSizeMB
-		if currentSizeMb < u.desiredMB {
+		if currentSizeMb != u.desiredMB {
 			needsResize = true
 		}
 	}
