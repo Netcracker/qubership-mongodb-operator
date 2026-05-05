@@ -232,32 +232,34 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 }
 
 func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
-	var err error
 	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	shardCount := spec.Spec.SchemaSettings.ShardCount
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
-	creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
-	core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
+	if core.GetCurrentDeployType(ctx) == core.Update {
 
-	u.desiredMB = spec.Spec.MongoDB.CnfOpLogSizeMb
-	oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameKey, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
-	if err != nil {
-		return err
-	}
+		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
+		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
-	needsResize := false
-	for _, replicaSetInfo := range oplogReport.Items {
-		currentSizeMb := replicaSetInfo.MaxSizeMB
-		if currentSizeMb != u.desiredMB {
-			needsResize = true
+		u.desiredMB = spec.Spec.MongoDB.CnfOpLogSizeMb
+		oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameKey, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
+		if err != nil {
+			return err
 		}
-	}
 
-	u.needsResize = needsResize
-	u.oplogReport = oplogReport
+		needsResize := false
+		for _, replicaSetInfo := range oplogReport.Items {
+			currentSizeMb := replicaSetInfo.MaxSizeMB
+			if currentSizeMb != u.desiredMB {
+				needsResize = true
+			}
+		}
+
+		u.needsResize = needsResize
+		u.oplogReport = oplogReport
+	}
 	return nil
 }
 
