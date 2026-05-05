@@ -21,12 +21,18 @@ type UpdateDataOplogStep struct {
 func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+
 	status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
 		spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
 
 	if err != nil {
 		return false, err
 	}
+
+	log.Info("==============- Inside condition update oplog -============")
+	log.Sugar().Infof("status : ", status)
+	log.Sugar().Infof("size: ", spec.Spec.MongoDB.DataOpLogSizeMb)
 
 	return core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != "" && u.needsResize && status == utils.Up, nil
 }
