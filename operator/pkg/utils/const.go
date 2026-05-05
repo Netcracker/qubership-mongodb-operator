@@ -198,7 +198,7 @@ const JsCheckMemberLag = `
          t.stateStr === "SECONDARY" &&
          t.optimeDate &&
          lag <= 30;
-})("%s")`
+})('%s')`
 
 const JsCheckMemberHealth = `
 (function(name) {
@@ -210,7 +210,7 @@ const JsCheckMemberHealth = `
 
   return t.health === 1 &&
          (t.stateStr === "PRIMARY" || t.stateStr === "SECONDARY");
-})("%s")`
+})('%s')`
 
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
