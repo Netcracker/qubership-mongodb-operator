@@ -21,8 +21,6 @@ type UpdateDataOplogStep struct {
 func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-
 	status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
 		spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
 
@@ -30,11 +28,7 @@ func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error)
 		return false, err
 	}
 
-	log.Info("==============- Inside condition update oplog -============")
-	log.Sugar().Infof("status : ", status)
-	log.Sugar().Infof("size: ", spec.Spec.MongoDB.DataOpLogSizeMb)
-
-	return core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != "" && u.needsResize && status == utils.Up, nil
+	return core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != 0 && u.needsResize && status == utils.Up, nil
 }
 
 func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
@@ -48,12 +42,8 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 	creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
 	core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
-	u.desiredMB, err = utils.ParseOplogSizeMB(spec.Spec.MongoDB.DataOpLogSizeMb)
-	if err != nil {
-		return err
-	}
-
-	oplogReport, err := mongoImpl.GetOplogSizes(ctx, shardCount, creds)
+	u.desiredMB = spec.Spec.MongoDB.DataOpLogSizeMb
+	oplogReport, err := mongoImpl.GetOplogSizes(shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
 	if err != nil {
 		return err
 	}
@@ -74,7 +64,7 @@ func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
 func (u *UpdateDataOplogStep) Execute(ctx core.ExecutionContext) error {
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	err := mongoImpl.UpdateOplogSize(ctx, u.desiredMB, *u.oplogReport)
+	err := mongoImpl.UpdateOplogSize(u.desiredMB, *u.oplogReport)
 	if err != nil {
 		log.Debug(fmt.Sprintf("Update oplog error [%s]", err))
 		return err

@@ -103,7 +103,7 @@ spec:
     cnfWiredTigerCacheGb: {{ .Values.mongodb.cnfWiredTigerCacheGb | quote }}
     {{- end }}
     {{- if .Values.mongodb.cnfOpLogSizeMb }}
-    cnfOpLogSizeMb: {{ .Values.mongodb.cnfOpLogSizeMb | quote }}
+    cnfOpLogSizeMb: {{ .Values.mongodb.cnfOpLogSizeMb }}
     {{- end }}
     dataResources:
       {{ template "getDatarsResourcesForProfile" (dict "envVar" .Values.MONGODB_PROFILE "dotVar" .Values.global.profile "values" .Values) }}
@@ -122,7 +122,7 @@ spec:
     dataWiredTigerCacheGb: {{ .Values.mongodb.dataWiredTigerCacheGb | quote }}
     {{- end }}
     {{- if .Values.mongodb.dataOpLogSizeMb }}
-    dataOpLogSizeMb: {{ .Values.mongodb.dataOpLogSizeMb | quote }}
+    dataOpLogSizeMb: {{ .Values.mongodb.dataOpLogSizeMb }}
     {{- end }}
     {{- if .Values.mongodb.customDataRSParameters }}
     customDataRSParameters: {{ .Values.mongodb.customDataRSParameters }}

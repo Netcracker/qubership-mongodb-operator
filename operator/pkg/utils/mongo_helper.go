@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 	"go.uber.org/zap"
@@ -22,7 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 type MongoHelper interface {
@@ -69,8 +67,8 @@ type MongoHelper interface {
 	GetRSStatus(labels map[string]string) string
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
 	CheckFCV(shardsCount int) (bool, error)
-	GetOplogSizes(ctx core.ExecutionContext, shardsCount int, creds *v1.Secret) (*OplogSizeReport, error)
-	UpdateOplogSize(ctx core.ExecutionContext, oplogSize int64, report OplogSizeReport) error
+	GetOplogSizes(shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
+	UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -109,16 +107,12 @@ type Member struct {
 	LagSeconds int    `json:"lagSeconds"`
 }
 
-func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desiredOplogSize int64, report OplogSizeReport) error {
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error {
 	opLogResizeCmd := fmt.Sprintf(JsOpLogResize, desiredOplogSize)
-
-	log.Sugar().Infof("CMD running for resize is : ", opLogResizeCmd)
-
 	//Secondaries
 	for _, item := range report.Items {
 		if !item.IsPrimary && desiredOplogSize != item.MaxSizeMB {
-			result, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
+			_, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
 			if err != nil {
 				return err
 			}
@@ -133,21 +127,16 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desire
 				return err
 			}
 
-			log.Sugar().Infof("check lag cmd : ", checkLagCmd)
-
-			log.Sugar().Infof("lagResult: ", memberHealthy)
 			if memberHealthy == "false" {
 				return fmt.Errorf("replication lag present")
 			}
-
-			log.Sugar().Infof("result of running on [%s] secondary %s", item.PodName, result)
 		}
 	}
 
 	//Primaries
 	for _, item := range report.Items {
 		if item.IsPrimary && desiredOplogSize != item.MaxSizeMB {
-			result, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
+			_, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
 			if err != nil {
 				return err
 			}
@@ -158,37 +147,26 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desire
 				return err
 			}
 
-			log.Sugar().Infof("check health cmd : ", checkHealthCmd)
-
-			log.Sugar().Infof("primary health Result: ", memberHealthy)
 			if memberHealthy == "false" {
-				return fmt.Errorf("replication lag present")
+				return fmt.Errorf("member [%s] not healthy", item.PodName)
 			}
-
-			log.Sugar().Infof("result of running on [%s] primary %s", item.PodName, result)
 		}
 	}
 
 	return nil
 }
 
-func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCount int, creds *v1.Secret) (*OplogSizeReport, error) {
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
-
+func (r *MongoUtilsHelperImpl) GetOplogSizes(shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error) {
 	report := &OplogSizeReport{
 		Items: make([]OplogSizeInfo, 0),
 	}
 
 	for i := 0; i < shardsCount; i++ {
 		dKey := fmt.Sprintf(DataNameKey, i+1)
-
 		label := map[string]string{
 			Microservice: dKey,
 		}
 
-		// list ALL pods in shard (primary + secondaries)
 		podList, err := checkListPodsResult(
 			r.KubernetesHelperImpl.ListPods(r.Namespace, label),
 		)
@@ -200,27 +178,21 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCo
 			opLogCmd := fmt.Sprintf(JsOpLogSize, "local")
 			r.Cmd = fmt.Sprintf(
 				MongoCMDAuthTemplate,
-				MongoBinary(spec.Spec.MongoDB.DockerImage),
+				MongoBinary(dockerImage),
 				string(creds.Data[Username]),
 				string(creds.Data[Password]),
-				spec.Spec.AuthDb,
+				AuthDB,
 			)
-
-			log.Sugar().Infof("cmd being passed: %s", r.Cmd)
-
 			output, err := r.RunOnMongoPod(&pod, opLogCmd)
 			if err != nil {
 				return nil, fmt.Errorf("failed oplog fetch for pod %s: %w", pod.Name, err)
 			}
-			log.Sugar().Infof("nAME : %s", pod.Name)
-			log.Sugar().Infof("output is : %s", output)
 
 			sizeBytes, err := strconv.ParseInt(strings.TrimSpace(output), 10, 64)
 			if err != nil {
 				return nil, fmt.Errorf("parse oplog failed for pod %s: %w", pod.Name, err)
 			}
 
-			// detect primary (optional safety: do not assume helper is already used)
 			isPrimary := false
 			if primary, err := r.GetMongoPrimaryReplica(label); err == nil {
 				isPrimary = primary.Name == pod.Name
@@ -229,7 +201,7 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(ctx core.ExecutionContext, shardsCo
 			report.Items = append(report.Items, OplogSizeInfo{
 				ShardName:  dKey,
 				ReplicaSet: dKey,
-				DomainName: fmt.Sprintf("%s.%s.%s:27017", pod.Name, dKey, fmt.Sprintf("%s.svc.%s", request.Namespace, spec.Spec.SchemaSettings.ThisDomainName)),
+				DomainName: fmt.Sprintf("%s.%s.%s:27017", pod.Name, dKey, fmt.Sprintf("%s.svc.%s", namespace, domainName)),
 				PodName:    pod.Name,
 				IsPrimary:  isPrimary,
 				MaxSizeMB:  sizeBytes / (1024 * 1024),
