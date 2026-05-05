@@ -117,7 +117,7 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desire
 
 	//Secondaries
 	for _, item := range report.Items {
-		if !item.IsPrimary && desiredOplogSize > item.MaxSizeMB {
+		if !item.IsPrimary && desiredOplogSize != item.MaxSizeMB {
 			result, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
 			if err != nil {
 				return err
@@ -146,7 +146,7 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(ctx core.ExecutionContext, desire
 
 	//Primaries
 	for _, item := range report.Items {
-		if item.IsPrimary && desiredOplogSize > item.MaxSizeMB {
+		if item.IsPrimary && desiredOplogSize != item.MaxSizeMB {
 			result, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
 			if err != nil {
 				return err
