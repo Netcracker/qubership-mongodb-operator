@@ -187,7 +187,7 @@ const JsCheckMemberLag = `
   var s = rs.status();
   if (!s.ok) return false;
 
-  var p = s.members.find(m => m.stateStr === "PRIMARY");
+  var p = s.members.find(m => m.stateStr === 'PRIMARY');
   var t = s.members.find(m => m.name === name);
 
   if (!p || !t) return false;
@@ -195,7 +195,7 @@ const JsCheckMemberLag = `
   var lag = (p.optimeDate - t.optimeDate) / 1000;
 
   return t.health === 1 &&
-         t.stateStr === "SECONDARY" &&
+         t.stateStr === 'SECONDARY' &&
          t.optimeDate &&
          lag <= 30;
 })('%s')`
@@ -209,7 +209,7 @@ const JsCheckMemberHealth = `
   if (!t) return false;
 
   return t.health === 1 &&
-         (t.stateStr === "PRIMARY" || t.stateStr === "SECONDARY");
+         (t.stateStr === 'PRIMARY' || t.stateStr === 'SECONDARY');
 })('%s')`
 
 const shardTemplate = "" +
