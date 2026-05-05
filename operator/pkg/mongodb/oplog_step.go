@@ -1,6 +1,8 @@
 package mongodb
 
 import (
+	"fmt"
+
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
@@ -18,7 +20,15 @@ type UpdateDataOplogStep struct {
 
 func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	return core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != "" && u.needsResize, nil
+	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+	status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
+		spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
+
+	if err != nil {
+		return false, err
+	}
+
+	return core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != "" && u.needsResize && status == utils.Up, nil
 }
 
 func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
@@ -60,9 +70,8 @@ func (u *UpdateDataOplogStep) Execute(ctx core.ExecutionContext) error {
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 	err := mongoImpl.UpdateOplogSize(ctx, u.desiredMB, *u.oplogReport)
 	if err != nil {
-		log.Sugar().Debugf("Error resize: ", err)
+		log.Debug(fmt.Sprintf("Update oplog error [%s]", err))
 		return err
 	}
-
 	return nil
 }

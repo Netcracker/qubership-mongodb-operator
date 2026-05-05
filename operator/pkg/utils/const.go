@@ -182,6 +182,36 @@ const JsOpLogSize = "db.getSiblingDB('%s').oplog.rs.stats().maxSize"
 
 const JsOpLogResize = "db.adminCommand({ replSetResizeOplog: 1, size: %v })"
 
+const JsCheckMemberLag = `
+(function(name) {
+  var s = rs.status();
+  if (!s.ok) return false;
+
+  var p = s.members.find(m => m.stateStr === "PRIMARY");
+  var t = s.members.find(m => m.name === name);
+
+  if (!p || !t) return false;
+
+  var lag = (p.optimeDate - t.optimeDate) / 1000;
+
+  return t.health === 1 &&
+         t.stateStr === "SECONDARY" &&
+         t.optimeDate &&
+         lag <= 30;
+})("%s")`
+
+const JsCheckMemberHealth = `
+(function(name) {
+  var s = rs.status();
+  if (!s.ok) return false;
+
+  var t = s.members.find(m => m.name === name);
+  if (!t) return false;
+
+  return t.health === 1 &&
+         (t.stateStr === "PRIMARY" || t.stateStr === "SECONDARY");
+})("%s")`
+
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
 	"adminDB.dropDatabase();" +
