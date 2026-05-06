@@ -224,12 +224,6 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 	shardCount := spec.Spec.SchemaSettings.ShardCount
 
 	if core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.CnfOpLogSizeMb != 0 {
-		status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
-			spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
-		if err != nil {
-			return false, err
-		}
-
 		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
 		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
@@ -250,7 +244,7 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 		u.needsResize = needsResize
 		u.oplogReport = oplogReport
 
-		return u.needsResize && status == utils.Up, nil
+		return u.needsResize, nil
 	}
 
 	return false, nil
@@ -263,11 +257,26 @@ func (u *UpdateCnfOplogStep) Validate(ctx core.ExecutionContext) error {
 func (u *UpdateCnfOplogStep) Execute(ctx core.ExecutionContext) error {
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	err := mongoImpl.UpdateOplogSize(u.desiredMB, *u.oplogReport)
+	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
+
+	log.Info("UpdateCnfOplogStep started")
+	status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
+		spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
+	if err != nil {
+		return err
+	}
+
+	if status != utils.Up {
+		return fmt.Errorf("cluster is down")
+	}
+
+	err = mongoImpl.UpdateOplogSize(u.desiredMB, *u.oplogReport)
 	if err != nil {
 		log.Debug(fmt.Sprintf("Update oplog error [%s]", err))
 		return err
 	}
+
+	log.Info("UpdateCnfOplogStep completed")
 	return nil
 }
 
