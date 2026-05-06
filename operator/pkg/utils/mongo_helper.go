@@ -163,6 +163,9 @@ func (r *MongoUtilsHelperImpl) GetOplogSizes(replKey string, shardsCount int, cr
 
 	for i := 0; i < shardsCount; i++ {
 		dKey := fmt.Sprintf(replKey, i+1)
+		if replKey == CnfNameKey {
+			dKey = replKey
+		}
 		label := map[string]string{
 			Microservice: dKey,
 		}

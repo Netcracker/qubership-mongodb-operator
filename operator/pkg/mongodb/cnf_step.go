@@ -221,14 +221,13 @@ func (u *UpdateCnfOplogStep) Condition(ctx core.ExecutionContext) (bool, error) 
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	shardCount := spec.Spec.SchemaSettings.ShardCount
 
 	if core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.CnfOpLogSizeMb != 0 {
 		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
 		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
 		u.desiredMB = spec.Spec.MongoDB.CnfOpLogSizeMb
-		oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameWithIndexFormat, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
+		oplogReport, err := mongoImpl.GetOplogSizes(utils.CnfNameKey, 1, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
 		if err != nil {
 			return false, err
 		}
