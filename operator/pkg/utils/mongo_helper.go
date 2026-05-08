@@ -141,7 +141,7 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report Op
 				return err
 			}
 
-			checkHealthCmd := fmt.Sprintf(JsCheckMemberLag, item.DomainName)
+			checkHealthCmd := fmt.Sprintf(JsCheckMemberHealth, item.DomainName)
 			memberHealthy, err := r.RunWithJSONResult(item.Pod, checkHealthCmd)
 			if err != nil {
 				return err
