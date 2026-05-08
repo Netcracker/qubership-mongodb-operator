@@ -8,6 +8,7 @@ import (
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
+	"github.com/gofiber/fiber/v2/log"
 	"go.uber.org/zap"
 	v12 "k8s.io/api/core/v1"
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,7 +141,7 @@ func (r *CreateDataStep) Execute(ctx core.ExecutionContext) error {
 				replicaType = ""
 			}
 
-			containerArgs := utils.MongoReplicaContainerArgs(replicaType, utils.Data, nameKey, nameWithIndexes, utils.MongoSecret, utils.MongoSecretKeyFile, dataWiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS)
+			containerArgs := utils.MongoReplicaContainerArgs(replicaType, utils.Data, nameKey, nameWithIndexes, utils.MongoSecret, utils.MongoSecretKeyFile, dataWiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.DataOpLogSizeMb)
 			log.Debug("Datars container args: " + containerArgs)
 
 			var tolerations []v12.Toleration
@@ -254,6 +255,78 @@ func (r *InitDataStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	return core.GetCurrentDeployType(ctx) == core.CleanDeploy && spec.Spec.DisasterRecovery.Mode == utils.ActiveMode, nil
 }
 
+type UpdateDataOplogStep struct {
+	core.DefaultExecutable
+	desiredMB   int64
+	needsResize bool
+	oplogReport *utils.OplogSizeReport
+}
+
+func (u *UpdateDataOplogStep) Condition(ctx core.ExecutionContext) (bool, error) {
+	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	shardCount := spec.Spec.SchemaSettings.ShardCount
+	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
+	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+
+	if core.GetCurrentDeployType(ctx) == core.Update && spec.Spec.MongoDB.DataOpLogSizeMb != 0 {
+		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
+		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
+
+		u.desiredMB = spec.Spec.MongoDB.DataOpLogSizeMb
+		oplogReport, err := mongoImpl.GetOplogSizes(utils.DataNameKey, shardCount, creds, request.Namespace, spec.Spec.SchemaSettings.ThisDomainName, spec.Spec.DockerImage, spec.Spec.AuthDb)
+		if err != nil {
+			return false, err
+		}
+
+		needsResize := false
+		for _, replicaSetInfo := range oplogReport.Items {
+			currentSizeMb := replicaSetInfo.MaxSizeMB
+			if currentSizeMb != u.desiredMB {
+				needsResize = true
+			}
+		}
+
+		u.needsResize = needsResize
+		u.oplogReport = oplogReport
+
+		return u.needsResize, nil
+	}
+
+	return false, nil
+}
+
+func (u *UpdateDataOplogStep) Validate(ctx core.ExecutionContext) error {
+	return nil
+}
+
+func (u *UpdateDataOplogStep) Execute(ctx core.ExecutionContext) error {
+	log.Info("UpdateDataOplogStep started")
+
+	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
+	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+
+	status, err := mongoImpl.GetClusterStatus(spec.Spec.DisasterRecovery.Mode, spec.Spec.SchemaSettings.ThisDomainName,
+		spec.Spec.SchemaSettings.CnfReplicaSize, spec.Spec.SchemaSettings.DataReplicaSize, spec.Spec.SchemaSettings.ShardCount, spec.Spec.SchemaSettings.Sharded)
+	if err != nil {
+		return err
+	}
+
+	if status != utils.Up {
+		return fmt.Errorf("cluster is down")
+	}
+
+	err = mongoImpl.UpdateOplogSize(u.desiredMB, *u.oplogReport)
+	if err != nil {
+		log.Debug(fmt.Sprintf("Update oplog error [%s]", err))
+		return err
+	}
+
+	log.Info("UpdateDataOplogStep completed")
+	return nil
+}
+
 type DataStepBuilder struct {
 	core.ExecutableBuilder
 }
@@ -263,6 +336,7 @@ func (r *DataStepBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	step.AddStep(&CreateDataStep{})
 	step.AddStep(&InitDataStep{}) //DR
+	step.AddStep(&UpdateDataOplogStep{})
 
 	return step
 }

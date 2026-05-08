@@ -66,7 +66,9 @@ type MongoHelper interface {
 	CompactAll(shardsCount int, dbName string) error
 	GetRSStatus(labels map[string]string) string
 	GetClusterRSStatus(cnfReplicaSize int, shardCount int, sharded bool) []string
-	CheckFCV(shardCount int) (bool, error)
+	CheckFCV(shardsCount int) (bool, error)
+	GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
+	UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -83,6 +85,135 @@ type MongoUtilsHelperImpl struct {
 	WaitSeconds          int
 	Sharded              bool
 	Single               bool
+}
+
+type OplogSizeReport struct {
+	Items []OplogSizeInfo
+}
+
+type OplogSizeInfo struct {
+	ShardName  string
+	ReplicaSet string
+	PodName    string
+	IsPrimary  bool
+	MaxSizeMB  int64
+	DomainName string
+	Pod        *v1.Pod
+}
+
+type Member struct {
+	Name       string `json:"name"`
+	StateStr   string `json:"stateStr"`
+	LagSeconds int    `json:"lagSeconds"`
+}
+
+func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error {
+	opLogResizeCmd := fmt.Sprintf(JsOpLogResize, desiredOplogSize)
+	//Secondaries
+	for _, item := range report.Items {
+		if !item.IsPrimary && desiredOplogSize != item.MaxSizeMB {
+			_, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
+			if err != nil {
+				return err
+			}
+
+			label := map[string]string{
+				Microservice: item.ShardName,
+			}
+
+			checkLagCmd := fmt.Sprintf(JsCheckMemberLag, item.DomainName)
+			memberHealthy, err := r.RunOnPrimaryWithJSONResult(label, checkLagCmd)
+			if err != nil {
+				return err
+			}
+
+			if memberHealthy == "false" {
+				return fmt.Errorf("replication lag present")
+			}
+		}
+	}
+
+	//Primaries
+	for _, item := range report.Items {
+		if item.IsPrimary && desiredOplogSize != item.MaxSizeMB {
+			_, err := r.RunWithJSONResult(item.Pod, opLogResizeCmd)
+			if err != nil {
+				return err
+			}
+
+			checkHealthCmd := fmt.Sprintf(JsCheckMemberHealth, item.DomainName)
+			memberHealthy, err := r.RunWithJSONResult(item.Pod, checkHealthCmd)
+			if err != nil {
+				return err
+			}
+
+			if memberHealthy == "false" {
+				return fmt.Errorf("member [%s] not healthy", item.PodName)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *MongoUtilsHelperImpl) GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error) {
+	report := &OplogSizeReport{
+		Items: make([]OplogSizeInfo, 0),
+	}
+
+	for i := 0; i < shardsCount; i++ {
+		dKey := fmt.Sprintf(replKey, i+1)
+		if replKey == CnfNameKey {
+			dKey = replKey
+		}
+		label := map[string]string{
+			Microservice: dKey,
+		}
+
+		podList, err := checkListPodsResult(
+			r.KubernetesHelperImpl.ListPods(r.Namespace, label),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pod := range podList.Items {
+			opLogCmd := fmt.Sprintf(JsOpLogSize, "local")
+			r.Cmd = fmt.Sprintf(
+				MongoCMDAuthTemplate,
+				MongoBinary(dockerImage),
+				string(creds.Data[Username]),
+				string(creds.Data[Password]),
+				AuthDB,
+			)
+			output, err := r.RunOnMongoPod(&pod, opLogCmd)
+			if err != nil {
+				return nil, fmt.Errorf("failed oplog fetch for pod %s: %w", pod.Name, err)
+			}
+
+			sizeBytes, err := strconv.ParseInt(strings.TrimSpace(output), 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("parse oplog failed for pod %s: %w", pod.Name, err)
+			}
+
+			isPrimary := false
+			if primary, err := r.GetMongoPrimaryReplica(label); err == nil {
+				isPrimary = primary.Name == pod.Name
+			}
+
+			report.Items = append(report.Items, OplogSizeInfo{
+				ShardName:  dKey,
+				ReplicaSet: dKey,
+				DomainName: fmt.Sprintf("%s.%s.%s:27017", pod.Name, dKey, fmt.Sprintf("%s.svc.%s", namespace, domainName)),
+				PodName:    pod.Name,
+				IsPrimary:  isPrimary,
+				MaxSizeMB:  sizeBytes / (1024 * 1024),
+				Pod:        &pod,
+			})
+		}
+	}
+
+	return report, nil
 }
 
 func (r *MongoUtilsHelperImpl) RunOnShards(command string, shardCount int) ([]string, error) {

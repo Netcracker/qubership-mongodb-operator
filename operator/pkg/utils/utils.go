@@ -147,7 +147,7 @@ func MongoReplicaNodeSelector(elements []map[string]string, replicasCount int, r
 }
 
 func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, nameWithIndexes string, mongoSecret string,
-	mongoSecretKeyFile string, wiredCacheGb float64, ipv6 bool, customDataRSParams []string, tls *v1alpha1.TLS) string {
+	mongoSecretKeyFile string, wiredCacheGb float64, ipv6 bool, customDataRSParams []string, tls *v1alpha1.TLS, OpLogSizeMb int64) string {
 
 	authOpt1 := "--auth"
 	authOpt2 := "--keyFile"
@@ -166,7 +166,13 @@ func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, 
 		}
 	}
 
-	return "if  [ ! -d /" + data + "/" + nameWithIndexes + " ]; then  mkdir /" + data + "/" + nameWithIndexes + "; fi && cp /opt/" + mongoSecret + "/" + mongoSecretKeyFile + " /" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + " && chmod 0600 /" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + " && mongod " + bindOpt + " --port 27017 --dbpath  /" + data + "/" + nameWithIndexes + " --replSet " + nameKey + " " + replicaType + " --wiredTigerCacheSizeGB " + fmt.Sprintf("%f", wiredCacheGb) + " " + authOpt1 + " " + authOpt2 + " " + authOpt3 + " " + setParameters + getTLSOPtions(tls)
+	cmd := "if  [ ! -d /" + data + "/" + nameWithIndexes + " ]; then  mkdir /" + data + "/" + nameWithIndexes + "; fi && cp /opt/" + mongoSecret + "/" + mongoSecretKeyFile + " /" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + " && chmod 0600 /" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + " && mongod " + bindOpt + " --port 27017 --dbpath  /" + data + "/" + nameWithIndexes + " --replSet " + nameKey + " " + replicaType + " --wiredTigerCacheSizeGB " + fmt.Sprintf("%f", wiredCacheGb) + " " + authOpt1 + " " + authOpt2 + " " + authOpt3 + " " + setParameters + getTLSOPtions(tls)
+	if OpLogSizeMb > 0 {
+		cmd += " --oplogSize " + fmt.Sprintf("%d", OpLogSizeMb)
+	}
+
+	return cmd
+
 }
 
 func HAMongosContainerArgs(tmp string, data string, mongoSecret string, mongoSecretKeyFile string, configNodes string, ipv6 bool, tls *v1alpha1.TLS) string {
