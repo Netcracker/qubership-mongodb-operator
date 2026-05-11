@@ -527,15 +527,13 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
   {{- end -}}
 {{- end -}}
 
-
 {{- define "mongodb.x509.generateCNFRSFQDNs" -}}
 {{- $size := int .Values.schemaSettings.cnfReplicaSize -}}
 {{- $namespace := .Release.Namespace -}}
 {{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
-{{- $service := .Values.schemaSettings.serviceName | default "mongodb" -}}
 
 {{- range $i := until $size }}
-- {{ printf "cnfrs%d-0.cnfrs.%s.svc.%s" $i $service $namespace $domain }}
+- {{ printf "cnfrs%d-0.cnfrs.%s.svc.%s" $i $namespace $domain }}
 {{- end }}
 
 {{- end }}
@@ -551,7 +549,7 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- $service := $ctx.Values.schemaSettings.serviceName | default "mongodb" -}}
 
 {{- range $r := until $size }}
-- {{ printf "datars%d%d-0.datars%d.%s.svc.%s" $shard $r $shard $service $namespace $domain }}
+- {{ printf "datars%d%d-0.datars%d.%s.%s.svc.%s" $shard $r $shard $service $namespace $domain }}
 {{- end }}
 
 {{- end }}
