@@ -546,10 +546,9 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- $size := int $ctx.Values.schemaSettings.dataReplicaSize -}}
 {{- $namespace := $ctx.Release.Namespace -}}
 {{- $domain := $ctx.Values.schemaSettings.thisDomainName | default "cluster.local" -}}
-{{- $service := $ctx.Values.schemaSettings.serviceName | default "mongodb" -}}
 
 {{- range $r := until $size }}
-- {{ printf "datars%d%d-0.datars%d.%s.%s.svc.%s" $shard $r $shard $service $namespace $domain }}
+- {{ printf "datars%d%d-0.datars%d.%s.svc.%s" $shard $r $shard $namespace $domain }}
 {{- end }}
 
 {{- end }}
