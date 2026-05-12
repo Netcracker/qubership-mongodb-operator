@@ -532,6 +532,7 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- $namespace := .Release.Namespace -}}
 {{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
 
+- localhost
 {{- range $i := until $size }}
 - {{ printf "cnfrs%d-0.cnfrs.%s.svc.%s" $i $namespace $domain }}
 {{- end }}
@@ -547,6 +548,7 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- $namespace := $ctx.Release.Namespace -}}
 {{- $domain := $ctx.Values.schemaSettings.thisDomainName | default "cluster.local" -}}
 
+- localhost
 {{- range $r := until $size }}
 - {{ printf "datars%d%d-0.datars%d.%s.svc.%s" $shard $r $shard $namespace $domain }}
 {{- end }}
