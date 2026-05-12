@@ -115,10 +115,11 @@ func (r *CreateDataStep) Execute(ctx core.ExecutionContext) error {
 		if err != nil {
 			return err
 		}
-
+		keyfileAuth := true
 		for i := 0; i < dataReplicaSize; i++ {
 			if spec.Spec.MongoDB.ClusterAuthMode == "x509" {
 				spec.Spec.TLS.CertificateSecretName = fmt.Sprintf("datars%s-x509-tls", i)
+				keyfileAuth = false
 			}
 
 			dataWiredCacheGb := utils.CalcProperMongoWiredCacheSize(mongoDbSpec.DataResources.Limits.Memory().Value(), mongoDbSpec.DataWiredTigerCacheGb, 0.25)
@@ -145,7 +146,7 @@ func (r *CreateDataStep) Execute(ctx core.ExecutionContext) error {
 				replicaType = ""
 			}
 
-			containerArgs := utils.MongoReplicaContainerArgs(replicaType, utils.Data, nameKey, nameWithIndexes, utils.MongoSecret, utils.MongoSecretKeyFile, dataWiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.DataOpLogSizeMb)
+			containerArgs := utils.MongoReplicaContainerArgs(replicaType, utils.Data, nameKey, nameWithIndexes, utils.MongoSecret, utils.MongoSecretKeyFile, dataWiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.DataOpLogSizeMb, keyfileAuth)
 			log.Debug("Datars container args: " + containerArgs)
 
 			var tolerations []v12.Toleration
