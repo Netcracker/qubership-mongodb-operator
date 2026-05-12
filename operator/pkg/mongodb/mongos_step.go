@@ -105,7 +105,7 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 	log.Info("HA Mongos Creation step started")
 	keyfileAuth := true
 	if spec.Spec.MongoDB.ClusterAuthMode == "x509" {
-		spec.Spec.TLS.CertificateSecretName = "mongos-x509-cert"
+		spec.Spec.TLS.CertificateSecretName = "mongos-x509-tls"
 		keyfileAuth = false
 	}
 
