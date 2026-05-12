@@ -116,6 +116,8 @@ func (r *CreateDataStep) Execute(ctx core.ExecutionContext) error {
 			return err
 		}
 
+		spec.Spec.TLS.CertificateSecretName = "root-ca"
+
 		for i := 0; i < dataReplicaSize; i++ {
 			dataWiredCacheGb := utils.CalcProperMongoWiredCacheSize(mongoDbSpec.DataResources.Limits.Memory().Value(), mongoDbSpec.DataWiredTigerCacheGb, 0.25)
 			log.Debug(fmt.Sprintf("Wired tiger cache size = %v", dataWiredCacheGb))
