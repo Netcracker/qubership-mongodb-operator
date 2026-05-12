@@ -202,7 +202,7 @@ func SingleMongosContainerArgs(wiredCacheGb float64, ipv6 bool, tls *v1alpha1.TL
 func getTLSOPtions(tls *v1alpha1.TLS) string {
 	var tlsOptions string
 	if tls.Enabled {
-		tlsOptions = fmt.Sprintf(" --tlsMode %s --tlsCertificateKeyFile %s%s --tlsCAFile %s%s --tlsAllowConnectionsWithoutCertificates", tls.Mode, RootCertPath, tls.CombinedKeyAndCRTFileName, RootCertPath, "ca.crt")
+		tlsOptions = fmt.Sprintf(" --tlsMode %s --tlsCertificateKeyFile %s%s --tlsCAFile %s%s --tlsAllowConnectionsWithoutCertificates --tlsDisabledProtocols TLS1_0,TLS1_1", tls.Mode, RootCertPath, tls.CombinedKeyAndCRTFileName, RootCertPath, "ca.crt")
 	}
 	return tlsOptions
 }
@@ -455,7 +455,7 @@ func TLSClientSpecUpdate(podSpec *v1.PodSpec, tls v1alpha1.TLS) {
 	)
 
 	if len(podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command) > 0 {
-		podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command = append(podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command, "--tls", "--tlsCAFile", RootCertPath+tls.RootCAFileName, "--tlsDisabledProtocols", "TLS1_0,TLS1_1")
+		podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command = append(podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command, "--tls", "--tlsCAFile", RootCertPath+tls.RootCAFileName)
 	}
 }
 
