@@ -455,7 +455,7 @@ func TLSClientSpecUpdate(podSpec *v1.PodSpec, tls v1alpha1.TLS) {
 	)
 
 	if len(podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command) > 0 {
-		podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command = append(podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command, "--tls", "--tlsCAFile", RootCertPath+tls.RootCAFileName)
+		podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command = append(podSpec.Containers[0].ReadinessProbe.ProbeHandler.Exec.Command, "--tls", "--tlsCAFile", RootCertPath+tls.RootCAFileName, "--tlsDisabledProtocols", "TLS1_0,TLS1_1")
 	}
 }
 
