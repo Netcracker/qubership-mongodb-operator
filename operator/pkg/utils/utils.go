@@ -147,11 +147,15 @@ func MongoReplicaNodeSelector(elements []map[string]string, replicasCount int, r
 }
 
 func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, nameWithIndexes string, mongoSecret string,
-	mongoSecretKeyFile string, wiredCacheGb float64, ipv6 bool, customDataRSParams []string, tls *v1alpha1.TLS, OpLogSizeMb int64) string {
+	mongoSecretKeyFile string, wiredCacheGb float64, ipv6 bool, customDataRSParams []string, tls *v1alpha1.TLS, OpLogSizeMb int64, keyfileAuth bool) string {
 
 	authOpt1 := "--auth"
 	authOpt2 := "--keyFile"
 	authOpt3 := "'/" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + "'"
+	if !keyfileAuth {
+		authOpt2 = "--clusterAuthMode"
+		authOpt3 = "x509"
+	}
 
 	bindOpt := "--bind_ip_all"
 
@@ -175,9 +179,13 @@ func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, 
 
 }
 
-func HAMongosContainerArgs(tmp string, data string, mongoSecret string, mongoSecretKeyFile string, configNodes string, ipv6 bool, tls *v1alpha1.TLS) string {
+func HAMongosContainerArgs(tmp string, data string, mongoSecret string, mongoSecretKeyFile string, configNodes string, ipv6 bool, tls *v1alpha1.TLS, keyfileAuth bool) string {
 	authOpt2 := "--keyFile"
 	authOpt3 := "'/" + tmp + "/" + data + "/" + mongoSecretKeyFile + "'"
+	if !keyfileAuth {
+		authOpt2 = "--clusterAuthMode"
+		authOpt3 = "x509"
+	}
 
 	bindOpt := "--bind_ip_all"
 
