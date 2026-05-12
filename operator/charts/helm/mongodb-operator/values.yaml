@@ -120,6 +120,7 @@ ipV6: false
 
 mongodb:
   install: true
+  clusterAuthMode: "keyfile"
   # flavor: small
   # Mandatory MongoDB docker image link
   dockerImage: ghcr.io/netcracker/qubership-mongodb:main_8.0.15

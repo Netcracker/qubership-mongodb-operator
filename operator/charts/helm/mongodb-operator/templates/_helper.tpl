@@ -554,3 +554,15 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- end }}
 
 {{- end }}
+
+{{- define "mongodb.x509.generateMongosFQDNs" -}}
+{{- $namespace := .Release.Namespace -}}
+{{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
+
+- localhost
+- mongos
+- {{ printf "mongos.%s" $namespace }}
+- {{ printf "mongos.%s.svc" $namespace }}
+- {{ printf "mongos.%s.svc.%s" $namespace $domain }}
+
+{{- end }}

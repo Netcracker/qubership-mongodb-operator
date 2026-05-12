@@ -1050,6 +1050,8 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
+                  clusterAuthMode:
+                    type: string
                   cnfOpLogSizeMb:
                     format: int64
                     type: integer

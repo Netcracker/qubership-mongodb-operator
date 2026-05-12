@@ -104,6 +104,10 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 
 	log.Info("HA Mongos Creation step started")
 
+	if spec.Spec.MongoDB.ClusterAuthMode == "x509" {
+		spec.Spec.TLS.CertificateSecretName = "mongos-x509-cert"
+	}
+
 	cnfSize := spec.Spec.SchemaSettings.CnfReplicaSize
 	var configNodes []string
 	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {

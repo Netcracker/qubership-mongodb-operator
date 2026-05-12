@@ -78,7 +78,9 @@ func (r *CreateCNFStep) Execute(ctx core.ExecutionContext) error {
 	wiredCacheGb := utils.CalcProperMongoWiredCacheSize(mongoDbSpec.CnfResources.Limits.Memory().Value(), mongoDbSpec.CnfWiredTigerCacheGb, 0.25)
 	log.Debug(fmt.Sprintf("Wired tiger cache size = %v", wiredCacheGb))
 
-	spec.Spec.TLS.CertificateSecretName = "cnfrs-x509-tls"
+	if spec.Spec.MongoDB.ClusterAuthMode == "x509" {
+		spec.Spec.TLS.CertificateSecretName = "cnfrs-x509-tls"
+	}
 
 	for i := 0; i < cnfSize; i++ {
 		nameWithIndex := fmt.Sprintf(utils.CnfNameWithIndexFormat, i)
