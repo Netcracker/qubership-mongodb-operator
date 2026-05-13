@@ -52,7 +52,10 @@ Prepare Shared
     ${MONGO_DB}=    Generate Random String    10    [LOWER]
     Set Suite Variable    ${MONGO_DB}
 
-    Import Library    ../lib/MongoDBLibrary.py
+    Log    ${CURDIR}
+    Log    ==Log Test==
+
+    Import Library    ${CURDIR}/../lib/MongoDBLibrary.py
     ...    host=${MONGO_HOST}
     ...    port=27017
     ...    user=${MONGO_ROOT_USER}
