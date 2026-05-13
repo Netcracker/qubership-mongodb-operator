@@ -23,7 +23,6 @@ Load Secrets
     ${backup_user}=       Get File    /var/run/secrets/mongodb/backup-api/username
     ${backup_password}=   Get File    /var/run/secrets/mongodb/backup-api/password
 
-    # IMPORTANT: remove newline characters from file-based secrets
     ${dbaas_user}=        Strip String    ${dbaas_user}
     ${dbaas_password}=    Strip String    ${dbaas_password}
 
@@ -51,9 +50,6 @@ Prepare Shared
 
     ${MONGO_DB}=    Generate Random String    10    [LOWER]
     Set Suite Variable    ${MONGO_DB}
-
-    Log    ${CURDIR}
-    Log    ==Log Test==
 
     Import Library    ${CURDIR}/../lib/MongoDBLibrary.py
     ...    host=${MONGO_HOST}

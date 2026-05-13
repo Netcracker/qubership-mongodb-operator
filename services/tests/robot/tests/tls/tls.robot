@@ -1,10 +1,6 @@
 *** Variables ***
 ${DBAAS_HOST}                                     %{DBAAS_HOST}
-${DBAAS_AGGREGATOR_USERNAME}                      %{DBAAS_AGGREGATOR_USERNAME}
-${DBAAS_AGGREGATOR_PASSWORD}                      %{DBAAS_AGGREGATOR_PASSWORD}
 ${BACKUP_HOST}                                    %{BACKUP_HOST}
-${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}         %{BACKUP_DAEMON_API_CREDENTIALS_USERNAME}
-${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}         %{BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}
 ${TLS_ENABLED}                                    %{TLS_ENABLED=false}
 ${NAMESPACE}                                      %{OPENSHIFT_WORKSPACE_WA}
 
