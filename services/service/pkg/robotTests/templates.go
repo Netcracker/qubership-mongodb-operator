@@ -19,7 +19,7 @@ func RobotTemplate(namespace string, image string,
 	resources corev1.ResourceRequirements,
 	nodeSelector map[string]string, tolerations []corev1.Toleration,
 	env []corev1.EnvVar, securityContext *corev1.PodSecurityContext,
-	tls types.TLS, vaultRegistration types.VaultRegistration, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy) *v1.Deployment {
+	tls types.TLS, vaultRegistration types.VaultRegistration, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy, volumeMounts []corev1.VolumeMount, volumes []corev1.Volume) *v1.Deployment {
 	allowPrivilegeEscalation := false
 	var replicas int32 = 1
 	dc := &v1.Deployment{
@@ -54,6 +54,7 @@ func RobotTemplate(namespace string, image string,
 							Name:            utils.Robot,
 							Image:           image,
 							Env:             env,
+							VolumeMounts:    volumeMounts,
 							Resources:       resources,
 							ImagePullPolicy: imagePullPolicy,
 							SecurityContext: &corev1.SecurityContext{
@@ -65,6 +66,7 @@ func RobotTemplate(namespace string, image string,
 						},
 					},
 					NodeSelector: nodeSelector,
+					Volumes:      volumes,
 					Affinity:     affinity,
 					Tolerations:  tolerations,
 				},

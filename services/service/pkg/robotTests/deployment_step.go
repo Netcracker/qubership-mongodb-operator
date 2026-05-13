@@ -130,7 +130,9 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 		spec.Spec.RobotTests.PriorityClassName,
 		spec.Spec.ServiceAccountName,
 		spec.Spec.RobotTests.Affinity,
-		spec.Spec.ImagePullPolicy)
+		spec.Spec.ImagePullPolicy,
+		volumeMounts,
+		volumes)
 
 	err := helperImpl.DeleteDeploymentAndPods(dc.Name, dc.Namespace, spec.Spec.WaitSeconds)
 	core.PanicError(err, log.Error, "RobotTests deployment config processing failed")
