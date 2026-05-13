@@ -45,11 +45,11 @@ func main() {
 	namespace := utils.GetEnv("NAMESPACE", "")
 	port := utils.GetEnvAsInt("PORT", mUtils.DefaultPort)
 	apiUser := mUtils.GetSecret(
-		"/var/run/secrets/dbaas-aggregator/username",
+		"/var/run/secrets/mongodb/dbaas-aggregator/username",
 		"dbaas-adapter",
 	)
 	apiPass := mUtils.GetSecret(
-		"/var/run/secrets/dbaas-aggregator/password",
+		"/var/run/secrets/mongodb/dbaas-aggregator/password",
 		"dbaas-adapter",
 	)
 
@@ -59,12 +59,12 @@ func main() {
 	aggregatorRegistrationIdentifier := utils.GetEnv("DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER", appName)
 
 	aggregatorRegistrationUser := mUtils.GetSecret(
-		"/var/run/secrets/dbaas-registration/username",
+		"/var/run/secrets/mongodb/dbaas-registration/username",
 		"cluster-dba",
 	)
 
 	aggregatorRegistrationPass := mUtils.GetSecret(
-		"/var/run/secrets/dbaas-registration/password",
+		"/var/run/secrets/mongodb/dbaas-registration/password",
 		"Bnmq5567_PO",
 	)
 	aggregatorRegistrationPass = checkForVaultPassword(vaultEnabled, aggregatorRegistrationPass, vaultClient)
@@ -86,18 +86,18 @@ func main() {
 	mongoPort := utils.GetEnvAsInt("MONGO_PORT", 27017)
 
 	mongoUser := mUtils.GetSecret(
-		"/var/run/secrets/mongo-admin/username",
+		"/var/run/secrets/mongodb/mongo-admin/username",
 		"root",
 	)
 
 	mongoPass := mUtils.GetSecret(
-		"/var/run/secrets/mongo-admin/password",
+		"/var/run/secrets/mongodb/mongo-admin/password",
 		"root",
 	)
 
 	mongoPass = checkForVaultPassword(vaultEnabled, mongoPass, vaultClient)
 	authDb := mUtils.GetSecret(
-		"/var/run/secrets/mongo-admin/auth-database",
+		"/var/run/secrets/mongodb/mongo-admin/auth-database",
 		"admin",
 	)
 
@@ -109,12 +109,12 @@ func main() {
 	credsVoid := "dbaas_bckp_nosql_void_covers_empty_env_var"
 
 	backupDaemonApiUser := mUtils.GetSecret(
-		"/var/run/secrets/backup-api/username",
+		"/var/run/secrets/mongodb/backup-api/username",
 		credsVoid,
 	)
 
 	backupDaemonApiUPass := mUtils.GetSecret(
-		"/var/run/secrets/backup-api/password",
+		"/var/run/secrets/mongodb/backup-api/password",
 		credsVoid,
 	)
 
