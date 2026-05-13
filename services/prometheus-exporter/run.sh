@@ -19,6 +19,19 @@ if [[ ! -z $DEBUG ]] && [[ ! -z ${DEBUG+x} ]]; then
 	set -x
 fi
 
+read_secret() {
+  local path="$1"
+  local fallback="$2"
+
+  if [ -f "$path" ]; then
+    echo "Reading secret from file: $path" >&2
+    cat "$path"
+  else
+    echo "Secret file not found: $path, using fallback value" >&2
+    echo "$fallback"
+  fi
+}
+
 PROM_EXPORTER_USER="$(read_secret /var/run/secrets/mongo-monitoring/username admin)"
 PROM_EXPORTER_PASSWORD="$(read_secret /var/run/secrets/mongo-monitoring/password admin)"
 
@@ -118,16 +131,3 @@ if [[ $shard_members != "" ]]; then
 else
 	echo "DATARS members list is empty"
 fi
-
-read_secret() {
-  local path="$1"
-  local fallback="$2"
-
-  if [ -f "$path" ]; then
-    echo "Reading secret from file: $path" >&2
-    cat "$path"
-  else
-    echo "Secret file not found: $path, using fallback value" >&2
-    echo "$fallback"
-  fi
-}

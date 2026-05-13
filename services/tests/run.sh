@@ -21,6 +21,17 @@ then
     export OPENSHIFT_WORKSPACE="mongodb-main"
 fi
 
+read_secret() {
+  local path="$1"
+
+  if [ -f "$path" ]; then
+    echo "Reading secret from file: $path" >&2
+    cat "$path"
+  else
+    echo "Secret file not found: $path" >&2
+  fi
+}
+
 
 oc project ${OPENSHIFT_WORKSPACE}
 
@@ -66,17 +77,6 @@ error_handling() {
     oc logs dc/mongo-tests
 
     exit 1
-}
-
-read_secret() {
-  local path="$1"
-
-  if [ -f "$path" ]; then
-    echo "Reading secret from file: $path" >&2
-    cat "$path"
-  else
-    echo "Secret file not found: $path" >&2
-  fi
 }
 
 _wait() {
