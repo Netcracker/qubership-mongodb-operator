@@ -1,14 +1,27 @@
 *** Variables ***
 ${DBAAS_HOST}                                     %{DBAAS_HOST}
+${DBAAS_AGGREGATOR_USERNAME}                      %{DBAAS_AGGREGATOR_USERNAME}
+${DBAAS_AGGREGATOR_PASSWORD}                      %{DBAAS_AGGREGATOR_PASSWORD}
 ${BACKUP_HOST}                                    %{BACKUP_HOST}
+${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}         %{BACKUP_DAEMON_API_CREDENTIALS_USERNAME}
+${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}         %{BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}
 ${TLS_ENABLED}                                    %{TLS_ENABLED=false}
 ${NAMESPACE}                                      %{OPENSHIFT_WORKSPACE_WA}
 
 *** Settings ***
 Library  String
-Library  Collections
+Library	 Collections
 Library  OperatingSystem
 Library  RequestsLibrary
+Library  ../lib/MongoDBLibrary.py  host=%{MONGO_HOST}
+...                                port=27017
+...                                user=%{MONGO_ROOT_USER}
+...                                password=%{MONGO_ROOT_PASSWORD}
+...                                database_name=test_tls
+...                                req_timeout_sec=%{WAIT_TIMEOUT}
+...                                host_datars=%{DATARS_HOST}
+...                                tls=${False}
+...                                tlsCAFile=${None}
 Library  ../lib/KubernetesClient.py
 Suite Setup  Check HTTPS Enabling in Dbaas Aggregator
 
@@ -18,27 +31,10 @@ Check HTTPS Enabling in Dbaas Aggregator
     ${dbaas_aggregator_host}=  Get Environment Variables For Deployment Entity Container  dbaas-mongo-adapter  ${NAMESPACE}  dbaas-mongo-adapter  ${env_dbaas_aggregator_host}
     ${https_aggregator_enabled}=  Evaluate  "https" in "${dbaas_aggregator_host}"
     Set Suite Variable  ${https_aggregator_enabled}
-
     ${verify}=  Get Environment Variable  name=TLS_ROOTCERT  default=False
     ${port}=  Get Environment Variable  name=PORT  default=8080
     Set Suite Variable  ${verify}
     Set Suite Variable  ${port}
-
-    ${MONGO_ROOT_USER}=    Get File    /var/run/secrets/mongodb/mongo-root/username
-    ${MONGO_ROOT_PASSWORD}=    Get File    /var/run/secrets/mongodb/mongo-root/password
-    ${MONGO_ROOT_USER}=    Strip String    ${MONGO_ROOT_USER}
-    ${MONGO_ROOT_PASSWORD}=    Strip String    ${MONGO_ROOT_PASSWORD}
-
-    Import Library  ../lib/MongoDBLibrary.py
-    ...    host=%{MONGO_HOST}
-    ...    port=27017
-    ...    user=${MONGO_ROOT_USER}
-    ...    password=${MONGO_ROOT_PASSWORD}
-    ...    database_name=test_tls
-    ...    req_timeout_sec=%{WAIT_TIMEOUT}
-    ...    host_datars=%{DATARS_HOST}
-    ...    tls=${False}
-    ...    tlsCAFile=${None}
 
 *** Test Cases ***
 Check Connection To TLS MongoDB Without Cert
