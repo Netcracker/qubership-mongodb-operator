@@ -36,12 +36,12 @@ oc process REPLICAS="1" \
     TEST_IMAGE=${TEST_IMAGE} \
     TAGS="$TAGS" \
     OPENSHIFT_WORKSPACE_WA="${OPENSHIFT_WORKSPACE}" \
-    MONGO_ROOT_USER="$MONGO_ROOT_USER" \
-    MONGO_ROOT_PASSWORD="$MONGO_ROOT_PASSWORD" \
-    BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$BACKUP_DAEMON_API_CREDENTIALS_USERNAME" \
-    BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$BACKUP_DAEMON_API_CREDENTIALS_PASSWORD" \
-    DBAAS_AGGREGATOR_USERNAME="$DBAAS_AGGREGATOR_USERNAME" \
-    DBAAS_AGGREGATOR_PASSWORD="$DBAAS_AGGREGATOR_PASSWORD" \
+    MONGO_ROOT_USER="$(read_secret /var/run/secrets/mongodb/mongo-root/username)"  \
+    MONGO_ROOT_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-root/password)" \
+    BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$(read_secret /var/run/secrets/mongodb/backup-api/username)" \
+    BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/backup-api/password)" \
+    DBAAS_AGGREGATOR_USERNAME="$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/username)" \
+    DBAAS_AGGREGATOR_PASSWORD="$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/password)" \
     EXTERNAL_BACKUP_PATH="$EXTERNAL_BACKUP_PATH" \
     DATARS_HOST="$DATARS_HOST" \
     LEFT_NODES_PATTERN="$LEFT_NODES_PATTERN" \
@@ -59,6 +59,17 @@ error_handling() {
     oc logs dc/mongo-tests
 
     exit 1
+}
+
+read_secret() {
+  local path="$1"
+
+  if [ -f "$path" ]; then
+    echo "Reading secret from file: $path" >&2
+    cat "$path"
+  else
+    echo "Secret file not found: $path" >&2
+  fi
 }
 
 _wait() {

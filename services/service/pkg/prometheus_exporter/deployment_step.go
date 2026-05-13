@@ -13,6 +13,7 @@ import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -99,37 +100,34 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 		simpleKV["EXPORT_MONGOS"] = strconv.FormatBool(spec.Spec.DisasterRecovery.Mode == utils.ActiveMode)
 	}
 
-	secretKeyRef := map[string]struct {
-		secretName  string
-		keyInSecret string
-	}{
-		"MONGO_MONITORING_USER":     {spec.Spec.PrometheusExporter.MonitoringSecretName, utils.Username},
-		"MONGO_MONITORING_PASSWORD": {spec.Spec.PrometheusExporter.MonitoringSecretName, utils.Password},
-		"PROM_EXPORTER_USER":        {spec.Spec.PrometheusExporter.PrometheusExporterSecretName, utils.Username},
-		"PROM_EXPORTER_PASSWORD":    {spec.Spec.PrometheusExporter.PrometheusExporterSecretName, utils.Password},
-	}
-	for key, value := range simpleKV {
-		envs = append(envs,
-			v12.EnvVar{
-				Name:  key,
-				Value: value,
-			})
+	secretVolumes := map[string]string{
+		spec.Spec.PrometheusExporter.MonitoringSecretName:         "/var/run/secrets/mongodb/mongo-monitoring",
+		spec.Spec.PrometheusExporter.PrometheusExporterSecretName: "/var/run/secrets/mongodb/prom-exporter",
 	}
 
-	for key, value := range secretKeyRef {
-		envs = append(envs,
-			v12.EnvVar{
-				Name: key,
-				ValueFrom: &v12.EnvVarSource{
-					SecretKeyRef: &v12.SecretKeySelector{
-						LocalObjectReference: v12.LocalObjectReference{
-							Name: value.secretName,
-						},
-						Key: value.keyInSecret,
-					},
+	volumes := []v1.Volume{}
+	volumeMounts := []v1.VolumeMount{}
+
+	for secretName, mountPath := range secretVolumes {
+
+		volumeName := utils.SanitizeVolumeName(secretName)
+
+		volumes = append(volumes, v1.Volume{
+			Name: volumeName,
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: secretName,
 				},
-			})
+			},
+		})
+
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			ReadOnly:  true,
+		})
 	}
+
 	// Environment variable End
 	var tolerations []v12.Toleration
 	if spec.Spec.Policies != nil {
@@ -158,7 +156,9 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 		spec.Spec.TLS,
 		spec.Spec.PrometheusExporter.PriorityClassName,
 		spec.Spec.Instance,
-		healthzPort)
+		healthzPort,
+		volumeMounts,
+		volumes)
 
 	err := credsManager.AddCredHashToPodTemplate([]string{spec.Spec.MongoDB.MongoRootSecretName}, &dc.Spec.Template)
 	if err != nil {

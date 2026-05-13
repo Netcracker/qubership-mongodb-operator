@@ -11,6 +11,7 @@ import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 	cUtils "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
 	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -72,47 +73,43 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 				Value: value,
 			})
 	}
-	secretKeyRef := map[string]struct {
-		secretName  string
-		keyInSecret string
-	}{
-		"MONGO_ROOT_USER":     {spec.Spec.MongoDB.MongoRootSecretName, utils.Username},
-		"MONGO_ROOT_PASSWORD": {spec.Spec.MongoDB.MongoRootSecretName, utils.Password},
+	secretVolumes := map[string]string{
+		spec.Spec.MongoDB.MongoRootSecretName: "/var/run/secrets/mongodb/mongo-root",
 	}
+
 	if spec.Spec.Backup.Install {
-		secretKeyRef["BACKUP_DAEMON_API_CREDENTIALS_USERNAME"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Backup.BackupApiSecretName, utils.Username}
-		secretKeyRef["BACKUP_DAEMON_API_CREDENTIALS_PASSWORD"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Backup.BackupApiSecretName, utils.Password}
+		secretVolumes[spec.Spec.Backup.BackupApiSecretName] =
+			"/var/run/secrets/mongodb/backup-api"
 	}
+
 	if spec.Spec.Dbaas.Install {
-		secretKeyRef["DBAAS_AGGREGATOR_USERNAME"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Dbaas.DbaasAggregatorSecretName, utils.Username}
-		secretKeyRef["DBAAS_AGGREGATOR_PASSWORD"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Dbaas.DbaasAggregatorSecretName, utils.Password}
+		secretVolumes[spec.Spec.Dbaas.DbaasAggregatorSecretName] =
+			"/var/run/secrets/mongodb/dbaas-aggregator"
 	}
-	for key, value := range secretKeyRef {
-		envs = append(envs,
-			v12.EnvVar{
-				Name: key,
-				ValueFrom: &v12.EnvVarSource{
-					SecretKeyRef: &v12.SecretKeySelector{
-						LocalObjectReference: v12.LocalObjectReference{
-							Name: value.secretName,
-						},
-						Key: value.keyInSecret,
-					},
+
+	volumes := []v1.Volume{}
+	volumeMounts := []v1.VolumeMount{}
+
+	for secretName, mountPath := range secretVolumes {
+
+		volumeName := sanitizeVolumeName(secretName)
+
+		volumes = append(volumes, v1.Volume{
+			Name: volumeName,
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: secretName,
 				},
-			})
+			},
+		})
+
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			ReadOnly:  true,
+		})
 	}
+
 	// Environment variable  End
 
 	var tolerations []v12.Toleration
@@ -151,4 +148,8 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 	core.PanicError(err, log.Error, "RobotTests failed")
 
 	return nil
+}
+
+func sanitizeVolumeName(name string) string {
+	return strings.ReplaceAll(name, ".", "-")
 }

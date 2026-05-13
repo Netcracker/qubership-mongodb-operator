@@ -44,11 +44,11 @@ func main() {
 	profiler := utils.GetEnvAsBool("PROFILER", false)
 	namespace := utils.GetEnv("NAMESPACE", "")
 	port := utils.GetEnvAsInt("PORT", mUtils.DefaultPort)
-	apiUser := mUtils.GetSecret(
+	apiUser := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/dbaas-aggregator/username",
 		"dbaas-adapter",
 	)
-	apiPass := mUtils.GetSecret(
+	apiPass := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/dbaas-aggregator/password",
 		"dbaas-adapter",
 	)
@@ -58,12 +58,12 @@ func main() {
 	aggregatorRegistrationAddress := utils.GetEnv("DBAAS_AGGREGATOR_REGISTRATION_ADDRESS", "http://dbaas-aggregator.dbaas:8080")
 	aggregatorRegistrationIdentifier := utils.GetEnv("DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER", appName)
 
-	aggregatorRegistrationUser := mUtils.GetSecret(
+	aggregatorRegistrationUser := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/dbaas-registration/username",
 		"cluster-dba",
 	)
 
-	aggregatorRegistrationPass := mUtils.GetSecret(
+	aggregatorRegistrationPass := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/dbaas-registration/password",
 		"Bnmq5567_PO",
 	)
@@ -85,18 +85,18 @@ func main() {
 	mognoHost := utils.GetEnv("MONGO_HOST", fmt.Sprintf("mongos.%s", namespace))
 	mongoPort := utils.GetEnvAsInt("MONGO_PORT", 27017)
 
-	mongoUser := mUtils.GetSecret(
+	mongoUser := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/mongo-admin/username",
 		"root",
 	)
 
-	mongoPass := mUtils.GetSecret(
+	mongoPass := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/mongo-admin/password",
 		"root",
 	)
 
 	mongoPass = checkForVaultPassword(vaultEnabled, mongoPass, vaultClient)
-	authDb := mUtils.GetSecret(
+	authDb := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/mongo-admin/auth-database",
 		"admin",
 	)
@@ -108,12 +108,12 @@ func main() {
 	backupAddress := utils.GetEnv("BACKUP_DAEMON_ADDRESS", fmt.Sprintf("http://%s-backup-daemon:8080", appName))
 	credsVoid := "dbaas_bckp_nosql_void_covers_empty_env_var"
 
-	backupDaemonApiUser := mUtils.GetSecret(
+	backupDaemonApiUser := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/backup-api/username",
 		credsVoid,
 	)
 
-	backupDaemonApiUPass := mUtils.GetSecret(
+	backupDaemonApiUPass := mUtils.GetSecret(logger,
 		"/var/run/secrets/mongodb/backup-api/password",
 		credsVoid,
 	)

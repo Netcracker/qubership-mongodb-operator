@@ -14,7 +14,7 @@ import (
 
 func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSelector map[string]string, serviceAccountName string,
 	resources v1.ResourceRequirements, env []v1.EnvVar, securityContext *v1.PodSecurityContext, tolerations []v1.Toleration, prometheusExporterImagePullPolicy v1.PullPolicy,
-	tls types.TLS, priorityClassName, instance string, healthzPort int) *v12.Deployment {
+	tls types.TLS, priorityClassName, instance string, healthzPort int, volumeMounts []v1.VolumeMount, volumes []v1.Volume) *v12.Deployment {
 	var replicas int32 = 1
 	allowPrivilegeEscalation := false
 	dc := &v12.Deployment{
@@ -59,6 +59,7 @@ func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSe
 							ImagePullPolicy: prometheusExporterImagePullPolicy,
 							Command:         []string{"bash", "-c", "/opt/run.sh"},
 							Env:             env,
+							VolumeMounts:    volumeMounts,
 							Resources:       resources,
 							SecurityContext: &v1.SecurityContext{
 								Capabilities: &v1.Capabilities{
@@ -92,6 +93,7 @@ func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSe
 							},
 						},
 					},
+					Volumes:      volumes,
 					NodeSelector: nodeSelector,
 				},
 			},
