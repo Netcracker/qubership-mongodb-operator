@@ -42,7 +42,7 @@ EXPORT_MONGOS="${EXPORT_MONGOS:-true}"
 MONGO_MONITORING_USER="$(read_secret /var/run/secrets/mongodb/mongo-monitoring/username monitoring)"
 MONGO_MONITORING_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-monitoring/password monitoring)"
 
-MONGOS_URI="${MONGOS_URI:-mongodb://$MONGO_MONITORING_USER:$MONGO_MONITORING_PASSWORD@mongos.$NAMESPACE:27017}"
+MONGOS_URI="${MONGOS_URI:-mongodb://$MONGO_MONITORING_USER:$MONGO_MONITORING_PASSWORD@mongos:27017}"
 
 TLS_ENABLED=${TLS_ENABLED:-false}
 
