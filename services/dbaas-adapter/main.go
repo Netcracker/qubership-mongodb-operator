@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Netcracker/qubership-dbaas-mongo/pkg"
-	mUtils "github.com/Netcracker/qubership-dbaas-mongo/utils"
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/dao"
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/dbaas"
 	fiber2 "github.com/Netcracker/qubership-dbaas-adapter-core/pkg/impl/fiber"
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/service"
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/utils"
+	"github.com/Netcracker/qubership-dbaas-mongo/pkg"
+	mUtils "github.com/Netcracker/qubership-dbaas-mongo/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -44,14 +44,29 @@ func main() {
 	profiler := utils.GetEnvAsBool("PROFILER", false)
 	namespace := utils.GetEnv("NAMESPACE", "")
 	port := utils.GetEnvAsInt("PORT", mUtils.DefaultPort)
-	apiUser := utils.GetEnv("DBAAS_AGGREGATOR_USERNAME", "dbaas-adapter")
-	apiPass := utils.GetEnv("DBAAS_AGGREGATOR_PASSWORD", "dbaas-adapter")
+	apiUser := mUtils.GetSecret(
+		"/var/run/secrets/dbaas-aggregator/username",
+		"dbaas-adapter",
+	)
+	apiPass := mUtils.GetSecret(
+		"/var/run/secrets/dbaas-aggregator/password",
+		"dbaas-adapter",
+	)
+
 	apiPass = checkForVaultPassword(vaultEnabled, apiPass, vaultClient)
 	aggregatorAdapterAddress := utils.GetEnv("DBAAS_ADAPTER_ADDRESS", fmt.Sprintf("http://dbaas-%s-adapter.%s:8080", appName, namespace))
 	aggregatorRegistrationAddress := utils.GetEnv("DBAAS_AGGREGATOR_REGISTRATION_ADDRESS", "http://dbaas-aggregator.dbaas:8080")
 	aggregatorRegistrationIdentifier := utils.GetEnv("DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER", appName)
-	aggregatorRegistrationUser := utils.GetEnv("DBAAS_AGGREGATOR_REGISTRATION_USERNAME", "cluster-dba")
-	aggregatorRegistrationPass := utils.GetEnv("DBAAS_AGGREGATOR_REGISTRATION_PASSWORD", "Bnmq5567_PO")
+
+	aggregatorRegistrationUser := mUtils.GetSecret(
+		"/var/run/secrets/dbaas-registration/username",
+		"cluster-dba",
+	)
+
+	aggregatorRegistrationPass := mUtils.GetSecret(
+		"/var/run/secrets/dbaas-registration/password",
+		"Bnmq5567_PO",
+	)
 	aggregatorRegistrationPass = checkForVaultPassword(vaultEnabled, aggregatorRegistrationPass, vaultClient)
 	aggregatorRegistrationDelay := utils.GetEnvAsInt("DBAAS_AGGREGATOR_REGISTRATION_FIXED_DELAY_MS", 150000)
 	aggregatorRegistrationRetryTime := utils.GetEnvAsInt("DBAAS_AGGREGATOR_REGISTRATION_RETRY_TIME_MS", 60000)
@@ -69,11 +84,22 @@ func main() {
 	// DB Administration
 	mognoHost := utils.GetEnv("MONGO_HOST", fmt.Sprintf("mongos.%s", namespace))
 	mongoPort := utils.GetEnvAsInt("MONGO_PORT", 27017)
-	mongoUser := utils.GetEnv("MONGO_ADMIN_USER", "root")
-	mongoPass := utils.GetEnv("MONGO_ADMIN_PASSWORD", "root")
-	mongoPass = checkForVaultPassword(vaultEnabled, mongoPass, vaultClient)
 
-	authDb := utils.GetEnv("MONGO_ADMIN_AUTH_DB", "admin")
+	mongoUser := mUtils.GetSecret(
+		"/var/run/secrets/mongo-admin/username",
+		"root",
+	)
+
+	mongoPass := mUtils.GetSecret(
+		"/var/run/secrets/mongo-admin/password",
+		"root",
+	)
+
+	mongoPass = checkForVaultPassword(vaultEnabled, mongoPass, vaultClient)
+	authDb := mUtils.GetSecret(
+		"/var/run/secrets/mongo-admin/auth-database",
+		"admin",
+	)
 
 	apiVersion := utils.GetEnv("API_VERSION", "v1")
 	multiUserEnabled := utils.GetEnvAsBool("MULTI_USERS_ENABLED", false)
@@ -81,8 +107,17 @@ func main() {
 	// Backup Daemon Administration
 	backupAddress := utils.GetEnv("BACKUP_DAEMON_ADDRESS", fmt.Sprintf("http://%s-backup-daemon:8080", appName))
 	credsVoid := "dbaas_bckp_nosql_void_covers_empty_env_var"
-	backupDaemonApiUser := utils.GetEnv("BACKUP_DAEMON_API_CREDENTIALS_USERNAME", credsVoid)
-	backupDaemonApiUPass := utils.GetEnv("BACKUP_DAEMON_API_CREDENTIALS_PASSWORD", credsVoid)
+
+	backupDaemonApiUser := mUtils.GetSecret(
+		"/var/run/secrets/backup-api/username",
+		credsVoid,
+	)
+
+	backupDaemonApiUPass := mUtils.GetSecret(
+		"/var/run/secrets/backup-api/password",
+		credsVoid,
+	)
+
 	backupDaemonApiUPass = checkForVaultPassword(vaultEnabled, backupDaemonApiUPass, vaultClient)
 
 	var backupAdminServiceImpl service.BackupAdministrationService
