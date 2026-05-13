@@ -32,15 +32,15 @@ read_secret() {
   fi
 }
 
-PROM_EXPORTER_USER="$(read_secret /var/run/secrets/mongo-monitoring/username admin)"
-PROM_EXPORTER_PASSWORD="$(read_secret /var/run/secrets/mongo-monitoring/password admin)"
+PROM_EXPORTER_USER="$(read_secret /var/run/secrets/mongodb/prom-exporter/username admin)"
+PROM_EXPORTER_PASSWORD="$(read_secret /var/run/secrets/mongodb/prom-exporter/password admin)"
 
 
 export HTTP_AUTH="$PROM_EXPORTER_USER:$PROM_EXPORTER_PASSWORD"
 
 EXPORT_MONGOS="${EXPORT_MONGOS:-true}"
-MONGO_MONITORING_USER="$(read_secret /var/run/secrets/mongo-monitoring/username monitoring)"
-MONGO_MONITORING_PASSWORD="$(read_secret /var/run/secrets/mongo-monitoring/password monitoring)"
+MONGO_MONITORING_USER="$(read_secret /var/run/secrets/mongodb/mongo-monitoring/username monitoring)"
+MONGO_MONITORING_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-monitoring/password monitoring)"
 
 MONGOS_URI="${MONGOS_URI:-mongodb://$MONGO_MONITORING_USER:$MONGO_MONITORING_PASSWORD@mongos:27017}"
 
