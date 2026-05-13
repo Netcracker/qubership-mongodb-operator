@@ -1,7 +1,5 @@
 *** Variables ***
 ${DBAAS_HOST}                                     %{DBAAS_HOST}
-${DBAAS_AGGREGATOR_USERNAME}                      %{DBAAS_AGGREGATOR_USERNAME}
-${DBAAS_AGGREGATOR_PASSWORD}                      %{DBAAS_AGGREGATOR_PASSWORD}
 ${ATTEMPTS_NUMBER}                                100
 
 *** Settings ***
@@ -18,6 +16,7 @@ Suite Teardown  Cleanup
 
 *** Keywords ***
 Preparation
+    Load Secrets
     Prepare Shared
     Preparation dbaas shared
 

@@ -1,7 +1,5 @@
 *** Variables ***
 ${BACKUP_HOST}                                    %{BACKUP_HOST}
-${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}         %{BACKUP_DAEMON_API_CREDENTIALS_USERNAME}
-${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}         %{BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}
 ${EXTERNAL_BACKUP_PATH}                           %{EXTERNAL_BACKUP_PATH}
 
 
@@ -17,6 +15,7 @@ Suite Teardown  Cleanup
 
 *** Keywords ***
 Preparation
+    Load Secrets
     Prepare Shared
 
     ${full_restore}=  Check ENABLE_FULL_RESTORE environment variable on name=mongodb-backup-daemon is true

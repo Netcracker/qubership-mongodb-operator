@@ -1,7 +1,5 @@
 *** Variables ***
 ${MONGO_HOST}                  %{MONGO_HOST}
-${MONGO_ROOT_USER}             %{MONGO_ROOT_USER}
-${MONGO_ROOT_PASSWORD}         %{MONGO_ROOT_PASSWORD}
 ${WAIT_TIMEOUT}                %{WAIT_TIMEOUT}
 ${NAMESPACE}                   %{OPENSHIFT_WORKSPACE_WA}
 ${DATARS_HOST}                 %{DATARS_HOST}
@@ -10,6 +8,7 @@ ${TLS_ROOTCERT}                %{TLS_ROOTCERT=None}
 
 *** Settings ***
 Library  String
+Library  OperatingSystem
 Library  Collections
 Library  RequestsLibrary
 Library  ../lib/KubernetesClient.py
@@ -25,6 +24,33 @@ Library  ../lib/MongoDBLibrary.py  host=${MONGO_HOST}
 
 
 *** Keywords ***
+Read Secret
+    [Arguments]    ${path}
+
+    ${value}=    Get File    ${path}
+    ${value}=    Strip String    ${value}
+
+    [Return]    ${value}
+
+Load Secrets
+    ${dbaas_user}=    Read Secret    /var/run/secrets/mongodb/dbaas-aggregator/username
+    Set Suite Variable    ${DBAAS_AGGREGATOR_USERNAME}    ${dbaas_user}
+
+    ${dbaas_password}=    Read Secret    /var/run/secrets/mongodb/dbaas-aggregator/password
+    Set Suite Variable    ${DBAAS_AGGREGATOR_PASSWORD}    ${dbaas_password}
+
+    ${mongo_user}=    Read Secret    /var/run/secrets/mongodb/mongo-root/username
+    Set Suite Variable    ${MONGO_ROOT_USER}    ${mongo_user}
+
+    ${mongo_password}=    Read Secret    /var/run/secrets/mongodb/mongo-root/password
+    Set Suite Variable    ${MONGO_ROOT_PASSWORD}    ${mongo_password}
+
+    ${backup_user}=    Read Secret    /var/run/secrets/mongodb/backup-api/username
+    Set Suite Variable    ${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}    ${backup_user}
+
+    ${backup_password}=    Read Secret    /var/run/secrets/mongodb/backup-api/password
+    Set Suite Variable    ${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}    ${backup_password}
+
 Prepare Shared
     &{headers}=  Create Dictionary  Content-Type=application/json  Accept=application/json
     Set Suite Variable  ${headers}
