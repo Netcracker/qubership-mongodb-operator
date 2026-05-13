@@ -21,6 +21,17 @@ then
     export OPENSHIFT_WORKSPACE="mongodb-main"
 fi
 
+read_secret() {
+  local path="$1"
+
+  if [ -f "$path" ]; then
+    echo "Reading secret from file: $path" >&2
+    cat "$path"
+  else
+    echo "Secret file not found: $path" >&2
+  fi
+}
+
 
 oc project ${OPENSHIFT_WORKSPACE}
 
@@ -31,6 +42,13 @@ oc delete dc/mongo-tests || true
 
 export OPENSHIFT_WORKSPACE_WA="${OPENSHIFT_WORKSPACE}"
 ATTEMPTS="${WAIT_TIMEOUT:=200}"
+
+MONGO_ROOT_USER="$(read_secret /var/run/secrets/mongodb/mongo-root/username)"
+MONGO_ROOT_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-root/password)"
+BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$(read_secret /var/run/secrets/mongodb/backup-api/username)"
+BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/backup-api/password)"
+DBAAS_AGGREGATOR_USERNAME="$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/username)"
+DBAAS_AGGREGATOR_PASSWORD="$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/password)"
 
 oc process REPLICAS="1" \
     TEST_IMAGE=${TEST_IMAGE} \
