@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
@@ -84,4 +85,8 @@ func GetUriScheme(tlsEnabled bool) v12.URIScheme {
 		return v12.URISchemeHTTPS
 	}
 	return v12.URISchemeHTTP
+}
+
+func SanitizeVolumeName(name string) string {
+	return strings.ReplaceAll(name, ".", "-")
 }

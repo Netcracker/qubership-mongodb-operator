@@ -97,7 +97,7 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 
 	for secretName, mountPath := range secretVolumes {
 
-		volumeName := secretName
+		volumeName := utils.SanitizeVolumeName(secretName)
 
 		volumes = append(volumes, v1.Volume{
 			Name: volumeName,
