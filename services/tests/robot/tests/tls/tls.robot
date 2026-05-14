@@ -10,6 +10,7 @@ Library	 Collections
 Library  OperatingSystem
 Library  RequestsLibrary
 Resource  ../shared/keywords.robot
+Resource  ../dbaas/dbaas-shared.robot
 Library  ../lib/KubernetesClient.py
 Suite Setup  Check HTTPS Enabling in Dbaas Aggregator
 
@@ -34,6 +35,7 @@ Check HTTPS Enabling in Dbaas Aggregator
     Set Suite Variable  ${https_aggregator_enabled}
     ${verify}=  Get Environment Variable  name=TLS_ROOTCERT  default=False
     ${port}=  Get Environment Variable  name=PORT  default=8080
+    Preparation dbaas shared
     Set Suite Variable  ${verify}
     Set Suite Variable  ${port}
 
