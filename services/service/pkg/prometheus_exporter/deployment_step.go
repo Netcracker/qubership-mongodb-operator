@@ -100,6 +100,14 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 		simpleKV["EXPORT_MONGOS"] = strconv.FormatBool(spec.Spec.DisasterRecovery.Mode == utils.ActiveMode)
 	}
 
+	for key, value := range simpleKV {
+		envs = append(envs,
+			v12.EnvVar{
+				Name:  key,
+				Value: value,
+			})
+	}
+
 	secretVolumes := map[string]string{
 		spec.Spec.PrometheusExporter.MonitoringSecretName:         "/var/run/secrets/mongodb/mongo-monitoring",
 		spec.Spec.PrometheusExporter.PrometheusExporterSecretName: "/var/run/secrets/mongodb/prom-exporter",
