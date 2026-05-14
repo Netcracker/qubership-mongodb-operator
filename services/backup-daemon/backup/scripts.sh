@@ -33,7 +33,7 @@ read_secret() {
 MONGO_BACKUP_USER="$(read_secret /var/run/secrets/mongodb/mongo-backup/username)"
 MONGO_BACKUP_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-backup/password)"
 MONGO_RESTORE_USER="$(read_secret /var/run/secrets/mongodb/mongo-restore/username)"
-MONGO_RESTORE_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-restore/passwprd)"
+MONGO_RESTORE_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-restore/password)"
 BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$(read_secret /var/run/secrets/mongodb/backup-api/username)"
 BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/backup-api/password)"
 S3_KEY_ID="$(read_secret /var/run/secrets/mongodb/s3/username)"
