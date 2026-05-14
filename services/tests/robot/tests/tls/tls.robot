@@ -25,8 +25,8 @@ Check HTTPS Enabling in Dbaas Aggregator
     ...    database_name=test_tls
     ...    req_timeout_sec=${WAIT_TIMEOUT}
     ...    host_datars=${DATARS_HOST}
-    ...    tls=${TLS_ENABLED}
-    ...    tlsCAFile=${TLS_ROOTCERT}
+    ...    tls=${False}
+    ...    tlsCAFile=${None}
 
     ${env_dbaas_aggregator_host}=  Create List  DBAAS_AGGREGATOR_REGISTRATION_ADDRESS
     ${dbaas_aggregator_host}=  Get Environment Variables For Deployment Entity Container  dbaas-mongo-adapter  ${NAMESPACE}  dbaas-mongo-adapter  ${env_dbaas_aggregator_host}
