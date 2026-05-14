@@ -62,6 +62,10 @@ GRANULAR_NUM_PARALLEL_CONNECTIONS=${GRANULAR_NUM_PARALLEL_CONNECTIONS:-4}
 
 cluster_backup() {
     require MONGO_AUTH_DB
+    echo "Data secret"
+    echo $MONGO_BACKUP_USER
+    echo $MONGO_BACKUP_PASSWORD
+
     export FAILED=0
     vaultfolder=${vault##*/}
 
