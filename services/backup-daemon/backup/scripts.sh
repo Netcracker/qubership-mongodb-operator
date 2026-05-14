@@ -27,6 +27,7 @@ read_secret() {
 
   if [ -f "$path" ]; then
     cat "$path"
+  fi
 }
 
 MONGO_BACKUP_USER="$(read_secret /var/run/secrets/mongodb/mongo-backup/username)"
