@@ -279,6 +279,11 @@ restore_user_databases() {
                     db_name=$new_db_name
                 fi
             fi
+            echo "==> restore user ${MONGO_RESTORE_USER}"
+            echo "==> restore password ${MONGO_RESTORE_PASSWORD}"
+            echo "==> auth db ${MONGO_AUTH_DB}"
+            echo "==> host $mongoHost"
+
             ${MONGORESTORE} --drop \
                 --username="${MONGO_RESTORE_USER}" \
                 --password="${MONGO_RESTORE_PASSWORD}" \
