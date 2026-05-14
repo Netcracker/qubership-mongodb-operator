@@ -13,7 +13,6 @@ import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 	"go.uber.org/zap"
-	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -113,23 +112,23 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 		spec.Spec.PrometheusExporter.PrometheusExporterSecretName: "/var/run/secrets/mongodb/prom-exporter",
 	}
 
-	volumes := []v1.Volume{}
-	volumeMounts := []v1.VolumeMount{}
+	volumes := []v12.Volume{}
+	volumeMounts := []v12.VolumeMount{}
 
 	for secretName, mountPath := range secretVolumes {
 
 		volumeName := utils.SanitizeVolumeName(secretName)
 
-		volumes = append(volumes, v1.Volume{
+		volumes = append(volumes, v12.Volume{
 			Name: volumeName,
-			VolumeSource: v1.VolumeSource{
-				Secret: &v1.SecretVolumeSource{
+			VolumeSource: v12.VolumeSource{
+				Secret: &v12.SecretVolumeSource{
 					SecretName: secretName,
 				},
 			},
 		})
 
-		volumeMounts = append(volumeMounts, v1.VolumeMount{
+		volumeMounts = append(volumeMounts, v12.VolumeMount{
 			Name:      volumeName,
 			MountPath: mountPath,
 			ReadOnly:  true,
