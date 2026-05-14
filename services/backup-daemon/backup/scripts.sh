@@ -62,10 +62,6 @@ GRANULAR_NUM_PARALLEL_CONNECTIONS=${GRANULAR_NUM_PARALLEL_CONNECTIONS:-4}
 
 cluster_backup() {
     require MONGO_AUTH_DB
-    echo "Data secret"
-    echo $MONGO_BACKUP_USER
-    echo $MONGO_BACKUP_PASSWORD
-
     export FAILED=0
     vaultfolder=${vault##*/}
 
@@ -184,7 +180,7 @@ restore_user_databases() {
 
     if [[ ! -d "$vault" ]]; then
         echo >&2 "Vault folder does not exist by given path: $vault"
-        # exit 1
+        exit 1
     fi
 
     if ls "$vault"/*.zip 1>/dev/null 2>&1; then
@@ -242,7 +238,7 @@ restore_user_databases() {
             db=$(echo "$clean_databases" | jq -cr ".[$DB_NUMBER]")
             if ! containsElement "$db" ${backed_dbs_array}; then
                 echo "❌ Database $db not found in backup. Aborting restore."
-                # exit 1
+                exit 1
             fi
         done
     fi
@@ -262,7 +258,7 @@ restore_user_databases() {
                 --numParallelCollections="${NUM_PARALLEL_CONNECTIONS}" \
                 --db="$db_name" \
                 $( [[ "$use_gzip" == true ]] && echo "--gzip" ) \
-                "$database"
+                "$database" || FAILED=1
         done
     else
         echo "=> Restoring selected databases..."
@@ -279,11 +275,6 @@ restore_user_databases() {
                     db_name=$new_db_name
                 fi
             fi
-            echo "==> restore user ${MONGO_RESTORE_USER}"
-            echo "==> restore password ${MONGO_RESTORE_PASSWORD}"
-            echo "==> auth db ${MONGO_AUTH_DB}"
-            echo "==> host $mongoHost"
-
             ${MONGORESTORE} --drop \
                 --username="${MONGO_RESTORE_USER}" \
                 --password="${MONGO_RESTORE_PASSWORD}" \
@@ -292,7 +283,7 @@ restore_user_databases() {
                 --numParallelCollections="${GRANULAR_NUM_PARALLEL_CONNECTIONS}" \
                 --db="$db_name" \
                 $( [[ "$use_gzip" == true ]] && echo "--gzip" ) \
-                "$vault/$database"
+                "$vault/$database" || FAILED=1
         done
     fi
 
@@ -304,7 +295,7 @@ restore_user_databases() {
 
     if [[ $FAILED -eq 1 ]]; then
         echo "❌ One or more databases failed to restore."
-        # exit 1
+        exit 1
     fi
     echo "✅ Databases successfully restored"
 }
