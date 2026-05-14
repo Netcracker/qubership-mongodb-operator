@@ -56,7 +56,7 @@ Prepare Shared
     ...    port=27017
     ...    user=${MONGO_ROOT_USER}
     ...    password=${MONGO_ROOT_PASSWORD}
-    ...    database_name=test_tls
+    ...    database_name=test
     ...    req_timeout_sec=${WAIT_TIMEOUT}
     ...    host_datars=${DATARS_HOST}
     ...    tls=${TLS_ENABLED}
