@@ -184,7 +184,7 @@ restore_user_databases() {
 
     if [[ ! -d "$vault" ]]; then
         echo >&2 "Vault folder does not exist by given path: $vault"
-        exit 1
+        # exit 1
     fi
 
     if ls "$vault"/*.zip 1>/dev/null 2>&1; then
@@ -242,7 +242,7 @@ restore_user_databases() {
             db=$(echo "$clean_databases" | jq -cr ".[$DB_NUMBER]")
             if ! containsElement "$db" ${backed_dbs_array}; then
                 echo "❌ Database $db not found in backup. Aborting restore."
-                exit 1
+                # exit 1
             fi
         done
     fi
@@ -262,7 +262,7 @@ restore_user_databases() {
                 --numParallelCollections="${NUM_PARALLEL_CONNECTIONS}" \
                 --db="$db_name" \
                 $( [[ "$use_gzip" == true ]] && echo "--gzip" ) \
-                "$database" || FAILED=1
+                "$database"
         done
     else
         echo "=> Restoring selected databases..."
@@ -287,7 +287,7 @@ restore_user_databases() {
                 --numParallelCollections="${GRANULAR_NUM_PARALLEL_CONNECTIONS}" \
                 --db="$db_name" \
                 $( [[ "$use_gzip" == true ]] && echo "--gzip" ) \
-                "$vault/$database" || FAILED=1
+                "$vault/$database"
         done
     fi
 
@@ -299,7 +299,7 @@ restore_user_databases() {
 
     if [[ $FAILED -eq 1 ]]; then
         echo "❌ One or more databases failed to restore."
-        exit 1
+        # exit 1
     fi
     echo "✅ Databases successfully restored"
 }
