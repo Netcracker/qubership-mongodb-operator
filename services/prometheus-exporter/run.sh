@@ -24,10 +24,8 @@ read_secret() {
   local fallback="$2"
 
   if [ -f "$path" ]; then
-    echo "Reading secret from file: $path" >&2
     cat "$path"
   else
-    echo "Secret file not found: $path, using fallback value" >&2
     echo "$fallback"
   fi
 }
@@ -90,7 +88,6 @@ cnfrs_member=$(echo "$MONGO_URI" | jq -r .cnfrsMembers)
 if [[ $EXPORT_MONGOS = true ]]; then
 	echo "Starting exporter for mongos"
 	exporter_cmd="/opt/mongodb_exporter --mongodb.uri=\"$MONGOS_URI\" --compatible-mode $mongosCollectors --web.listen-address=:9216 --mongodb.direct-connect=false"
-	echo $exporter_cmd
 	if [[ "$cnfrs_member" == "" || "$cnfrs_member" == "null" ]] && [[ "$shard_members" == "" || "$shard_members" == "null" ]]; then
 	eval $exporter_cmd
 	else

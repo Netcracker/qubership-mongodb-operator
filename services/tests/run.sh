@@ -25,11 +25,7 @@ read_secret() {
   local path="$1"
 
   if [ -f "$path" ]; then
-    echo "Reading secret from file: $path" >&2
     cat "$path"
-  else
-    echo "Secret file not found: $path" >&2
-  fi
 }
 
 

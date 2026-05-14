@@ -51,19 +51,15 @@ func GetEnvBool(key string, fallback bool) bool {
 	return fallback
 }
 
-func GetSecret(logger *zap.Logger, path string, fallback string) string {
-	logger.Info("===== GET SECRET =====")
+func GetSecret(path string, fallback string) string {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		logger.Sugar().Infof("===== err reading file ===== %s", err.Error())
 		return fallback
 	}
 
 	val := strings.TrimSpace(string(data))
 	if val == "" {
-		logger.Info("value empty")
 		return fallback
 	}
-	logger.Info("read correctly")
 	return val
 }
