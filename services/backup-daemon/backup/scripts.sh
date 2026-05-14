@@ -22,6 +22,22 @@ containsElement() {
     return 1
 }
 
+read_secret() {
+  local path="$1"
+
+  if [ -f "$path" ]; then
+    cat "$path"
+}
+
+MONGO_BACKUP_USER="$(read_secret /var/run/secrets/mongodb/mongo-backup/username)"
+MONGO_BACKUP_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-backup/password)"
+MONGO_RESTORE_USER="$(read_secret /var/run/secrets/mongodb/mongo-restore/username)"
+MONGO_RESTORE_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-restore/passwprd)"
+BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$(read_secret /var/run/secrets/mongodb/backup-api/username)"
+BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/backup-api/password)"
+S3_KEY_ID="$(read_secret /var/run/secrets/mongodb/s3/username)"
+S3_KEY_SECRET="$(read_secret /var/run/secrets/mongodb/s3/password)"
+
 MONGO_DUMP="mongodump --gzip"
 MONGORESTORE="mongorestore"
 MONGO_CMD="mongo"

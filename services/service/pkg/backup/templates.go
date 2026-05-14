@@ -13,7 +13,7 @@ import (
 )
 
 func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName string, namespace string, nodeSelector map[string]string,
-	env []v1.EnvVar, tolerations []v1.Toleration, storageDirectory string, emptyDir bool, numberOfReplicas int32, priorityClassName string, affinity *v1.Affinity) *v12.Deployment {
+	env []v1.EnvVar, tolerations []v1.Toleration, storageDirectory string, emptyDir bool, numberOfReplicas int32, priorityClassName string, affinity *v1.Affinity, volumeMounts []v1.VolumeMount, volumes []v1.Volume) *v12.Deployment {
 	secret := utils.MongoSecret
 	storage := utils.BackupStorage
 	uriScheme := utils.GetUriScheme(spec.TLS.Enabled)
@@ -32,6 +32,36 @@ func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName st
 		}
 	}
 	allowPrivilegeEscalation := false
+
+	backupVolumeMounts := []v1.VolumeMount{
+		{
+			Name:      storage,
+			MountPath: storageDirectory,
+		},
+		{
+			Name:      secret,
+			ReadOnly:  true,
+			MountPath: "/opt/" + secret,
+		},
+	}
+
+	backupVolumes := []v1.Volume{
+		{
+			Name:         storage,
+			VolumeSource: volumeSource,
+		},
+		{
+			Name: secret,
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: secret,
+				},
+			},
+		},
+	}
+
+	volumeMounts = append(backupVolumeMounts, volumeMounts...)
+	volumes = append(backupVolumes, volumes...)
 
 	dc := &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -120,36 +150,13 @@ func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName st
 								SuccessThreshold:    1,
 								FailureThreshold:    12,
 							},
-							VolumeMounts: []v1.VolumeMount{
-								v1.VolumeMount{
-									Name:      storage,
-									MountPath: storageDirectory,
-								},
-								v1.VolumeMount{
-									Name:      secret,
-									ReadOnly:  true,
-									MountPath: "/opt/" + secret,
-								},
-							},
+							VolumeMounts: volumeMounts,
 						},
 					},
 					NodeSelector: nodeSelector,
 					Affinity:     affinity,
 					Tolerations:  tolerations,
-					Volumes: []v1.Volume{
-						v1.Volume{
-							Name:         storage,
-							VolumeSource: volumeSource,
-						},
-						v1.Volume{
-							Name: secret,
-							VolumeSource: v1.VolumeSource{
-								Secret: &v1.SecretVolumeSource{
-									SecretName: secret,
-								},
-							},
-						},
-					},
+					Volumes:      volumes,
 				},
 			},
 		},

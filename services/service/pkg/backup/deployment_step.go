@@ -64,15 +64,15 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 		coreUtils.GetPlainTextEnvVar("GRANULAR_NUM_PARALLEL_CONNECTIONS", fmt.Sprintf("%v", backup.GranularNumParallelConnections)),
 		coreUtils.GetPlainTextEnvVar("MONGO_AUTH_DB", "admin"),
 		coreUtils.GetPlainTextEnvVar("STORAGE", backup.StorageDirectory),
-		coreUtils.GetSecretEnvVar("MONGO_BACKUP_USER", spec.Spec.Backup.BackupSecretName, utils.Username),
-		coreUtils.GetSecretEnvVar("MONGO_BACKUP_PASSWORD", spec.Spec.Backup.BackupSecretName, utils.Password),
-		coreUtils.GetSecretEnvVar("MONGO_RESTORE_USER", spec.Spec.Backup.RestoreUserSecretName, utils.Username),
-		coreUtils.GetSecretEnvVar("MONGO_RESTORE_PASSWORD", spec.Spec.Backup.RestoreUserSecretName, utils.Password),
-		coreUtils.GetSecretEnvVar("BACKUP_DAEMON_API_CREDENTIALS_USERNAME", spec.Spec.Backup.BackupApiSecretName, utils.Username),
-		coreUtils.GetSecretEnvVar("BACKUP_DAEMON_API_CREDENTIALS_PASSWORD", spec.Spec.Backup.BackupApiSecretName, utils.Password),
 		coreUtils.GetPlainTextEnvVar("GRANULAR_SCHEDULE", backup.GranularBackupSchedule),
 		coreUtils.GetPlainTextEnvVar("SCHEDULED_DBS", strings.Join(backup.GranularBackupScheduledDbs[:], ",")),
 	)
+
+	secretVolumes := map[string]string{
+		spec.Spec.Backup.BackupSecretName:      "/var/run/secrets/mongodb/mongo-backup",
+		spec.Spec.Backup.RestoreUserSecretName: "/var/run/secrets/mongodb/mongo-restore",
+		spec.Spec.Backup.BackupApiSecretName:   "/var/run/secrets/mongodb/backup-api",
+	}
 
 	if spec.Spec.IpV6 {
 		envs = append(envs, coreUtils.GetPlainTextEnvVar("BROADCAST_ADDRESS", "::"))
@@ -83,9 +83,10 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 			coreUtils.GetPlainTextEnvVar("S3_ENABLED", strconv.FormatBool(backup.S3.Enabled)),
 			coreUtils.GetPlainTextEnvVar("S3_BUCKET", backup.S3.BucketName),
 			coreUtils.GetPlainTextEnvVar("S3_URL", backup.S3.EndpointUrl),
-			coreUtils.GetSecretEnvVar("S3_KEY_ID", backup.S3.SecretName, utils.Username),
-			coreUtils.GetSecretEnvVar("S3_KEY_SECRET", backup.S3.SecretName, utils.Password),
 		)
+		secretVolumes[backup.S3.SecretName] =
+			"/var/run/secrets/mongodb/s3"
+
 		if backup.S3.SslVerify {
 			envs = append(envs, coreUtils.GetPlainTextEnvVar("S3_CERTS_PATH", "/s3Certs"))
 
@@ -119,6 +120,27 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 		numberOfReplicas = 0
 	}
 
+	volumes := []v12.Volume{}
+	volumeMounts := []v12.VolumeMount{}
+
+	for secretName, mountPath := range secretVolumes {
+		volumeName := utils.SanitizeVolumeName(secretName)
+		volumes = append(volumes, v12.Volume{
+			Name: volumeName,
+			VolumeSource: v12.VolumeSource{
+				Secret: &v12.SecretVolumeSource{
+					SecretName: secretName,
+				},
+			},
+		})
+
+		volumeMounts = append(volumeMounts, v12.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			ReadOnly:  true,
+		})
+	}
+
 	dc := BackupDeploymentTemplate(
 		&spec.Spec,
 		pvcName,
@@ -133,7 +155,9 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 		backup.Storage.EmptyDir,
 		numberOfReplicas,
 		spec.Spec.Backup.PriorityClassName,
-		spec.Spec.Backup.Affinity)
+		spec.Spec.Backup.Affinity,
+		volumeMounts,
+		volumes)
 
 	err := credsManager.AddCredHashToPodTemplate([]string{spec.Spec.MongoDB.MongoRootSecretName}, &dc.Spec.Template)
 	if err != nil {
