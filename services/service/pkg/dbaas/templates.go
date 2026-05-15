@@ -16,6 +16,7 @@ func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace s
 	env []v1.EnvVar, tolerations []v1.Toleration, numberOfReplicas int32, port int32, priorityClassName string, affinity *v1.Affinity, volumeMounts []v1.VolumeMount, volumes []v1.Volume) *v12.Deployment {
 
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	dc := &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      utils.DbaasName,
@@ -58,6 +59,7 @@ func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace s
 							Image:           image,
 							ImagePullPolicy: spec.ImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},

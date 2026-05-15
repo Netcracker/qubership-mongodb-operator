@@ -18,6 +18,7 @@ func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName st
 	storage := utils.BackupStorage
 	uriScheme := utils.GetUriScheme(spec.TLS.Enabled)
 	var volumeSource v1.VolumeSource
+	readOnlyRootFilesystem := true
 	if emptyDir {
 		volumeSource = v1.VolumeSource{
 			EmptyDir: &v1.EmptyDirVolumeSource{
@@ -108,6 +109,7 @@ func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName st
 							Image:           spec.Backup.DockerImage,
 							ImagePullPolicy: spec.ImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},

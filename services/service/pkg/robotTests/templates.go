@@ -21,6 +21,7 @@ func RobotTemplate(namespace string, image string,
 	env []corev1.EnvVar, securityContext *corev1.PodSecurityContext,
 	tls types.TLS, vaultRegistration types.VaultRegistration, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy, volumeMounts []corev1.VolumeMount, volumes []corev1.Volume) *v1.Deployment {
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	var replicas int32 = 1
 	dc := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -58,6 +59,7 @@ func RobotTemplate(namespace string, image string,
 							Resources:       resources,
 							ImagePullPolicy: imagePullPolicy,
 							SecurityContext: &corev1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &corev1.Capabilities{
 									Drop: []corev1.Capability{"ALL"},
 								},

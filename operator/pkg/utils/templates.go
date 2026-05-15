@@ -126,6 +126,7 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 	timeoutSeconds := int32(containerTimeoutSeconds)
 	periodSeconds := int32(containerPeriodSeconds)
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 
 	statefulSet := v12.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -174,6 +175,7 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 							Image:           image,
 							ImagePullPolicy: mongoImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},
@@ -391,6 +393,7 @@ func MongosRCTemplate(
 	secret := MongoSecret
 	mongos := Mongos
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 
 	defaultNodeAffinity := &v1.NodeAffinity{
 		PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
@@ -465,6 +468,7 @@ func MongosRCTemplate(
 							Image:           image,
 							ImagePullPolicy: mongoImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},
@@ -536,6 +540,7 @@ func MongosRCTemplate(
 func RecyclerPodTemplate(pvcName string, namespace string, image string, nodeSelector map[string]string, serviceAccountName string, res v1.ResourceRequirements, securityContext *v1.PodSecurityContext) *v1.Pod {
 	podName := fmt.Sprintf(RecyclerNameTemplate, pvcName)
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	pod := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -564,6 +569,7 @@ func RecyclerPodTemplate(pvcName string, namespace string, image string, nodeSel
 					Name:  fmt.Sprintf(RecyclerNameTemplate, "container"),
 					Image: image,
 					SecurityContext: &v1.SecurityContext{
+						ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{"ALL"},
 						},

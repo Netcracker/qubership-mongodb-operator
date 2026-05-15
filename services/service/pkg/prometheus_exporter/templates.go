@@ -17,6 +17,7 @@ func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSe
 	tls types.TLS, priorityClassName, instance string, healthzPort int, volumeMounts []v1.VolumeMount, volumes []v1.Volume) *v12.Deployment {
 	var replicas int32 = 1
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	dc := &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      utils.MongoPrometheusExporter,
@@ -62,6 +63,7 @@ func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSe
 							VolumeMounts:    volumeMounts,
 							Resources:       resources,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},
