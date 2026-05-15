@@ -6,6 +6,7 @@ import (
 	utils2 "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,6 +24,21 @@ func RobotTemplate(namespace string, image string,
 	allowPrivilegeEscalation := false
 	readOnlyRootFilesystem := true
 	var replicas int32 = 1
+
+	volumes = append(volumes, corev1.Volume{
+		Name: "tmp",
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{
+				SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
+			},
+		},
+	})
+
+	volumeMounts = append(volumeMounts, corev1.VolumeMount{
+		Name:      "tmp",
+		MountPath: "/tmp",
+	})
+
 	dc := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ServiceName,
