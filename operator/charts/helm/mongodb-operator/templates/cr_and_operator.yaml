@@ -256,7 +256,6 @@ spec:
       serviceAccountName: {{ .Values.operator.operatorName }}
       priorityClassName: {{ .Values.operator.priorityClassName | quote }}
       securityContext:
-        readOnlyRootFilesystem: true
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
@@ -266,7 +265,6 @@ spec:
           image: {{ template "find_image" (dict "deployName" "operator_init" "SERVICE_NAME" "operator_init" "vals" .Values "default" .Values.operator.initImage) }}
           imagePullPolicy: Always
           securityContext:
-            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
               drop:
