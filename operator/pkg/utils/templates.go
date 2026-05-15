@@ -8,6 +8,7 @@ import (
 	v12 "k8s.io/api/apps/v1"
 	corev12 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -169,6 +170,14 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 								},
 							},
 						},
+						v1.Volume{
+							Name: "tmp",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
+								},
+							},
+						},
 					},
 					Containers: []v1.Container{
 						v1.Container{
@@ -219,6 +228,10 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 									Name:      mongoSecretName,
 									ReadOnly:  true,
 									MountPath: "/opt/" + mongoSecretName,
+								},
+								v1.VolumeMount{
+									Name:      "tmp",
+									MountPath: "/tmp",
 								},
 							},
 							Resources: resources,
