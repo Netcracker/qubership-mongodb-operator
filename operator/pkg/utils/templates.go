@@ -525,6 +525,10 @@ func MongosRCTemplate(
 									ReadOnly:  true,
 									MountPath: "/opt/" + secret,
 								},
+								v1.VolumeMount{
+									Name:      "tmp",
+									MountPath: "/tmp",
+								},
 							},
 							Resources: resources,
 						},
@@ -536,6 +540,14 @@ func MongosRCTemplate(
 								Secret: &v1.SecretVolumeSource{
 									SecretName:  secret,
 									DefaultMode: &defaultMode,
+								},
+							},
+						},
+						v1.Volume{
+							Name: "tmp",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
 								},
 							},
 						},
