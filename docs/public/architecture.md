@@ -29,17 +29,6 @@ A replica set consists of the following components:
 
 Shard - It is an individual MongoDB instance or replica set that holds a subset of an entire dataset. Each shard is responsible for storing a specific range of data based on a sharding key, which is a field or fields used to determine how data is distributed across shards. Shards operate independently of each other, allowing for parallel read and write operations on different parts of a dataset, which significantly enhances performance and scalability.
 
-## Netcracker MongoDB Delivery and Features
-
-The Netcracker platform provides MongoDB deployment to Kubernetes/OpenShift using their own helm chart with an operator and additional features.
-The deployment procedure and additional features include the following:
-
-* Support of Netcracker deployment jobs for multiple schemes and different configurations. For more information, refer to [MongoDB Cluster Installation Procedure](installation_guide.md).
-- Backup and restore of databases. For more information, refer to [MongoDB Backup Daemon Maintenance](https://git.netcracker.com/PROD.Platform.Databases/mongodb-backup-daemon/-/blob/master/readme.md) in _Cloud Platform Maintenance Guide_.
-- Monitoring integration with Grafana Dashboard and Prometheus Alerts. For more information, refer to [MongoDB Monitoring](grafana_dashboard.md) in _Cloud Platform Monitoring Guide_.
-- Integration with DBaaS.
-- Support of Disaster Recovery scheme. 
-
 # MongoDB Components
 
 The following image displays the various MongoDB components:
