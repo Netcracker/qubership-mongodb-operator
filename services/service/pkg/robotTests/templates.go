@@ -25,19 +25,36 @@ func RobotTemplate(namespace string, image string,
 	readOnlyRootFilesystem := true
 	var replicas int32 = 1
 
-	volumes = append(volumes, corev1.Volume{
-		Name: "tmp",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{
-				SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
+	tmpVolumes := []corev1.Volume{
+		corev1.Volume{
+			Name: "output",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
-	})
+		corev1.Volume{
+			Name: "tmp",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{
+					SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
+				},
+			},
+		},
+	}
 
-	volumeMounts = append(volumeMounts, corev1.VolumeMount{
-		Name:      "tmp",
-		MountPath: "/tmp",
-	})
+	tmpVolumeMount := []corev1.VolumeMount{
+		corev1.VolumeMount{
+			Name:      "output",
+			MountPath: "/opt/robot/output",
+		},
+		corev1.VolumeMount{
+			Name:      "tmp",
+			MountPath: "/tmp",
+		},
+	}
+
+	volumes = append(volumes, tmpVolumes...)
+	volumeMounts = append(volumeMounts, tmpVolumeMount...)
 
 	dc := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
