@@ -42,7 +42,10 @@ const NonVaultPassword = "nonVaultPassword"
 const Role = "role"
 const AuthDatabase = "auth-database"
 const CloneModeType = "clone-mode-type"
-
+const X509AuthMode = "x509"
+const X509CnfrsCertificate = "cnfrs-x509-tls"
+const X509DatarsCertificate = "datars%d-x509-tls"
+const X509MongosCertificate = "mongos-x509-tls"
 const ContextPasswordKey = "ctxPasswordKey"
 
 const BashCommand = "bash"

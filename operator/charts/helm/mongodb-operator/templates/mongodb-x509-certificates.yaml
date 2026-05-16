@@ -1,4 +1,4 @@
-{{- if and .Values.tls.generateCerts.enabled (ne (default "disabled" .Values.tls.mode) "disabled") }}
+{{- if and .Values.tls.generateCerts.enabled (ne (default "disabled" .Values.tls.mode) "disabled") (eq (default "keyFile" .Values.mongodb.clusterAuthMode) "x509") }}
 
 ########################################################
 # CONFIG SERVER x.509 CERT
@@ -14,7 +14,7 @@ spec:
     organizations:
       - Netcracker
     organizationalUnits:
-      - MongoCluster
+      - MongodbOperator
 
   duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
 
@@ -64,7 +64,7 @@ spec:
     organizations:
       - Netcracker
     organizationalUnits:
-      - MongoCluster
+      - MongodbOperator
 
   duration: {{ default 365 $.Values.tls.generateCerts.duration | mul 24 }}h
 
@@ -112,7 +112,7 @@ spec:
     organizations:
       - Netcracker
     organizationalUnits:
-      - MongoCluster
+      - MongodbOperator
 
   duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
 

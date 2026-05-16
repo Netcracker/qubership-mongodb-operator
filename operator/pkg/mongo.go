@@ -61,7 +61,7 @@ func (r *MongoServiceBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	core.PanicError(commonParamCheckErr, log.Error, "Error happened during checking common parameters for changes")
 	ctx.Set(utils.IsAnyCommonParameterChanged, isAnyParamChanged)
 
-	if spec.Spec.ClusterAuthMode == "x509" && !spec.Spec.TLS.Enabled {
+	if spec.Spec.ClusterAuthMode == utils.X509AuthMode && !spec.Spec.TLS.Enabled {
 		core.PanicError(fmt.Errorf("Cluster Auth Mode "), log.Error, "For x509 TLS has to be enabled")
 	}
 

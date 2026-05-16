@@ -154,7 +154,7 @@ func MongoReplicaContainerArgs(replicaType string, data string, nameKey string, 
 	authOpt3 := "'/" + data + "/" + nameWithIndexes + "/" + mongoSecretKeyFile + "'"
 	if !keyfileAuth {
 		authOpt2 = "--clusterAuthMode"
-		authOpt3 = "x509"
+		authOpt3 = X509AuthMode
 	}
 
 	bindOpt := "--bind_ip_all"
@@ -184,7 +184,7 @@ func HAMongosContainerArgs(tmp string, data string, mongoSecret string, mongoSec
 	authOpt3 := "'/" + tmp + "/" + data + "/" + mongoSecretKeyFile + "'"
 	if !keyfileAuth {
 		authOpt2 = "--clusterAuthMode"
-		authOpt3 = "x509"
+		authOpt3 = X509AuthMode
 	}
 
 	bindOpt := "--bind_ip_all"

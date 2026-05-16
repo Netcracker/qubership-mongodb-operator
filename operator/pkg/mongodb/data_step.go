@@ -117,8 +117,8 @@ func (r *CreateDataStep) Execute(ctx core.ExecutionContext) error {
 		}
 		keyfileAuth := true
 		for i := 0; i < dataReplicaSize; i++ {
-			if spec.Spec.MongoDB.ClusterAuthMode == "x509" {
-				spec.Spec.TLS.CertificateSecretName = fmt.Sprintf("datars%d-x509-tls", s+1)
+			if spec.Spec.MongoDB.ClusterAuthMode == utils.X509AuthMode {
+				spec.Spec.TLS.CertificateSecretName = fmt.Sprintf(utils.X509DatarsCertificate, s+1)
 				keyfileAuth = false
 			}
 
