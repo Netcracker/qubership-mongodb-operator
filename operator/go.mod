@@ -16,10 +16,6 @@ require (
 	sigs.k8s.io/controller-runtime v0.22.0
 )
 
-// replace github.com/Netcracker/qubership-nosqldb-operator-core => ../nosqldb-operator-core
-
-// replace git.netcracker.com/prod.platform.databases/credential-manager => ../credential-manager
-
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect

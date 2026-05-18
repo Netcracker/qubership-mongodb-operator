@@ -825,10 +825,6 @@ For OpenShift:
 curl -v -XDELETE -u ${DBAAS_AGGREGATOR_REGISTRATION_USERNAME}:${DBAAS_AGGREGATOR_REGISTRATION_PASSWORD} ${DBAAS_AGGREGATOR_REGISTRATION_ADDRESS}/api/v1/dbaas/mongodb/physical_databases/${DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER}
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-For more details, refer to [https://bass.netcracker.com/pages/viewpage.action?spaceKey=CLOUDCORE&title=DbaaS+REST+API#DbaaSRESTAPI-V2.Deletephysicaldatabasedeletephysicaldatabaseusingdelete_1](https://bass.netcracker.com/pages/viewpage.action?spaceKey=CLOUDCORE&title=DbaaS+REST+API#DbaaSRESTAPI-V2.Deletephysicaldatabasedeletephysicaldatabaseusingdelete_1).
-<!-- #GFCFilterMarkerEnd# -->
-
 Or through CLI:
 
 ```
@@ -848,10 +844,6 @@ For Kubernetes:
 ```
 curl -v -XDELETE -u ${DBAAS_AGGREGATOR_REGISTRATION_USERNAME}:${DBAAS_AGGREGATOR_REGISTRATION_PASSWORD} ${DBAAS_AGGREGATOR_REGISTRATION_ADDRESS}/api/v1/dbaas/mongodb/physical_databases/${DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER}
 ```
-
-<!-- #GFCFilterMarkerStart# -->
-For more details, refer to [https://bass.netcracker.com/pages/viewpage.action?spaceKey=CLOUDCORE&title=DbaaS+REST+API#DbaaSRESTAPI-V2.Deletephysicaldatabasedeletephysicaldatabaseusingdelete_1](https://bass.netcracker.com/pages/viewpage.action?spaceKey=CLOUDCORE&title=DbaaS+REST+API#DbaaSRESTAPI-V2.Deletephysicaldatabasedeletephysicaldatabaseusingdelete_1).
-<!-- #GFCFilterMarkerEnd# -->
 
 Or through CLI:
 
