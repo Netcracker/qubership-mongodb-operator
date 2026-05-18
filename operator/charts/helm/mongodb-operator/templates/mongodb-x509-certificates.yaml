@@ -9,7 +9,7 @@ kind: Certificate
 metadata:
   name: cnfrs-x509-cert
 spec:
-  secretName: cnfrs-x509-tls
+  secretName: cnfrs-x509-certificate
   subject:
     organizations:
       - Netcracker
@@ -59,7 +59,7 @@ metadata:
   name: datars{{ add1 $i }}-x509-cert
 
 spec:
-  secretName: datars{{ add1 $i }}-x509-tls
+  secretName: datars{{ add1 $i }}-x509-certificate
   subject:
     organizations:
       - Netcracker
@@ -107,7 +107,7 @@ metadata:
   name: mongos-x509-cert
 
 spec:
-  secretName: mongos-x509-tls
+  secretName: mongos-x509-certificate
   subject:
     organizations:
       - Netcracker
