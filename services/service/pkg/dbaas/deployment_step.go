@@ -79,47 +79,40 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 			cUtils.GetPlainTextEnvVar("VAULT_DB_ENGINE_NAME", spec.Spec.VaultDBEngine.Name),
 		)
 	}
-	secretKeyRef := map[string]struct {
-		secretName  string
-		keyInSecret string
-	}{
-		"DBAAS_AGGREGATOR_USERNAME": {spec.Spec.Dbaas.DbaasAggregatorSecretName, utils.Username},
-		"DBAAS_AGGREGATOR_PASSWORD": {spec.Spec.Dbaas.DbaasAggregatorSecretName, utils.Password},
 
-		"MONGO_ADMIN_USER":     {spec.Spec.Dbaas.DbaasAdminSecretName, utils.Username},
-		"MONGO_ADMIN_PASSWORD": {spec.Spec.Dbaas.DbaasAdminSecretName, utils.Password},
-		"MONGO_ADMIN_AUTH_DB":  {spec.Spec.Dbaas.DbaasAdminSecretName, utils.AuthDatabase},
-
-		"DBAAS_AGGREGATOR_REGISTRATION_USERNAME": {spec.Spec.Dbaas.DbaasRegistrationSecretName, utils.Username},
-		"DBAAS_AGGREGATOR_REGISTRATION_PASSWORD": {spec.Spec.Dbaas.DbaasRegistrationSecretName, utils.Password},
+	secretVolumes := map[string]string{
+		spec.Spec.Dbaas.DbaasAggregatorSecretName:   "/var/run/secrets/mongodb/dbaas-aggregator",
+		spec.Spec.Dbaas.DbaasAdminSecretName:        "/var/run/secrets/mongodb/mongo-admin",
+		spec.Spec.Dbaas.DbaasRegistrationSecretName: "/var/run/secrets/mongodb/dbaas-registration",
 	}
 
 	if spec.Spec.Backup.Install {
-		secretKeyRef["BACKUP_DAEMON_API_CREDENTIALS_USERNAME"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Backup.BackupApiSecretName, utils.Username}
-		secretKeyRef["BACKUP_DAEMON_API_CREDENTIALS_PASSWORD"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Backup.BackupApiSecretName, utils.Password}
+		secretVolumes[spec.Spec.Backup.BackupApiSecretName] =
+			"/var/run/secrets/mongodb/backup-api"
 	}
 
-	for key, value := range secretKeyRef {
-		envs = append(envs,
-			v12.EnvVar{
-				Name: key,
-				ValueFrom: &v12.EnvVarSource{
-					SecretKeyRef: &v12.SecretKeySelector{
-						LocalObjectReference: v12.LocalObjectReference{
-							Name: value.secretName,
-						},
-						Key: value.keyInSecret,
-					},
+	volumes := []v12.Volume{}
+	volumeMounts := []v12.VolumeMount{}
+
+	for secretName, mountPath := range secretVolumes {
+
+		volumeName := utils.SanitizeVolumeName(secretName)
+
+		volumes = append(volumes, v12.Volume{
+			Name: volumeName,
+			VolumeSource: v12.VolumeSource{
+				Secret: &v12.SecretVolumeSource{
+					SecretName: secretName,
 				},
-			})
+			},
+		})
+
+		volumeMounts = append(volumeMounts, v12.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			ReadOnly:  true,
+		})
 	}
-	// Environment variable End
 
 	var tolerations []v12.Toleration
 	if spec.Spec.Policies != nil {
@@ -145,6 +138,8 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 		dbaasPort,
 		spec.Spec.Dbaas.PriorityClassName,
 		spec.Spec.Dbaas.Affinity,
+		volumeMounts,
+		volumes,
 	)
 
 	err := credsManager.AddCredHashToPodTemplate([]string{spec.Spec.MongoDB.MongoRootSecretName}, &dc.Spec.Template)

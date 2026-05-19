@@ -6,6 +6,7 @@ import (
 	utils2 "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,9 +20,42 @@ func RobotTemplate(namespace string, image string,
 	resources corev1.ResourceRequirements,
 	nodeSelector map[string]string, tolerations []corev1.Toleration,
 	env []corev1.EnvVar, securityContext *corev1.PodSecurityContext,
-	tls types.TLS, vaultRegistration types.VaultRegistration, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy) *v1.Deployment {
+	tls types.TLS, vaultRegistration types.VaultRegistration, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy, volumeMounts []corev1.VolumeMount, volumes []corev1.Volume) *v1.Deployment {
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	var replicas int32 = 1
+
+	tmpVolumes := []corev1.Volume{
+		corev1.Volume{
+			Name: "output",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+		corev1.Volume{
+			Name: "tmp",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{
+					SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
+				},
+			},
+		},
+	}
+
+	tmpVolumeMount := []corev1.VolumeMount{
+		corev1.VolumeMount{
+			Name:      "output",
+			MountPath: "/opt/robot/output",
+		},
+		corev1.VolumeMount{
+			Name:      "tmp",
+			MountPath: "/tmp",
+		},
+	}
+
+	volumes = append(volumes, tmpVolumes...)
+	volumeMounts = append(volumeMounts, tmpVolumeMount...)
+
 	dc := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ServiceName,
@@ -54,9 +88,11 @@ func RobotTemplate(namespace string, image string,
 							Name:            utils.Robot,
 							Image:           image,
 							Env:             env,
+							VolumeMounts:    volumeMounts,
 							Resources:       resources,
 							ImagePullPolicy: imagePullPolicy,
 							SecurityContext: &corev1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &corev1.Capabilities{
 									Drop: []corev1.Capability{"ALL"},
 								},
@@ -65,6 +101,7 @@ func RobotTemplate(namespace string, image string,
 						},
 					},
 					NodeSelector: nodeSelector,
+					Volumes:      volumes,
 					Affinity:     affinity,
 					Tolerations:  tolerations,
 				},

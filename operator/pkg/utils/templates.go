@@ -8,6 +8,7 @@ import (
 	v12 "k8s.io/api/apps/v1"
 	corev12 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -126,6 +127,7 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 	timeoutSeconds := int32(containerTimeoutSeconds)
 	periodSeconds := int32(containerPeriodSeconds)
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 
 	statefulSet := v12.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -168,12 +170,21 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 								},
 							},
 						},
+						v1.Volume{
+							Name: "tmp",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
+								},
+							},
+						},
 					},
 					Containers: []v1.Container{
 						v1.Container{
 							Image:           image,
 							ImagePullPolicy: mongoImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},
@@ -217,6 +228,10 @@ func MongoSSCommonTemplateWithoutNamesArgs(
 									Name:      mongoSecretName,
 									ReadOnly:  true,
 									MountPath: "/opt/" + mongoSecretName,
+								},
+								v1.VolumeMount{
+									Name:      "tmp",
+									MountPath: "/tmp",
 								},
 							},
 							Resources: resources,
@@ -391,6 +406,7 @@ func MongosRCTemplate(
 	secret := MongoSecret
 	mongos := Mongos
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 
 	defaultNodeAffinity := &v1.NodeAffinity{
 		PreferredDuringSchedulingIgnoredDuringExecution: []v1.PreferredSchedulingTerm{
@@ -465,6 +481,7 @@ func MongosRCTemplate(
 							Image:           image,
 							ImagePullPolicy: mongoImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},
@@ -510,6 +527,10 @@ func MongosRCTemplate(
 									ReadOnly:  true,
 									MountPath: "/opt/" + secret,
 								},
+								v1.VolumeMount{
+									Name:      "tmp",
+									MountPath: "/tmp",
+								},
 							},
 							Resources: resources,
 						},
@@ -521,6 +542,14 @@ func MongosRCTemplate(
 								Secret: &v1.SecretVolumeSource{
 									SecretName:  secret,
 									DefaultMode: &defaultMode,
+								},
+							},
+						},
+						v1.Volume{
+							Name: "tmp",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									SizeLimit: resource.NewScaledQuantity(32, resource.Mega),
 								},
 							},
 						},
@@ -538,6 +567,7 @@ func MongosRCTemplate(
 func RecyclerPodTemplate(pvcName string, namespace string, image string, nodeSelector map[string]string, serviceAccountName string, res v1.ResourceRequirements, securityContext *v1.PodSecurityContext) *v1.Pod {
 	podName := fmt.Sprintf(RecyclerNameTemplate, pvcName)
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	pod := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -566,6 +596,7 @@ func RecyclerPodTemplate(pvcName string, namespace string, image string, nodeSel
 					Name:  fmt.Sprintf(RecyclerNameTemplate, "container"),
 					Image: image,
 					SecurityContext: &v1.SecurityContext{
+						ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 						Capabilities: &v1.Capabilities{
 							Drop: []v1.Capability{"ALL"},
 						},

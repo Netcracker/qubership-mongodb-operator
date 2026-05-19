@@ -22,6 +22,23 @@ containsElement() {
     return 1
 }
 
+read_secret() {
+  local path="$1"
+
+  if [ -f "$path" ]; then
+    cat "$path"
+  fi
+}
+
+MONGO_BACKUP_USER="$(read_secret /var/run/secrets/mongodb/mongo-backup/username)"
+MONGO_BACKUP_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-backup/password)"
+MONGO_RESTORE_USER="$(read_secret /var/run/secrets/mongodb/mongo-restore/username)"
+MONGO_RESTORE_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-restore/password)"
+BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$(read_secret /var/run/secrets/mongodb/backup-api/username)"
+BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/backup-api/password)"
+S3_KEY_ID="$(read_secret /var/run/secrets/mongodb/s3/username)"
+S3_KEY_SECRET="$(read_secret /var/run/secrets/mongodb/s3/password)"
+
 MONGO_DUMP="mongodump --gzip"
 MONGORESTORE="mongorestore"
 MONGO_CMD="mongo"
@@ -44,8 +61,6 @@ NUM_PARALLEL_CONNECTIONS=${NUM_PARALLEL_CONNECTIONS:-4}
 GRANULAR_NUM_PARALLEL_CONNECTIONS=${GRANULAR_NUM_PARALLEL_CONNECTIONS:-4}
 
 cluster_backup() {
-    require MONGO_BACKUP_USER
-    require MONGO_BACKUP_PASSWORD
     require MONGO_AUTH_DB
     export FAILED=0
     vaultfolder=${vault##*/}
@@ -160,8 +175,6 @@ cluster_backup() {
 }
 
 restore_user_databases() {
-    require MONGO_RESTORE_USER
-    require MONGO_RESTORE_PASSWORD
     require MONGO_AUTH_DB
     export FAILED=0
 
