@@ -103,6 +103,11 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
 	log.Info("HA Mongos Creation step started")
+	keyfileAuth := true
+	if spec.Spec.MongoDB.ClusterAuthMode == utils.X509AuthMode {
+		spec.Spec.TLS.CertificateSecretName = utils.X509MongosCertificate
+		keyfileAuth = false
+	}
 
 	cnfSize := spec.Spec.SchemaSettings.CnfReplicaSize
 	var configNodes []string
@@ -115,7 +120,7 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 	log.Debug(fmt.Sprintf("Config nodes for mongos initialization: %s", configNodes))
 
 	args := utils.HAMongosContainerArgs(utils.Tmp, utils.Data, utils.MongoSecret,
-		utils.MongoSecretKeyFile, fmt.Sprintf("cnfrs/%s", strings.Join(configNodes, ",")), spec.Spec.IpV6, &spec.Spec.TLS)
+		utils.MongoSecretKeyFile, fmt.Sprintf("cnfrs/%s", strings.Join(configNodes, ",")), spec.Spec.IpV6, &spec.Spec.TLS, keyfileAuth)
 
 	log.Debug("Mongos container args: " + args)
 

@@ -118,6 +118,9 @@ spec:
         cpu: {{ .Values.mongodb.arbiterResources.requests.cpu | quote }}
     {{- end}}
     {{- end}}
+    {{- if .Values.mongodb.clusterAuthMode }}
+    clusterAuthMode: {{ .Values.mongodb.clusterAuthMode | quote }}
+    {{- end }}
     {{- if .Values.mongodb.dataWiredTigerCacheGb }}
     dataWiredTigerCacheGb: {{ .Values.mongodb.dataWiredTigerCacheGb | quote }}
     {{- end }}

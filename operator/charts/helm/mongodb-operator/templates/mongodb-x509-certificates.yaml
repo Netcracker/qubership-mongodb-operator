@@ -1,0 +1,144 @@
+{{- if and .Values.tls.generateCerts.enabled (ne (default "disabled" .Values.tls.mode) "disabled") (eq (default "keyFile" .Values.mongodb.clusterAuthMode) "x509") }}
+
+########################################################
+# CONFIG SERVER x.509 CERT
+########################################################
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cnfrs-x509-cert
+spec:
+  secretName: cnfrs-x509-certificate
+  subject:
+    organizations:
+      - Netcracker
+    organizationalUnits:
+      - MongodbOperator
+
+  duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+
+  dnsNames:
+{{ include "mongodb.x509.generateCNFRSFQDNs" . | indent 4 }}
+
+  usages:
+    - server auth
+    - client auth
+
+  additionalOutputFormats:
+    - type: CombinedPEM
+
+  issuerRef:
+    group: cert-manager.io
+    {{- if .Values.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+    {{- else }}
+    name: mongodb-tls-issuer
+    kind: Issuer
+    {{- end }}
+
+---
+
+########################################################
+# SHARD x.509 CERTS
+########################################################
+
+{{- $shards := int .Values.schemaSettings.shardCount }}
+
+{{- range $i := until $shards }}
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: datars{{ add1 $i }}-x509-cert
+
+spec:
+  secretName: datars{{ add1 $i }}-x509-certificate
+  subject:
+    organizations:
+      - Netcracker
+    organizationalUnits:
+      - MongodbOperator
+
+  duration: {{ default 365 $.Values.tls.generateCerts.duration | mul 24 }}h
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+
+  dnsNames:
+{{ include "mongodb.x509.generateShardFQDNs" (dict "shard" (add1 $i) "context" $) | indent 4 }}
+
+  usages:
+    - server auth
+    - client auth
+
+  additionalOutputFormats:
+    - type: CombinedPEM
+
+  issuerRef:
+    group: cert-manager.io
+    {{- if $.Values.tls.generateCerts.clusterIssuerName }}
+    name: {{ $.Values.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+    {{- else }}
+    name: mongodb-tls-issuer
+    kind: Issuer
+    {{- end }}
+
+---
+
+{{- end }}
+
+########################################################
+# MONGOS x.509 CERT
+########################################################
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mongos-x509-cert
+
+spec:
+  secretName: mongos-x509-certificate
+  subject:
+    organizations:
+      - Netcracker
+    organizationalUnits:
+      - MongodbOperator
+
+  duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+
+  dnsNames:
+{{ include "mongodb.x509.generateMongosFQDNs" . | indent 4 }}
+
+  usages:
+    - server auth
+    - client auth
+
+  additionalOutputFormats:
+    - type: CombinedPEM
+
+  issuerRef:
+    group: cert-manager.io
+    {{- if .Values.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+    {{- else }}
+    name: mongodb-tls-issuer
+    kind: Issuer
+    {{- end }}
+
+{{- end }}

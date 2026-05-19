@@ -77,6 +77,11 @@ func (r *CreateCNFStep) Execute(ctx core.ExecutionContext) error {
 
 	wiredCacheGb := utils.CalcProperMongoWiredCacheSize(mongoDbSpec.CnfResources.Limits.Memory().Value(), mongoDbSpec.CnfWiredTigerCacheGb, 0.25)
 	log.Debug(fmt.Sprintf("Wired tiger cache size = %v", wiredCacheGb))
+	keyfileAuth := true
+	if spec.Spec.MongoDB.ClusterAuthMode == utils.X509AuthMode {
+		spec.Spec.TLS.CertificateSecretName = utils.X509CnfrsCertificate
+		keyfileAuth = false
+	}
 
 	for i := 0; i < cnfSize; i++ {
 		nameWithIndex := fmt.Sprintf(utils.CnfNameWithIndexFormat, i)
@@ -86,7 +91,7 @@ func (r *CreateCNFStep) Execute(ctx core.ExecutionContext) error {
 			utils.MongoReplicaNodeSelector(nodeLabels, cnfSize, i, 1, 0))
 
 		containerArgs := utils.MongoReplicaContainerArgs("--configsvr", utils.Data, nameKey, nameWithIndex, utils.MongoSecret,
-			utils.MongoSecretKeyFile, wiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.CnfOpLogSizeMb)
+			utils.MongoSecretKeyFile, wiredCacheGb, spec.Spec.IpV6, mongoDbSpec.CustomDataRSParameters, &spec.Spec.TLS, mongoDbSpec.CnfOpLogSizeMb, keyfileAuth)
 
 		log.Debug("Cnfrs container args: " + containerArgs)
 

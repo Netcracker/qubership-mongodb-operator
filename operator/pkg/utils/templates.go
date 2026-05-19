@@ -499,6 +499,8 @@ func MongosRCTemplate(
 									Exec: &v1.ExecAction{
 										Command: []string{
 											MongoBinary(image),
+											"--host",
+											"localhost",
 											"--port",
 											"27017",
 											"--eval",

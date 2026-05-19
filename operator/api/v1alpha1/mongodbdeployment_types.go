@@ -144,6 +144,7 @@ type MongoDB struct {
 	PriorityClassName       string                     `json:"priorityClassName,omitempty"`
 	MongoRootSecretName     string                     `json:"mongoRootSecretName,omitempty"`
 	Affinity                *v1.Affinity               `json:"affinity,omitempty"`
+	ClusterAuthMode         string                     `json:"clusterAuthMode,omitempty"`
 }
 
 func init() {
