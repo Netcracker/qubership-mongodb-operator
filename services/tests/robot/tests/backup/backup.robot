@@ -8,23 +8,13 @@ Library  String
 Library	 Collections
 Library	 RequestsLibrary
 Resource  ../shared/keywords.robot
+Resource  backup-shared.robot
 Library  ../lib/KubernetesClient.py
 Library    OperatingSystem
 Suite Setup  Preparation
 Suite Teardown  Cleanup
 
 *** Keywords ***
-Load Backup Secrets
-    ${backup_user}=       Get File    /var/run/secrets/mongodb/backup-api/username
-    ${backup_password}=   Get File    /var/run/secrets/mongodb/backup-api/password
-
-    ${backup_user}=       Strip String    ${backup_user}
-    ${backup_password}=   Strip String    ${backup_password}
-
-    # Set suite variables
-    Set Suite Variable    ${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}    ${backup_user}
-    Set Suite Variable    ${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}    ${backup_password}
-
 Preparation
     Prepare Shared
     Load Backup Secrets

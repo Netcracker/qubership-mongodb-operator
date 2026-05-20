@@ -11,7 +11,7 @@ Library  OperatingSystem
 Library  RequestsLibrary
 Resource  ../shared/keywords.robot
 Resource  ../dbaas/dbaas-shared.robot
-Resource  ../backup/backup.robot
+Resource  ../backup/backup-shared.robot
 Library  ../lib/KubernetesClient.py
 Suite Setup  Check HTTPS Enabling in Dbaas Aggregator
 
