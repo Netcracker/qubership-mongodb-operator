@@ -11,13 +11,14 @@ Library  OperatingSystem
 Library  RequestsLibrary
 Resource  ../shared/keywords.robot
 Resource  ../dbaas/dbaas-shared.robot
+Resource  ../backup/backup-shared.robot
 Library  ../lib/KubernetesClient.py
 Suite Setup  Check HTTPS Enabling in Dbaas Aggregator
 
 *** Keywords ***
 Check HTTPS Enabling in Dbaas Aggregator
     Load Secrets
-
+    Load Backup Secrets
     Import Library    ${CURDIR}/../lib/MongoDBLibrary.py
     ...    host=${MONGO_HOST}
     ...    port=27017

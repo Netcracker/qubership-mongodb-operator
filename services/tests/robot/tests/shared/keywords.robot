@@ -14,33 +14,15 @@ Library  ../lib/KubernetesClient.py
 
 *** Keywords ***
 Load Secrets
-    ${dbaas_user}=        Get File    /var/run/secrets/mongodb/dbaas-aggregator/username
-    ${dbaas_password}=    Get File    /var/run/secrets/mongodb/dbaas-aggregator/password
-
     ${mongo_user}=        Get File    /var/run/secrets/mongodb/mongo-root/username
     ${mongo_password}=    Get File    /var/run/secrets/mongodb/mongo-root/password
-
-    ${backup_user}=       Get File    /var/run/secrets/mongodb/backup-api/username
-    ${backup_password}=   Get File    /var/run/secrets/mongodb/backup-api/password
-
-    ${dbaas_user}=        Strip String    ${dbaas_user}
-    ${dbaas_password}=    Strip String    ${dbaas_password}
 
     ${mongo_user}=        Strip String    ${mongo_user}
     ${mongo_password}=    Strip String    ${mongo_password}
 
-    ${backup_user}=       Strip String    ${backup_user}
-    ${backup_password}=   Strip String    ${backup_password}
-
     # Set suite variables
-    Set Suite Variable    ${DBAAS_AGGREGATOR_USERNAME}    ${dbaas_user}
-    Set Suite Variable    ${DBAAS_AGGREGATOR_PASSWORD}    ${dbaas_password}
-
     Set Suite Variable    ${MONGO_ROOT_USER}              ${mongo_user}
     Set Suite Variable    ${MONGO_ROOT_PASSWORD}          ${mongo_password}
-
-    Set Suite Variable    ${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}    ${backup_user}
-    Set Suite Variable    ${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}    ${backup_password}
 
 Prepare Shared
     Load Secrets
