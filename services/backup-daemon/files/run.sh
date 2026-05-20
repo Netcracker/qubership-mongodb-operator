@@ -1,5 +1,13 @@
 #!/bin/sh
 
+read_secret() {
+  local path="$1"
+
+  if [ -f "$path" ]; then
+    cat "$path"
+  fi
+}
+
 S3_KEY_ID="$(read_secret /var/run/secrets/mongodb/s3/username)"
 S3_KEY_SECRET="$(read_secret /var/run/secrets/mongodb/s3/password)"
 
