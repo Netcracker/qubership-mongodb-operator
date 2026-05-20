@@ -91,6 +91,7 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 			"/var/run/secrets/mongodb/backup-api"
 	}
 
+	secretVolumeMode := int32(256)
 	volumes := []v12.Volume{}
 	volumeMounts := []v12.VolumeMount{}
 
@@ -102,7 +103,8 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 			Name: volumeName,
 			VolumeSource: v12.VolumeSource{
 				Secret: &v12.SecretVolumeSource{
-					SecretName: secretName,
+					SecretName:  secretName,
+					DefaultMode: &secretVolumeMode,
 				},
 			},
 		})

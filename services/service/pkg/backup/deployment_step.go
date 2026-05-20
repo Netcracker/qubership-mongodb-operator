@@ -122,14 +122,15 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 
 	volumes := []v12.Volume{}
 	volumeMounts := []v12.VolumeMount{}
-
+	secretVolumeMode := int32(256)
 	for secretName, mountPath := range secretVolumes {
 		volumeName := utils.SanitizeVolumeName(secretName)
 		volumes = append(volumes, v12.Volume{
 			Name: volumeName,
 			VolumeSource: v12.VolumeSource{
 				Secret: &v12.SecretVolumeSource{
-					SecretName: secretName,
+					SecretName:  secretName,
+					DefaultMode: &secretVolumeMode,
 				},
 			},
 		})
