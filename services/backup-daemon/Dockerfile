@@ -11,6 +11,8 @@ RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositori
 
 ADD backup-daemon.conf /etc/backup-daemon.conf
 ADD backup/ ${MONGO_HOME}/
+ADD files/  ${MONGO_HOME}/
+RUN chmod +x ${MONGO_HOME}/run.sh
 RUN chmod +x ${MONGO_HOME}/scripts.sh
 
 VOLUME /backup-storage
@@ -23,3 +25,5 @@ VOLUME /run/cryptsetup
 VOLUME /etc
 VOLUME /opt/backup
 VOLUME /tmp
+
+CMD ["sh", "-c", "$MONGO_HOME/run.sh"]
