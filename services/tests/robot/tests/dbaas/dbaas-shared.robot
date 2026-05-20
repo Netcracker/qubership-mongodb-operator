@@ -8,7 +8,18 @@ Library	 RequestsLibrary
 Library  OperatingSystem
 
 *** Keywords ***
+Load Dbaas Secrets
+    ${dbaas_user}=        Get File    /var/run/secrets/mongodb/dbaas-aggregator/username
+    ${dbaas_password}=    Get File    /var/run/secrets/mongodb/dbaas-aggregator/password
+
+    ${dbaas_user}=        Strip String    ${dbaas_user}
+    ${dbaas_password}=    Strip String    ${dbaas_password}
+
+    Set Suite Variable    ${DBAAS_AGGREGATOR_USERNAME}    ${dbaas_user}
+    Set Suite Variable    ${DBAAS_AGGREGATOR_PASSWORD}    ${dbaas_password}
+
 Preparation dbaas shared
+    Load Dbaas Secrets
     ${dbaas_api_version}=    Get Dbaas Aggregator version
     Set Suite Variable  ${dbaas_api_version}
 
