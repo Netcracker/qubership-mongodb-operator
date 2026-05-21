@@ -85,7 +85,7 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 		secretVolumes[spec.Spec.Dbaas.DbaasAggregatorSecretName] =
 			"/var/run/secrets/mongodb/dbaas-aggregator"
 	}
-
+	secretVolumeMode := int32(256)
 	volumes := []v12.Volume{}
 	volumeMounts := []v12.VolumeMount{}
 
@@ -97,7 +97,8 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 			Name: volumeName,
 			VolumeSource: v12.VolumeSource{
 				Secret: &v12.SecretVolumeSource{
-					SecretName: secretName,
+					SecretName:  secretName,
+					DefaultMode: &secretVolumeMode,
 				},
 			},
 		})

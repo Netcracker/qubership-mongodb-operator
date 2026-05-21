@@ -111,7 +111,7 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 		spec.Spec.PrometheusExporter.MonitoringSecretName:         "/var/run/secrets/mongodb/mongo-monitoring",
 		spec.Spec.PrometheusExporter.PrometheusExporterSecretName: "/var/run/secrets/mongodb/prom-exporter",
 	}
-
+	secretVolumeMode := int32(256)
 	volumes := []v12.Volume{}
 	volumeMounts := []v12.VolumeMount{}
 
@@ -123,7 +123,8 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 			Name: volumeName,
 			VolumeSource: v12.VolumeSource{
 				Secret: &v12.SecretVolumeSource{
-					SecretName: secretName,
+					SecretName:  secretName,
+					DefaultMode: &secretVolumeMode,
 				},
 			},
 		})
