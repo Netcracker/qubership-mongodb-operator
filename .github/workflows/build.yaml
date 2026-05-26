@@ -119,8 +119,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${GITHUB_ACTOR}
+          password: ${{secrets.GITHUB_TOKEN}}
       - name: Prepare Tag
         run: echo "TAG_NAME=$(echo ${TAG_NAME} | sed 's@refs/tags/@@;s@refs/heads/@@;s@/@_@g')" >> $GITHUB_ENV
       - name: Get package IDs for delete
@@ -130,7 +130,7 @@ jobs:
           component-name: ${{ matrix.component.name }}
           component-tag: ${{ env.TAG_NAME }}
           access-token: ${{secrets.GITHUB_TOKEN}}
-        if: false
+        if: ${{ env.PUSH }}
       - name: Build and push
         uses: docker/build-push-action@16ebe778df0e7752d2cfcbd924afdbbd89c1a755 # v6.6.1
         with:
@@ -140,7 +140,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ env.PUSH }}
           build-args: MONGO_VERSION=${{ matrix.component.mongo_version }}
-          tags: ghcr.io/islamabishov/${{ matrix.component.name }}:${{ env.TAG_NAME }}
+          tags: ghcr.io/netcracker/${{ matrix.component.name }}:${{ env.TAG_NAME }}
           provenance: false
       - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
         with:
