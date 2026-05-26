@@ -29,3 +29,4 @@ RUN chmod -R 777 ${ROBOT_HOME}
 # Expose the port
 EXPOSE 8080
 VOLUME ["${ROBOT_HOME}"]
+
