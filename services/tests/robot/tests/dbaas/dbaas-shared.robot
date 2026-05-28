@@ -46,7 +46,7 @@ Get Dbaas Aggregator version
         ${apiVersion}=    Set Variable    v2
     END
     
-    [Return]    ${apiVersion}
+    RETURN    ${apiVersion}
 
 Check Enabled Multi Users
     ${env_variables}=  Create List  MULTI_USERS_ENABLED
