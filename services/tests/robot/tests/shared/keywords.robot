@@ -14,8 +14,8 @@ Library  ../lib/KubernetesClient.py
 
 *** Keywords ***
 Load Secrets
-    ${mongo_user}=        Get File    /var/run/secrets/mongodb/mongo-root/username
-    ${mongo_password}=    Get File    /var/run/secrets/mongodb/mongo-root/password
+    ${mongo_user}=        Get Environment Variable    MONGO_ROOT_USER
+    ${mongo_password}=    Get Environment Variable    MONGO_ROOT_PASSWORD
 
     ${mongo_user}=        Strip String    ${mongo_user}
     ${mongo_password}=    Strip String    ${mongo_password}
