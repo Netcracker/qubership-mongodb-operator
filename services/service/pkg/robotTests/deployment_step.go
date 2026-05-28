@@ -72,47 +72,44 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 				Value: value,
 			})
 	}
-	secretKeyRef := map[string]struct {
-		secretName  string
-		keyInSecret string
-	}{
-		"MONGO_ROOT_USER":     {spec.Spec.MongoDB.MongoRootSecretName, utils.Username},
-		"MONGO_ROOT_PASSWORD": {spec.Spec.MongoDB.MongoRootSecretName, utils.Password},
+	secretVolumes := map[string]string{
+		spec.Spec.MongoDB.MongoRootSecretName: "/var/run/secrets/mongodb/mongo-root",
 	}
+
 	if spec.Spec.Backup.Install {
-		secretKeyRef["BACKUP_DAEMON_API_CREDENTIALS_USERNAME"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Backup.BackupApiSecretName, utils.Username}
-		secretKeyRef["BACKUP_DAEMON_API_CREDENTIALS_PASSWORD"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Backup.BackupApiSecretName, utils.Password}
+		secretVolumes[spec.Spec.Backup.BackupApiSecretName] =
+			"/var/run/secrets/mongodb/backup-api"
 	}
+
 	if spec.Spec.Dbaas.Install {
-		secretKeyRef["DBAAS_AGGREGATOR_USERNAME"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Dbaas.DbaasAggregatorSecretName, utils.Username}
-		secretKeyRef["DBAAS_AGGREGATOR_PASSWORD"] = struct {
-			secretName  string
-			keyInSecret string
-		}{spec.Spec.Dbaas.DbaasAggregatorSecretName, utils.Password}
+		secretVolumes[spec.Spec.Dbaas.DbaasAggregatorSecretName] =
+			"/var/run/secrets/mongodb/dbaas-aggregator"
 	}
-	for key, value := range secretKeyRef {
-		envs = append(envs,
-			v12.EnvVar{
-				Name: key,
-				ValueFrom: &v12.EnvVarSource{
-					SecretKeyRef: &v12.SecretKeySelector{
-						LocalObjectReference: v12.LocalObjectReference{
-							Name: value.secretName,
-						},
-						Key: value.keyInSecret,
-					},
+	secretVolumeMode := int32(256)
+	volumes := []v12.Volume{}
+	volumeMounts := []v12.VolumeMount{}
+
+	for secretName, mountPath := range secretVolumes {
+
+		volumeName := sanitizeVolumeName(secretName)
+
+		volumes = append(volumes, v12.Volume{
+			Name: volumeName,
+			VolumeSource: v12.VolumeSource{
+				Secret: &v12.SecretVolumeSource{
+					SecretName:  secretName,
+					DefaultMode: &secretVolumeMode,
 				},
-			})
+			},
+		})
+
+		volumeMounts = append(volumeMounts, v12.VolumeMount{
+			Name:      volumeName,
+			MountPath: mountPath,
+			ReadOnly:  true,
+		})
 	}
+
 	// Environment variable  End
 
 	var tolerations []v12.Toleration
@@ -133,7 +130,9 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 		spec.Spec.RobotTests.PriorityClassName,
 		spec.Spec.ServiceAccountName,
 		spec.Spec.RobotTests.Affinity,
-		spec.Spec.ImagePullPolicy)
+		spec.Spec.ImagePullPolicy,
+		volumeMounts,
+		volumes)
 
 	err := helperImpl.DeleteDeploymentAndPods(dc.Name, dc.Namespace, spec.Spec.WaitSeconds)
 	core.PanicError(err, log.Error, "RobotTests deployment config processing failed")
@@ -151,4 +150,8 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 	core.PanicError(err, log.Error, "RobotTests failed")
 
 	return nil
+}
+
+func sanitizeVolumeName(name string) string {
+	return strings.ReplaceAll(name, ".", "-")
 }

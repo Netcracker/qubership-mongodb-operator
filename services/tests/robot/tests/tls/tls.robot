@@ -1,10 +1,6 @@
 *** Variables ***
 ${DBAAS_HOST}                                     %{DBAAS_HOST}
-${DBAAS_AGGREGATOR_USERNAME}                      %{DBAAS_AGGREGATOR_USERNAME}
-${DBAAS_AGGREGATOR_PASSWORD}                      %{DBAAS_AGGREGATOR_PASSWORD}
 ${BACKUP_HOST}                                    %{BACKUP_HOST}
-${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}         %{BACKUP_DAEMON_API_CREDENTIALS_USERNAME}
-${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}         %{BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}
 ${TLS_ENABLED}                                    %{TLS_ENABLED=false}
 ${NAMESPACE}                                      %{OPENSHIFT_WORKSPACE_WA}
 
@@ -13,26 +9,34 @@ Library  String
 Library	 Collections
 Library  OperatingSystem
 Library  RequestsLibrary
-Library  ../lib/MongoDBLibrary.py  host=%{MONGO_HOST}
-...                                port=27017
-...                                user=%{MONGO_ROOT_USER}
-...                                password=%{MONGO_ROOT_PASSWORD}
-...                                database_name=test_tls
-...                                req_timeout_sec=%{WAIT_TIMEOUT}
-...                                host_datars=%{DATARS_HOST}
-...                                tls=${False}
-...                                tlsCAFile=${None}
+Resource  ../shared/keywords.robot
+Resource  ../dbaas/dbaas-shared.robot
+Resource  ../backup/backup-shared.robot
 Library  ../lib/KubernetesClient.py
 Suite Setup  Check HTTPS Enabling in Dbaas Aggregator
 
 *** Keywords ***
 Check HTTPS Enabling in Dbaas Aggregator
+    Load Secrets
+    Load Backup Secrets
+    Import Library    ${CURDIR}/../lib/MongoDBLibrary.py
+    ...    host=${MONGO_HOST}
+    ...    port=27017
+    ...    user=${MONGO_ROOT_USER}
+    ...    password=${MONGO_ROOT_PASSWORD}
+    ...    database_name=test_tls
+    ...    req_timeout_sec=${WAIT_TIMEOUT}
+    ...    host_datars=${DATARS_HOST}
+    ...    tls=${False}
+    ...    tlsCAFile=${None}
+
     ${env_dbaas_aggregator_host}=  Create List  DBAAS_AGGREGATOR_REGISTRATION_ADDRESS
     ${dbaas_aggregator_host}=  Get Environment Variables For Deployment Entity Container  dbaas-mongo-adapter  ${NAMESPACE}  dbaas-mongo-adapter  ${env_dbaas_aggregator_host}
     ${https_aggregator_enabled}=  Evaluate  "https" in "${dbaas_aggregator_host}"
     Set Suite Variable  ${https_aggregator_enabled}
     ${verify}=  Get Environment Variable  name=TLS_ROOTCERT  default=False
     ${port}=  Get Environment Variable  name=PORT  default=8080
+    Preparation dbaas shared
     Set Suite Variable  ${verify}
     Set Suite Variable  ${port}
 

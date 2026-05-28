@@ -13,9 +13,10 @@ import (
 
 func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace string, image string,
 	nodeSelector map[string]string, resources v1.ResourceRequirements,
-	env []v1.EnvVar, tolerations []v1.Toleration, numberOfReplicas int32, port int32, priorityClassName string, affinity *v1.Affinity) *v12.Deployment {
+	env []v1.EnvVar, tolerations []v1.Toleration, numberOfReplicas int32, port int32, priorityClassName string, affinity *v1.Affinity, volumeMounts []v1.VolumeMount, volumes []v1.Volume) *v12.Deployment {
 
 	allowPrivilegeEscalation := false
+	readOnlyRootFilesystem := true
 	dc := &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      utils.DbaasName,
@@ -58,6 +59,7 @@ func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace s
 							Image:           image,
 							ImagePullPolicy: spec.ImagePullPolicy,
 							SecurityContext: &v1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 								Capabilities: &v1.Capabilities{
 									Drop: []v1.Capability{"ALL"},
 								},
@@ -70,8 +72,9 @@ func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace s
 									Protocol:      "TCP",
 								},
 							},
-							Env:       env,
-							Resources: resources,
+							Env:          env,
+							VolumeMounts: volumeMounts,
+							Resources:    resources,
 							LivenessProbe: &v1.Probe{
 								ProbeHandler: v1.ProbeHandler{
 									TCPSocket: &v1.TCPSocketAction{
@@ -98,6 +101,9 @@ func DbaasDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, namespace s
 							},
 						},
 					},
+
+					Volumes: volumes,
+
 					NodeSelector: nodeSelector,
 					Affinity:     affinity,
 					Tolerations:  tolerations,

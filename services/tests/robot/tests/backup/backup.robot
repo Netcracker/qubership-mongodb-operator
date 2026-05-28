@@ -1,7 +1,5 @@
 *** Variables ***
 ${BACKUP_HOST}                                    %{BACKUP_HOST}
-${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}         %{BACKUP_DAEMON_API_CREDENTIALS_USERNAME}
-${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}         %{BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}
 ${EXTERNAL_BACKUP_PATH}                           %{EXTERNAL_BACKUP_PATH}
 
 
@@ -10,6 +8,7 @@ Library  String
 Library	 Collections
 Library	 RequestsLibrary
 Resource  ../shared/keywords.robot
+Resource  backup-shared.robot
 Library  ../lib/KubernetesClient.py
 Library    OperatingSystem
 Suite Setup  Preparation
@@ -18,6 +17,7 @@ Suite Teardown  Cleanup
 *** Keywords ***
 Preparation
     Prepare Shared
+    Load Backup Secrets
 
     ${full_restore}=  Check ENABLE_FULL_RESTORE environment variable on name=mongodb-backup-daemon is true
     Set Suite Variable  ${full_restore}

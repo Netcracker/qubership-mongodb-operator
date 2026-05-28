@@ -2,6 +2,7 @@
 
 *** Settings ***
 Library  String
+Library    OperatingSystem
 Resource  ../shared/keywords.robot
 Suite Setup  Preparation
 Suite Teardown  Cleanup

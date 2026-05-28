@@ -19,11 +19,26 @@ if [[ ! -z $DEBUG ]] && [[ ! -z ${DEBUG+x} ]]; then
 	set -x
 fi
 
+read_secret() {
+  local path="$1"
+  local fallback="$2"
+
+  if [ -f "$path" ]; then
+    cat "$path"
+  else
+    echo "$fallback"
+  fi
+}
+
+PROM_EXPORTER_USER="$(read_secret /var/run/secrets/mongodb/prom-exporter/username admin)"
+PROM_EXPORTER_PASSWORD="$(read_secret /var/run/secrets/mongodb/prom-exporter/password admin)"
+
+
 export HTTP_AUTH="$PROM_EXPORTER_USER:$PROM_EXPORTER_PASSWORD"
 
 EXPORT_MONGOS="${EXPORT_MONGOS:-true}"
-MONGO_MONITORING_USER="${MONGO_MONITORING_USER:-monitoring}"
-MONGO_MONITORING_PASSWORD="${MONGO_MONITORING_PASSWORD:-monitoring}"
+MONGO_MONITORING_USER="$(read_secret /var/run/secrets/mongodb/mongo-monitoring/username monitoring)"
+MONGO_MONITORING_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-monitoring/password monitoring)"
 
 MONGOS_URI="${MONGOS_URI:-mongodb://$MONGO_MONITORING_USER:$MONGO_MONITORING_PASSWORD@mongos:27017}"
 
@@ -72,7 +87,7 @@ cnfrs_member=$(echo "$MONGO_URI" | jq -r .cnfrsMembers)
 
 if [[ $EXPORT_MONGOS = true ]]; then
 	echo "Starting exporter for mongos"
-	exporter_cmd="/opt/mongodb_exporter --mongodb.uri=$MONGOS_URI --compatible-mode $mongosCollectors --web.listen-address=:9216 --mongodb.direct-connect=false"
+	exporter_cmd="/opt/mongodb_exporter --mongodb.uri=\"$MONGOS_URI\" --compatible-mode $mongosCollectors --web.listen-address=:9216 --mongodb.direct-connect=false"
 	if [[ "$cnfrs_member" == "" || "$cnfrs_member" == "null" ]] && [[ "$shard_members" == "" || "$shard_members" == "null" ]]; then
 	eval $exporter_cmd
 	else

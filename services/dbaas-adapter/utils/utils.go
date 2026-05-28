@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -48,4 +49,17 @@ func GetEnvBool(key string, fallback bool) bool {
 		return bvalue
 	}
 	return fallback
+}
+
+func GetSecret(path string, fallback string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fallback
+	}
+
+	val := strings.TrimSpace(string(data))
+	if val == "" {
+		return fallback
+	}
+	return val
 }

@@ -231,6 +231,7 @@ The list of Operator parameters is as follows:
 | `podSecurityContext.fsGroup`                      | false     | int     | 1001                              | The fsGroup of pods.                                                                                                                                                                                                                                                                         |
 | `podSecurityContext.runAsUser`                    | false     | int     | 1001                              | The runAsUser of pods.                                                                                                                                                                                                                                                                       |
 | `podSecurityContext.supplementalGroups`           | false     | string  | ""                                | The supplemental groups of pods.                                                                                                                                                                                                                                                             |
+| `podSecurityContext.seLinuxOptions`                    | false     | object     | `{}`                              | The SELinux context labels to apply to the pod.                                                                                                                                                                                                                                                                       |
 | `policies.tolerations[$idx].key`                  | false     | string  | ""                                | The taint key the toleration applies to.                                                                                                                                                                                                                                                     |
 | `policies.tolerations[$idx].operator`             | false     | string  | ""                                | The key relationship to the value.                                                                                                                                                                                                                                                           |
 | `policies.tolerations[$idx].value`                | false     | string  | ""                                | The taint value the toleration matches to.                                                                                                                                                                                                                                                   |
@@ -275,6 +276,7 @@ The list of MongoDB parameters is as follows:
 | Parameter                                                                    | Mandatory | Type           | Default              | Description                                                                                                                                                                                                                   |
 | ---------------------------------------------------------------------------- | --------- | -------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `mongodb.install`                                                            | true      | bool           | `true`               | If MongoDB needs to be installed.                                                                                                                                                                                              |
+| `mongodb.clusterAuthMode`                                                            | false      | string           | `keyfile`               | Specifies the authentication mode used between MongoDB cluster members. Supported values: `keyfile`, `x509` (described in the [Cluster Auth Mode](#cluster-auth-modes) section).                                                                                                                                                                                              |
 | `mongodb.flavor`                              | false     | string            | small   | The flavor of Mongodb deployment resources. Possible values are  `small`, `medium`, `large`.           |
 | `mongodb.dockerImage`                                                        | false     | string         | ``                   | The Docker image of MongoDB.                                                                                                                                                                                                   |
 | `mongodb.additionalNodeLabels`                                               | false     | object         | `{}`                 | The additional node labels for each mongo replica.                                                                                                                                                                             |
@@ -283,6 +285,8 @@ The list of MongoDB parameters is as follows:
 | `mongodb.rootUserRole`                                                       | false     | string         | `'root', '__system'` | The root user role in MongoDB.                                                                                                                                                                                                 |
 | `mongodb.cnfWiredTigerCacheGb`                                               | false     | string         | `0.12`               | The MongoDB Wired Tiger cache in GB for CNFRS replica.                                                                                                                                                                         |
 | `mongodb.dataWiredTigerCacheGb`                                              | false     | string         | `0.25`               | The MongoDB Wired Tiger cache in GB for DATARS replica.                                                                                                                                                                        |
+| `mongodb.cnfOpLogSizeMb`                                                     | false      |       int | [Default Size](https://www.mongodb.com/docs/manual/core/replica-set-oplog/#oplog-size) | The MongoDB OpLog size in MB for CNFRS replica. |
+| `mongodb.dataOpLogSizeMb`                                                    | false |        int | [Default Size](https://www.mongodb.com/docs/manual/core/replica-set-oplog/#oplog-size) | The MongoDB OpLog size in MB for DATARS replica. |
 | `mongodb.customDataRSParameters`                                             | false     | list of string | `[]`                 | The custom parameters for DATARS replica.                                                                                                                                                                                      |
 | `mongodb.cnfResources.limits.memory`                                         | true      | Quantity       | `512Mi`              | The memory limit of CNFRS replica.                                                                                                                                                                                             |
 | `mongodb.cnfResources.limits.cpu`                                            | true      | Quantity       | `300m`               | The CPU limit of CNFRS replica.                                                                                                                                                                                                |
@@ -774,6 +778,26 @@ To pass pre-generated certificates as deploy parameters use the following parame
 `tls.disasterRecovery.certificates.tls_crt` - a base 64 encoded certificate for DR Site Manager, DNS name is `mongodb-disaster-recovery.<namespace>.svc`
 
 `tls.disasterRecovery.certificates.tls_key` - a base 64 encoded key for Dbaas Adapter
+
+
+### Cluster Auth Modes
+
+#### `keyFile` (default)
+
+Uses a shared key file for internal authentication between MongoDB cluster members.  
+All replica set members and sharded cluster components use the same key to authenticate and establish trusted inter-node communication.
+
+#### `x509`
+
+Uses X.509 certificates for internal authentication between MongoDB cluster members.  
+TLS must be enabled when using `x509` authentication.
+
+Separate certificates are generated for:
+- Each shard replica set
+- Config server replica set
+- `mongos` router
+
+Cluster members authenticate each other using their certificates during inter-node communication.
 
 # Upgrade
 

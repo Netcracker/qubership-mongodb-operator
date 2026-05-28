@@ -526,3 +526,40 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
     {{- end -}}
   {{- end -}}
 {{- end -}}
+
+{{- define "mongodb.x509.generateCNFRSFQDNs" -}}
+{{- $size := int .Values.schemaSettings.cnfReplicaSize -}}
+{{- $namespace := .Release.Namespace -}}
+{{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
+
+- localhost
+{{- range $i := until $size }}
+- {{ printf "cnfrs%d-0.cnfrs.%s.svc.%s" $i $namespace $domain }}
+{{- end }}
+
+{{- end }}
+
+
+{{- define "mongodb.x509.generateShardFQDNs" -}}
+{{- $shard := .shard -}}
+{{- $ctx := .context -}}
+
+{{- $size := int $ctx.Values.schemaSettings.dataReplicaSize -}}
+{{- $namespace := $ctx.Release.Namespace -}}
+{{- $domain := $ctx.Values.schemaSettings.thisDomainName | default "cluster.local" -}}
+
+- localhost
+{{- range $r := until $size }}
+- {{ printf "datars%d%d-0.datars%d.%s.svc.%s" $shard $r $shard $namespace $domain }}
+{{- end }}
+
+{{- end }}
+
+{{- define "mongodb.x509.generateMongosFQDNs" -}}
+{{- $namespace := .Release.Namespace -}}
+{{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
+
+- localhost
+- {{ printf "mongos.%s.svc.%s" $namespace $domain }}
+
+{{- end }}
