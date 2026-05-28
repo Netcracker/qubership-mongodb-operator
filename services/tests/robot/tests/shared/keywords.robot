@@ -55,7 +55,7 @@ Test Mongo Connection
 Check ${var} environment variable on ${pod} is ${value}
     ${val}=  Get Var On Pod  ${var}  ${pod}
     ${res}=  set variable  '${val}'=='${value}'
-    [Return]  ${res}
+    RETURN  ${res}
 
 Check ${document} Should Exist In ${collection} Of ${db}
     ${result}=  Check Document Exists  ${collection}  ${document}  database_name=${db}
@@ -75,4 +75,4 @@ Create random DB with data
 
     ${collection}=  Generate Random String  10  [LOWER]
 
-    [Return]  ${dbName}  ${collection}  ${document}
+    RETURN  ${dbName}  ${collection}  ${document}

@@ -85,7 +85,7 @@ Get Request To ${point}
     Log  ${resp.status_code}
     Log  ${resp.content}
 
-    [Return]  ${resp}
+    RETURN  ${resp}
 
 Post Request With ${doc} Data To ${point}
     ${heads}=  Set Variable  ${headers}
@@ -96,7 +96,7 @@ Post Request With ${doc} Data To ${point}
     Log  ${resp.status_code}
     Log  ${resp.content}
 
-    [Return]  ${resp}
+    RETURN  ${resp}
 
 Put Request With ${doc} Data To ${point}
     ${heads}=  Set Variable  ${headers}
@@ -107,7 +107,7 @@ Put Request With ${doc} Data To ${point}
     Log  ${resp.status_code}
     Log  ${resp.content}
 
-    [Return]  ${resp}
+    RETURN  ${resp}
 
 Wait For ${job} Job Completion With ${attempts} Attempts
     FOR    ${CheckStatus}    IN RANGE    ${attempts}
@@ -125,7 +125,7 @@ Wait For ${job} Job Completion With ${attempts} Attempts
     END
     Log  ${resp}
     Log  ${resp.content}
-    [Return]  ${resp}
+    RETURN  ${resp}
 
 Check Meta Values With ${col1} And ${col2} In ${db}
     ${doc}=  Set Variable  {"metadata": {"${col1}":"${col2}"}}
@@ -161,7 +161,7 @@ Create Database And Return Users Names
     Check Roles Existence In Response  ${resp}
     ${resp_con_properties}=  Get From Dictionary  ${resp.json()}  connectionProperties
     ${db_users}=  Get Multi Users Name  ${resp_con_properties}
-    [Return]  ${db_users}
+    RETURN  ${db_users}
 
 Check Roles Existence In Response
     [Arguments]  ${resp}

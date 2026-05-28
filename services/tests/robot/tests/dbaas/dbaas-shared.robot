@@ -27,7 +27,9 @@ Get Dbaas Aggregator version
     ${env_dbaas_aggregator_host}=  Create List  DBAAS_AGGREGATOR_REGISTRATION_ADDRESS
     ${dbaas_aggregator_host}=  Get Environment Variables For Deployment Entity Container  dbaas-mongo-adapter  ${NAMESPACE}  dbaas-mongo-adapter  ${env_dbaas_aggregator_host}
     Create Session    dbaas_aggregator   ${dbaas_aggregator_host["DBAAS_AGGREGATOR_REGISTRATION_ADDRESS"]}
+    Evaluate    logging.getLogger("urllib3").setLevel(logging.ERROR)    logging
     ${resp}=    Run Keyword And Ignore Error    Get On Session    dbaas_aggregator    /api-version
+    Evaluate    logging.getLogger("urllib3").setLevel(logging.WARNING)    logging
     Log    ${resp[0]}
     Log    ${resp[1]}
 
@@ -44,7 +46,7 @@ Get Dbaas Aggregator version
         ${apiVersion}=    Set Variable    v2
     END
     
-    [Return]    ${apiVersion}
+    RETURN    ${apiVersion}
 
 Check Enabled Multi Users
     ${env_variables}=  Create List  MULTI_USERS_ENABLED

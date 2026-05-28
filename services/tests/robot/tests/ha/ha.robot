@@ -34,7 +34,7 @@ Get Primary And Secondary Replicas
     ${rs_status_primary}  ${rs_status_secondary} =  get_rs_status  host_repl=${var}
     Log To Console  \nPrimary for ${var}: ${rs_status_primary}
     Log To Console  \nSecondary for ${var}: ${rs_status_secondary}
-    [Return]  ${rs_status_primary}  ${rs_status_secondary}
+    RETURN  ${rs_status_primary}  ${rs_status_secondary}
 
 Reelection Primary
     [Arguments]  ${rs_status_primary}  ${var}
