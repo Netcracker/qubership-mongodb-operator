@@ -61,103 +61,6 @@ Configure MongoDB statefulset names in disaster recovery health check format.
     {{- end }}
     {{- join "," $lst }}
 {{- end -}}
-[MongoDB Operator] Get Vault kv path to secret
-Arguments:
-Dictionary with:
-1. "cloudPublicHost" - Server Hostname
-2. "namespace" - Namespace
-2. "serviceAccount" - Service Account
-3. "secretName" - Name of the secret
-Usage example:
-{{include "vault_kv_path" (dict "cloudPublicHost" .Values.CLOUD_PUBLIC_HOST "namespace" .Release.Namespace "serviceAccount" .Values.operator.operatorName "secretName" "sample-secret") }}
-*/}}
-{{- define "vault_kv_path" -}}
-    {{ printf "secret/nc-%s/%s/%s/%s#password" .cloudPublicHost .namespace .serviceAccount .secretName }}
-{{- end -}}
-
-{{/*
-[MongoDB Operator] Get Vault DB Engine path
-Arguments:
-Dictionary with:
-1. "cloudPublicHost" - Server Hostname
-2. "namespace" - Namespace
-2. "serviceAccount" - Service Account
-3. "username" - Username
-Usage example:
-{{include "vault_db_path" (dict "cloudPublicHost" .Values.CLOUD_PUBLIC_HOST "namespace" .Release.Namespace "serviceAccount" .Values.operator.operatorName "username" "sample-user") }}
-*/}}
-{{- define "vault_db_path" -}}
-    {{ printf "database/static-creds/nc-%s_%s_%s_%s#password" .cloudPublicHost .namespace .serviceAccount .username }}
-{{- end -}}
-
-
-{{- define "nosql.core.secret.vault" -}}
-{{ $_ := set . "userEnv" "" }}
-{{ $_ := set . "userPass" "" }}
-{{include "nosql.core.secret.vault.fromEnv" $_ }}
-{{- end -}}
-
-{{/*
-[NoSQL Operator Core] Vault secret template
-Arguments:
-Dictionary with:
-1. "vlt" - .vaultRegistration section
-3. "secret" section includes next elements:
-    .secretName (required)
-    .password (required)
-    .username (optional)
-    .role (optinal)
-    .authDb (optional)
-    .vaultPasswordPath (optional)
-4. "isInternal" is a required boolean parameter
-Usage example:
-{{template "nosql.core.secret.vault" (dict "vlt" .Values.vaultRegistration "secret" (dict "secretName" "mongodb-root-credentials.v1" "password" .Values.mongodb.rootPassword) "userEnv" .Values.INFRA_MONGO_DB_USERNAME "passEnv" .Values.INFRA_MONGO_DB_PASSWORD))}}
-*/}}
-{{- define "nosql.core.secret.vault.fromEnv" -}}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .secret.secretName }}
-stringData:
-  {{- if .vlt.enabled }}
-    {{- if .secret.vaultPasswordPath }}
-  password: {{ .secret.vaultPasswordPath | quote }}
-    {{- else }}
-        {{- if (.isInternal) }}
-            {{- if (.secret.db) }}
-  password: 'vault:{{include "vault_db_path" (set . "username" .secret.username) }}'
-            {{- else }}
-  password: 'vault:{{include "vault_kv_path" (set . "secretName" .secret.secretName) }}'
-            {{- end }}
-        {{- else }}
-  password: {{ include "fromEnv" (dict "envName" .passEnv "default" .secret.password) | quote }}
-        {{- end }}
-    {{- end }}
-  {{- if .secret.nonVaultPassword }}
-  nonVaultPassword: {{ include "fromEnv" (dict "envName" .passEnv "default" .secret.password) | quote }}
-  {{- end }}
-  {{- else }}
-  password: {{ include "fromEnv" (dict "envName" .passEnv "default" .secret.password) | quote }}
-  {{- end }}
-  {{- if .secret.username }}
-  username: {{ include "fromEnv" (dict "envName" .userEnv "default" .secret.username) | quote }} 
-  {{- end }}
-  {{- if .secret.role }}
-  role: {{ .secret.role | quote }}
-  {{- end }}
-  {{- if .secret.authDb }}
-  auth-database: {{ .secret.authDb | quote }}
-  {{- end }}
-type: Opaque
-{{- end -}}
-
-{{/*
-[NoSQL Operator Core] Internal secret template
-{{template "nosql.core.secret.internal" (dict "vlt" .Values.vaultRegistration "secret" .Values.redis)}}
-*/}}
-{{- define "nosql.core.secret.internal" -}}
-{{include "nosql.core.secret.vault" (set . "isInternal" true)}}
-{{- end -}}
 
 
 {{/*
@@ -185,29 +88,6 @@ spec:
       {{- end }}
 {{- end -}}
 
-{{/*
-[NoSQL Operator Core] External secret template
-{{template "nosql.core.secret.external" (dict "vlt" .Values.vaultRegistration "secret" .Values.redis)}}
-*/}}
-{{- define "nosql.core.secret.external" -}}
-{{include "nosql.core.secret.vault" (set . "isInternal" false)}}
-{{- end -}}
-
-{{/*
-[MongoDB Operator Core] from env of from values
-Dictionary with:
-1. "envName" - name of env var to get value from
-2.  "default" - default value from values.yaml
-{{template "fromEnv" (dict "envName" ".Values.VAULT_ADDR" "default" .Values.vaultRegistration.token) }}
-*/}}
-{{- define "fromEnv" -}}
-  {{- $envValue := .envName -}}
-  {{- if and (ne ($envValue | toString) "<nil>") (ne ($envValue | toString) "") -}}
-    {{- .envName -}}
-  {{- else -}}
-    {{- .default -}}
-  {{- end -}}
-{{- end -}}
 
 {{/*
 Dictionary with:
@@ -224,25 +104,6 @@ Uses value from values.yaml if defined, otherwise value from environment variabl
     {{- .envVar -}}
   {{- else -}}
     {{- .default -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-[MongoDB Operator Core] from env of from values
-Dictionary with:
-1. "envName" - name of env var to get value from
-2.  "default" - default value from values.yaml
-{{template "ifEnvThenDefault" (dict "envName" .Values.VAULT_ADDR "then" (printf %s_%s .Values.VAULT_ADDR "const" ) "default" .Values.vaultRegistration.token) }}
-*/}}
-{{- define "ifEnvThenDefault" -}}
-  {{- $value := .default -}}
-  {{- if .envName -}}
-    {{- $value = .then -}}
-  {{- else -}}
-    {{- $value = .default -}}
-  {{- end -}}
-  {{- if $value -}}
-  {{ printf "%s" $value }}
   {{- end -}}
 {{- end -}}
 

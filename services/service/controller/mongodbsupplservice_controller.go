@@ -227,7 +227,7 @@ func (s *MongodbServiceInstanceReconciler) GetDeploymentVersion() string {
 }
 
 func (s *MongodbServiceInstanceReconciler) GetVaultRegistration() *types.VaultRegistration {
-	return &s.Instance.Spec.VaultRegistration
+	return &types.VaultRegistration{}
 }
 
 func (s *MongodbServiceInstanceReconciler) GetMessage() string {

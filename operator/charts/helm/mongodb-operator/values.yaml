@@ -224,29 +224,6 @@ tls:
     tls_crt: 
     ca_crt: 
 
-vaultRegistration:
-  tokenSecretName: vault-secret
-  dockerImage: banzaicloud/vault-env:1.19.0
-  enabled: false
-  path: kv
-  url:
-  role: mongodb-role
-  method: kubernetes
-  rotationPeriod: 8640
-  initContainerResources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      cpu: 20m
-      memory: 64Mi
-
-vaultDBEngine:
-  name: mongodb-db-engine
-  enabled: false
-  pluginName: mongodb-database-plugin
-  allowedRoles: nc*
-
 role:
   # Specifies whether a role should be created
   create: yes

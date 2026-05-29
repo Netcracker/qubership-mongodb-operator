@@ -889,18 +889,6 @@ For OpenShift and Kubernetes:
 [oc | kubectl ]  delete configmap --all -n <mongo namespace>
 ```
 
-# Vault Integration
-
-The process of Vault integration is specified below.
-
-## Credential Rotation
-
-To rotate admin credentials, navigate to **Application > Pods** and open the **Terminal** tab on the MongoDB Operator pod. From the pod terminal, execute the following command:
-
-```
-curl -XPOST localhost:8080/rotate-roles
-```
-
 # If Operator Needs to be Restarted
 
 The Mongodb operator is designed in a way that restart will not execute any steps if Mongoservice CR has no changes.    

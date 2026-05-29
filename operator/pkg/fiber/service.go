@@ -10,7 +10,6 @@ import (
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
-	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/vault"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -18,7 +17,6 @@ import (
 type MongoFiberService interface {
 	GetKeyFile() string
 	Health() Status
-	RotateRoles() error
 	AddDRReplicas() error
 	FlushInMemoryData() error
 	Compact(dbName string, collectionName string) error
@@ -111,73 +109,6 @@ func (m *MongoFiberServiceImpl) AddDRReplicas() error {
 	}
 
 	return nil
-}
-
-func (m *MongoFiberServiceImpl) RotateRoles() error {
-	spec := m.ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	logger := m.ctx.Get(constants.ContextLogger).(*zap.Logger)
-	request := m.ctx.Get(constants.ContextRequest).(reconcile.Request)
-	vaultHelper := m.ctx.Get(constants.ContextVault).(vault.VaultHelper)
-	utilsHelper := m.ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
-	cloudPublicHost := spec.Spec.CloudPublicHost
-	roles := make([]string, 0)
-	podSelectors := make([]map[string]string, 0)
-
-	registerRoleForRotation(m.ctx, logger, &roles, spec.Spec.MongoDB.MongoRootSecretName, cloudPublicHost, request.Namespace, spec.Spec.ServiceAccountName)
-
-	// TODO services
-	// if spec.Spec.Backup.Install {
-	// 	podSelectors = append(podSelectors, map[string]string{
-	// 		utils.Name: utils.BackupDaemon,
-	// 	})
-	// 	registerRoleForRotation(m.ctx, logger, &roles, utils.BackupBackupCreds, cloudPublicHost, request.Namespace, spec.Spec.ServiceAccountName)
-	// 	registerRoleForRotation(m.ctx, logger, &roles, utils.BackupRestoreCreds, cloudPublicHost, request.Namespace, spec.Spec.ServiceAccountName)
-	// }
-
-	// if spec.Spec.Dbaas.Install {
-	// 	podSelectors = append(podSelectors, map[string]string{
-	// 		utils.Name: utils.DbaasName,
-	// 	})
-	// 	registerRoleForRotation(m.ctx, logger, &roles, utils.DbaasAdminCreds, cloudPublicHost, request.Namespace, spec.Spec.ServiceAccountName)
-	// }
-
-	// if spec.Spec.PrometheusExporter.Install {
-	// 	podSelectors = append(podSelectors, map[string]string{
-	// 		utils.Name: utils.MongoPrometheusExporter,
-	// 	})
-	// 	registerRoleForRotation(m.ctx, logger, &roles, utils.MonitoringCreds, cloudPublicHost, request.Namespace, spec.Spec.ServiceAccountName)
-	// }
-
-	for _, role := range roles {
-		if err := vaultHelper.RotateRole(role); err != nil {
-			return err
-		}
-	}
-
-	for _, selector := range podSelectors {
-
-		podList, err := utilsHelper.ListPods(request.Namespace, selector)
-		if err != nil {
-			return err
-		}
-
-		for podIdx := 0; podIdx < len(podList.Items); podIdx++ {
-			podForRestart := podList.Items[podIdx]
-			logger.Info(fmt.Sprintf("Restarting %v", podForRestart.ObjectMeta.Name))
-			if err = utilsHelper.RestartPod(&podForRestart, request.Namespace, spec.Spec.WaitSeconds); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func registerRoleForRotation(ctx core.ExecutionContext, logger *zap.Logger, roles *[]string,
-	secretName, cloudPublicHost, namespace, serviceAccount string) {
-	creds, err := utils.ReadSecret(ctx, secretName, namespace)
-	core.PanicError(err, logger.Error, secretName+" secret reading failed")
-	*roles = append(*roles, vault.GetVaultRoleName(cloudPublicHost, namespace, serviceAccount, string(creds.Data[utils.Username])))
 }
 
 func (m *MongoFiberServiceImpl) FlushInMemoryData() error {

@@ -27,20 +27,18 @@ import (
 
 // MongodbDeploymentSpec defines the desired state of MongodbDeployment
 type MongodbDeploymentSpec struct {
-	DisasterRecovery           *DisasterRecovery       `json:"disasterRecovery,omitempty"`
-	DeploymentVersion          string                  `json:"deploymentVersion,omitempty"`
-	SchemaSettings             SchemaSettings          `json:"schemaSettings,omitempty" common:"true"`
-	Recycler                   Recycler                `json:"recycler,omitempty"`
-	StopOnFailedResourceUpdate bool                    `json:"stopOnFailedResourceUpdate,omitempty"`
-	WaitSeconds                int                     `json:"waitSeconds,omitempty"`
-	AuthDb                     string                  `json:"authDb,omitempty"`
-	IpV6                       bool                    `json:"ipV6,omitempty"`
-	PodSecurityContext         *v1.PodSecurityContext  `json:"podSecurityContext,omitempty"`
-	Policies                   *Policies               `json:"policies,omitempty" common:"true"`
-	VaultRegistration          types.VaultRegistration `json:"vaultRegistration,omitempty" common:"true"`
-	VaultDBEngine              types.VaultDBEngine     `json:"vaultDBEngine"  common:"true"`
-	ServiceAccountName         string                  `json:"serviceAccountName"`
-	ImagePullPolicy            v1.PullPolicy           `json:"imagePullPolicy,omitempty" common:"true"`
+	DisasterRecovery           *DisasterRecovery      `json:"disasterRecovery,omitempty"`
+	DeploymentVersion          string                 `json:"deploymentVersion,omitempty"`
+	SchemaSettings             SchemaSettings         `json:"schemaSettings,omitempty" common:"true"`
+	Recycler                   Recycler               `json:"recycler,omitempty"`
+	StopOnFailedResourceUpdate bool                   `json:"stopOnFailedResourceUpdate,omitempty"`
+	WaitSeconds                int                    `json:"waitSeconds,omitempty"`
+	AuthDb                     string                 `json:"authDb,omitempty"`
+	IpV6                       bool                   `json:"ipV6,omitempty"`
+	PodSecurityContext         *v1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+	Policies                   *Policies              `json:"policies,omitempty" common:"true"`
+	ServiceAccountName         string                 `json:"serviceAccountName"`
+	ImagePullPolicy            v1.PullPolicy          `json:"imagePullPolicy,omitempty" common:"true"`
 	MongoDB                    `json:"mongodb"`
 	TLS                        `json:"tls,omitempty" common:"true"`
 	CloudPublicHost            string `json:"cloudPublicHost,omitempty"`

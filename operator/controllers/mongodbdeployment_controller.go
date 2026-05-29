@@ -140,7 +140,7 @@ func (s *MongodbDeploymentInstanceReconciler) GetDeploymentVersion() string {
 }
 
 func (s *MongodbDeploymentInstanceReconciler) GetVaultRegistration() *types.VaultRegistration {
-	return &s.Instance.Spec.VaultRegistration
+	return &types.VaultRegistration{}
 }
 
 func (s *MongodbDeploymentInstanceReconciler) GetMessage() string {

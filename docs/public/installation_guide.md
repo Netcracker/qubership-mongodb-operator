@@ -492,16 +492,6 @@ The list of Vault Registration parameters is as follows:
 
 The parameter' examples for the different scenarios of deployment are given below.
 
-### Vault Registration
-
-```  
-vaultRegistration:
-  enabled: true
-  url: http://vault-service.vault-test:8200
-vaultDBEngine:
-  enabled: true
-
-```
 
 ### Different Sizes for MongoDB Volumes
 

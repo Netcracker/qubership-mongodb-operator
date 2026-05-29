@@ -168,34 +168,6 @@
                 }
             }
         },
-        "/rotate-roles": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Operator API"
-                ],
-                "summary": "Rotate Vault Roles",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/rs-status": {
             "get": {
                 "description": "Returns output of rs.status()",
