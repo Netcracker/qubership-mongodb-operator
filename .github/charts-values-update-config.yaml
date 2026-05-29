@@ -1,0 +1,26 @@
+---
+
+# Charts release configuration file example
+# This file is used to update the version of the helm charts and images in the values.yaml file
+# It is used in the helm-charts-release action
+# ${release} is replaced with the release version provided in the workflow
+
+charts:
+  - name: mongodb-operator
+    chart_file: operator/charts/helm/mongodb-operator/Chart.yaml
+    values_file: operator/charts/helm/mongodb-operator/values.yaml
+    image:
+      - ghcr.io/netcracker/qubership-mongodb-operator:${release}
+      - ghcr.io/netcracker/qubership-mongodb-operator-transfer:${release}
+      - ghcr.io/netcracker/docker-mongo-7:${release}
+      - ghcr.io/netcracker/docker-mongo-8:${release}
+  - name: mongodb-services
+    chart_file: services/service/charts/helm/mongodb-services/Chart.yaml
+    values_file: services/service/charts/helm/mongodb-services/values.yaml
+    image:
+      - ghcr.io/netcracker/mongodb-supplementary:${release}
+      - ghcr.io/netcracker/mongodb-supplementary-transfer:${release}
+      - ghcr.io/netcracker/mongodb-docker-tests:${release}
+      - ghcr.io/netcracker/mongodb-docker-backup-daemon:${release}
+      - ghcr.io/netcracker/mongodb-docker-dbaas-adapter:${release}
+      - ghcr.io/netcracker/mongodb-docker-prometheus-exporter:${release}

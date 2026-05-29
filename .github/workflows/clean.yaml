@@ -31,9 +31,9 @@ jobs:
             context: ""
           - name: mongodb-docker-prometheus-exporter
             context: ""
-          - name: docker-mongo-7.0.31
+          - name: docker-mongo-7
             context: ""
-          - name: docker-mongo-8.0.20
+          - name: docker-mongo-8
             context: ""
     steps:
       - name: Prepare Tag
