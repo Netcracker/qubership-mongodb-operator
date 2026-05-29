@@ -122,6 +122,15 @@ DNS names used to generate SSL certificate with "Subject Alternative Name" field
   {{- $fqdnList | toYaml -}} 
 {{- end -}}
 
+{{- define "fromEnv" -}}
+  {{- $envValue := .envName -}}
+  {{- if and (ne ($envValue | toString) "<nil>") (ne ($envValue | toString) "") -}}
+    {{- .envName -}}
+  {{- else -}}
+    {{- .default -}}
+  {{- end -}}
+{{- end -}}
+
 {{- define "mongodb.generateDATARSFQDNs" -}}
   {{- $size := int .Values.schemaSettings.dataReplicaSize -}}
   {{- $shCount := int .Values.schemaSettings.shardCount -}}

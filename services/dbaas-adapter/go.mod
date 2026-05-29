@@ -17,7 +17,7 @@ require (
 	github.com/valyala/fasthttp v1.52.0 // indirect
 	go.mongodb.org/mongo-driver v1.17.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/net v0.54.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
 )
