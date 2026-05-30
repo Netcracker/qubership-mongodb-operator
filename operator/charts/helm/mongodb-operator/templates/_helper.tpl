@@ -122,6 +122,13 @@ DNS names used to generate SSL certificate with "Subject Alternative Name" field
   {{- $fqdnList | toYaml -}} 
 {{- end -}}
 
+{{/*
+[MongoDB Operator Core] from env of from values
+Dictionary with:
+1. "envName" - name of env var to get value from
+2.  "default" - default value from values.yaml
+{{template "fromEnv" (dict "envName" ".Values.VAULT_ADDR" "default" .Values.vaultRegistration.token) }}
+*/}}
 {{- define "fromEnv" -}}
   {{- $envValue := .envName -}}
   {{- if and (ne ($envValue | toString) "<nil>") (ne ($envValue | toString) "") -}}
@@ -130,6 +137,57 @@ DNS names used to generate SSL certificate with "Subject Alternative Name" field
     {{- .default -}}
   {{- end -}}
 {{- end -}}
+
+
+{{- define "nosql.core.secret" -}}
+{{ $_ := set . "userEnv" "" }}
+{{ $_ := set . "passEnv" "" }}
+{{ include "nosql.core.secret.fromEnv" $_ }}
+{{- end -}}
+
+{{/*
+[NoSQL Operator Core] Secret template
+
+Arguments:
+Dictionary with:
+1. "secret" section includes next elements:
+    .secretName (required)
+    .password (required)
+    .username (optional)
+    .role (optional)
+    .authDb (optional)
+
+Usage example:
+{{template "nosql.core.secret" (dict "secret" (dict "secretName" "mongodb-root-credentials.v1" "password" .Values.mongodb.rootPassword) "userEnv" .Values.INFRA_MONGO_DB_USERNAME "passEnv" .Values.INFRA_MONGO_DB_PASSWORD)}}
+*/}}
+{{- define "nosql.core.secret.fromEnv" -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .secret.secretName }}
+stringData:
+  password: {{ include "fromEnv" (dict "envName" .passEnv "default" .secret.password) | quote }}
+  {{- if .secret.username }}
+  username: {{ include "fromEnv" (dict "envName" .userEnv "default" .secret.username) | quote }}
+  {{- end }}
+  {{- if .secret.role }}
+  role: {{ .secret.role | quote }}
+  {{- end }}
+  {{- if .secret.authDb }}
+  auth-database: {{ .secret.authDb | quote }}
+  {{- end }}
+type: Opaque
+{{- end -}}
+
+{{/*
+[NoSQL Operator Core] Internal secret template
+
+{{template "nosql.core.secret.internal" (dict "secret" .Values.redis)}}
+*/}}
+{{- define "nosql.core.secret.internal" -}}
+{{ include "nosql.core.secret" . }}
+{{- end -}}
+
 
 {{- define "mongodb.generateDATARSFQDNs" -}}
   {{- $size := int .Values.schemaSettings.dataReplicaSize -}}
