@@ -166,8 +166,6 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 		return err
 	}
 
-	coreUtils.VaultPodSpec(&dc.Spec.Template.Spec, []string{"python3", "/opt/backup/backup-daemon.py"}, spec.Spec.VaultRegistration)
-
 	err = utils.CreateRuntimeObjectContextWrapper(ctx, dc, dc.ObjectMeta)
 
 	if err != nil {

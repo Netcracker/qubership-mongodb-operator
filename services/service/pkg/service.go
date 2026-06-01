@@ -15,7 +15,6 @@ import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
 
-	// "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/vault"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -97,16 +96,6 @@ func (r *MongoServiceBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	pass := string(secret.Data[utils.Password])
 	user := string(secret.Data[utils.Username])
-	// var vaultErr error
-	if spec.Spec.VaultRegistration.Enabled {
-		// vaultHelper := ctx.Get(constants.ContextVault).(vault.VaultHelper)
-		// pass, vaultErr = vaultHelper.ResolvePassword(pass)
-		// if vaultErr != nil {
-		// 	panic("failed to resolve mongodb password from vault")
-		// }
-		pass = "vault-admin"
-		user = "vault-admin"
-	}
 
 	//TODO
 	mongodService := &driver.MongoServiceImpl{

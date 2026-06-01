@@ -48,7 +48,6 @@ var (
 type MongoDbAdministration struct {
 	logger            *zap.Logger
 	mongodService     MongoService
-	vaultEnabled      bool
 	apiVersion        string
 	supportedRoles    []string
 	supportedFeatures map[string]bool
@@ -58,7 +57,7 @@ type metadataDocument struct {
 	Metadata map[string]interface{}
 }
 
-func GetMongoDbAdministration(logger *zap.Logger, hostname string, port int, user string, pass string, authDb string, vaultEnabled bool, apiVersion string, supportedRoles []string, supportedFeatures map[string]bool) service.DbAdministration {
+func GetMongoDbAdministration(logger *zap.Logger, hostname string, port int, user string, pass string, authDb string, apiVersion string, supportedRoles []string, supportedFeatures map[string]bool) service.DbAdministration {
 	return &MongoDbAdministration{
 		logger: logger,
 		mongodService: &MongoServiceImpl{
@@ -71,7 +70,6 @@ func GetMongoDbAdministration(logger *zap.Logger, hostname string, port int, use
 				authDb:   authDb,
 			},
 		},
-		vaultEnabled:      vaultEnabled,
 		apiVersion:        apiVersion,
 		supportedRoles:    supportedRoles,
 		supportedFeatures: supportedFeatures,
@@ -80,13 +78,7 @@ func GetMongoDbAdministration(logger *zap.Logger, hostname string, port int, use
 
 // todo identical
 func (c *MongoDbAdministration) getConnectionProperties(dbName string, username string, password string, role string) dao.ConnectionProperties {
-	var authDbName string
-	if c.vaultEnabled {
-		authDbName = c.mongodService.GetConfiguration().GetAuthDb()
-	} else {
-		authDbName = dbName
-	}
-
+	authDbName := dbName
 	connectionProps := dao.ConnectionProperties{
 		"url": fmt.Sprintf("mongodb://%s:%d/%s",
 			c.mongodService.GetConfiguration().GetHost(),
@@ -238,12 +230,7 @@ func (c *MongoDbAdministration) CreateDatabase(ctx context.Context, requestOnCre
 	var resources []dao.DbResource
 
 	//create user for database
-	var authDb string
-	if c.vaultEnabled {
-		authDb = c.mongodService.GetConfiguration().GetAuthDb()
-	} else {
-		authDb = logicalDatabaseName
-	}
+	authDb := logicalDatabaseName
 
 	if c.GetVersion() == "v2" {
 		logger.Debug("v2 starting role creating")
@@ -469,11 +456,8 @@ func (c *MongoDbAdministration) CreateUser(ctx context.Context, userName string,
 	} else {
 		logicalDbName = requestOnCreateUser.DbName
 	}
-	if c.vaultEnabled {
-		authDb = c.mongodService.GetConfiguration().GetAuthDb()
-	} else {
-		authDb = logicalDbName
-	}
+
+	authDb = logicalDbName
 	if userName == "" {
 		userName = c.generateUserName()
 	}

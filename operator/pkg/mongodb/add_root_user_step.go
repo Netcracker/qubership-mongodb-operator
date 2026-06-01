@@ -88,20 +88,3 @@ func (r *UpdateContextAuthMongo) Execute(ctx core.ExecutionContext) error {
 
 	return nil
 }
-
-type ResetNonVaultPassword struct {
-	core.DefaultExecutable
-}
-
-func (r *ResetNonVaultPassword) Execute(ctx core.ExecutionContext) error {
-	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
-	secret, err := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
-	if err != nil {
-		return err
-	}
-
-	secret.Data[utils.NonVaultPassword] = []byte{}
-
-	return utils.CreateRuntimeObjectContextWrapper(ctx, secret, secret.ObjectMeta)
-}

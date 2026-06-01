@@ -65,26 +65,24 @@ type MongodbSupplServiceSpec struct {
 	Dbaas                     `json:"dbaas"`
 	PrometheusExporter        `json:"prometheusExporter"`
 	RobotTests                `json:"robotTests"`
-	TLS                       types.TLS               `json:"tls,omitempty"`
-	DeploymentVersion         string                  `json:"deploymentVersion,omitempty"`
-	Recycler                  types.Recycler          `json:"recycler,omitempty"`
-	WaitSeconds               int                     `json:"waitSeconds,omitempty"`
-	PodSecurityContext        *v1.PodSecurityContext  `json:"podSecurityContext,omitempty"`
-	ServiceAccountName        string                  `json:"serviceAccountName"`
-	ImagePullPolicy           v1.PullPolicy           `json:"imagePullPolicy,omitempty" common:"true"`
-	Policies                  *Policies               `json:"policies,omitempty" common:"true"`
-	VaultRegistration         types.VaultRegistration `json:"vaultRegistration" common:"true"`
-	VaultDBEngine             types.VaultDBEngine     `json:"vaultDBEngine"  common:"true"`
-	SchemaSettings            SchemaSettings          `json:"schemaSettings,omitempty" common:"true"`
-	DisasterRecovery          *DisasterRecovery       `json:"disasterRecovery,omitempty"`
-	DeletePVConUninstall      bool                    `json:"deletePVConUninstall,omitempty"`
-	AuthDb                    string                  `json:"authDb,omitempty"`
-	IpV6                      bool                    `json:"ipV6,omitempty"`
-	ArtifactDescriptorVersion string                  `json:"artifactDescriptorVersion,omitempty"`
-	PartOf                    string                  `json:"partOf,omitempty"`
-	ManagedBy                 string                  `json:"managedBy,omitempty"`
-	Instance                  string                  `json:"instance,omitempty"`
-	CloudPublicHost           string                  `json:"cloudPublicHost,omitempty"`
+	TLS                       types.TLS              `json:"tls,omitempty"`
+	DeploymentVersion         string                 `json:"deploymentVersion,omitempty"`
+	Recycler                  types.Recycler         `json:"recycler,omitempty"`
+	WaitSeconds               int                    `json:"waitSeconds,omitempty"`
+	PodSecurityContext        *v1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+	ServiceAccountName        string                 `json:"serviceAccountName"`
+	ImagePullPolicy           v1.PullPolicy          `json:"imagePullPolicy,omitempty" common:"true"`
+	Policies                  *Policies              `json:"policies,omitempty" common:"true"`
+	SchemaSettings            SchemaSettings         `json:"schemaSettings,omitempty" common:"true"`
+	DisasterRecovery          *DisasterRecovery      `json:"disasterRecovery,omitempty"`
+	DeletePVConUninstall      bool                   `json:"deletePVConUninstall,omitempty"`
+	AuthDb                    string                 `json:"authDb,omitempty"`
+	IpV6                      bool                   `json:"ipV6,omitempty"`
+	ArtifactDescriptorVersion string                 `json:"artifactDescriptorVersion,omitempty"`
+	PartOf                    string                 `json:"partOf,omitempty"`
+	ManagedBy                 string                 `json:"managedBy,omitempty"`
+	Instance                  string                 `json:"instance,omitempty"`
+	CloudPublicHost           string                 `json:"cloudPublicHost,omitempty"`
 }
 
 // MongodbSupplServiceStatus defines the observed state of MongodbSupplService

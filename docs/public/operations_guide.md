@@ -37,8 +37,6 @@ This section describes the various commands to work with MongoDB.
   - [Remove MongoDB from DBAAS Aggregator](#remove-mongodb-from-dbaas-aggregator)
   - [Uninstall Helm Release](#uninstall-helm-release)
   - [Cleanup Namespace:](#cleanup-namespace)
-- [Vault Integration](#vault-integration)
-  - [Credential Rotation](#credential-rotation)
 - [If Operator Needs to be Restarted](#if-operator-needs-to-be-restarted)
 
 

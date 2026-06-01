@@ -455,20 +455,6 @@ The list of Prometheus Exporter parameters is as follows:
 | `prometheusExporter.alerts.backup.usedSpaceThreshold` | false     | int      | `80`                                             | Backup used space threshold %.                                 |
 | `prometheusExporter.alerts.backup.usedInodesThreshold` | false    | int      | `80`                                             | Backup used inodes threshold %.                                |
 
-## Vault Registration Parameters
-
-The list of Vault Registration parameters is as follows:
-
-| Parameter                          | Mandatory | Type   | Default                   | Description                                                                                                                        |
-| ---------------------------------- | --------- | ------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `vaultRegistration.enabled`        | false     | bool   | `false`                   | If the Vault storing credentials are enabled or not.                                                                                |
-| `vaultRegistration.url`            | false     | string | ""                        | The URL address to the Vault service.                                                                                                  |
-| `vaultRegistration.rotationPeriod` | false     | int    | 8640                      | The amount of time Vault should wait before rotating the DB passwords.                                                             |
-| `vaultDBEngine.enabled`            | false     | bool   | `false`                   | If the Vault MongoDB DB plugin is enabled or not. If the DBaaS adapter needs to store credentials in Vault, set this parameter to "true". |
-| `vaultDBEngine.name`               | false     | string | `mongodb-db-engine`       | The Vault DB engine name. |
-| `vaultDBEngine.pluginName`         | false     | string | `mongodb-database-plugin` | The Vault DB engine plugin name.|
-| `vaultDBEngine.allowedRoles`       | false     | string | `nc*`                     | The Vault DB engine allowed roles mask. |
-
 ## Robot Tests Parameters
 
 The list of Vault Registration parameters is as follows:

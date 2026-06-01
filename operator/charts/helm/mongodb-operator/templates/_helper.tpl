@@ -127,7 +127,6 @@ DNS names used to generate SSL certificate with "Subject Alternative Name" field
 Dictionary with:
 1. "envName" - name of env var to get value from
 2.  "default" - default value from values.yaml
-{{template "fromEnv" (dict "envName" ".Values.VAULT_ADDR" "default" .Values.vaultRegistration.token) }}
 */}}
 {{- define "fromEnv" -}}
   {{- $envValue := .envName -}}

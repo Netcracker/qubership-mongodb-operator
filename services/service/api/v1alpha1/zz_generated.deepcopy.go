@@ -253,8 +253,6 @@ func (in *MongodbSupplServiceSpec) DeepCopyInto(out *MongodbSupplServiceSpec) {
 		*out = new(Policies)
 		(*in).DeepCopyInto(*out)
 	}
-	in.VaultRegistration.DeepCopyInto(&out.VaultRegistration)
-	in.VaultDBEngine.DeepCopyInto(&out.VaultDBEngine)
 	out.SchemaSettings = in.SchemaSettings
 	if in.DisasterRecovery != nil {
 		in, out := &in.DisasterRecovery, &out.DisasterRecovery

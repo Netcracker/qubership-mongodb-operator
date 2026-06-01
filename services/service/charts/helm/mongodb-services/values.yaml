@@ -334,29 +334,6 @@ prometheusExporter:
       memory: 128Mi
       cpu: 200m
 
-vaultRegistration:
-  tokenSecretName: vault-secret-services
-  dockerImage: banzaicloud/vault-env:1.19.0
-  enabled: false
-  path: kv
-  url:
-  role: mongodb-role
-  method: kubernetes
-  rotationPeriod: 8640
-  initContainerResources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      cpu: 20m
-      memory: 64Mi
-
-vaultDBEngine:
-  name: mongodb-db-engine
-  enabled: false
-  pluginName: mongodb-database-plugin
-  allowedRoles: nc*
-
 robotTests:
   install: false
   dockerImage:  ghcr.io/netcracker/qubership-mongodb-tests:main

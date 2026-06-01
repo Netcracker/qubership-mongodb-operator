@@ -581,7 +581,6 @@ func TestMongoDbAdministration_CreateDatabase(t *testing.T) {
 			c := &MongoDbAdministration{
 				logger:        tt.fields.logger,
 				mongodService: tt.fields.mongodService,
-				vaultEnabled:  tt.fields.vaultEnabled,
 			}
 			got, got1, err := c.CreateDatabase(context.Background(), tt.args.requestOnCreateDb)
 			if (err != nil) != tt.wantErr {

@@ -126,7 +126,6 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 		envs,
 		spec.Spec.PodSecurityContext,
 		spec.Spec.TLS,
-		spec.Spec.VaultRegistration,
 		spec.Spec.RobotTests.PriorityClassName,
 		spec.Spec.ServiceAccountName,
 		spec.Spec.RobotTests.Affinity,
@@ -136,8 +135,6 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 
 	err := helperImpl.DeleteDeploymentAndPods(dc.Name, dc.Namespace, spec.Spec.WaitSeconds)
 	core.PanicError(err, log.Error, "RobotTests deployment config processing failed")
-
-	cUtils.VaultPodSpec(&dc.Spec.Template.Spec, []string{"/docker-entrypoint.sh", "run-robot"}, spec.Spec.VaultRegistration)
 
 	err = utils.CreateRuntimeObjectContextWrapper(ctx, dc, dc.ObjectMeta)
 	core.PanicError(err, log.Error, "RobotTests deployment config processing failed")

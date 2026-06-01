@@ -1,13 +1,10 @@
 package dbaas
 
 import (
-	"fmt"
-
 	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
-	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/steps"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -37,13 +34,9 @@ func (r *DbaasBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		User:       string(creds.Data[utils.Username]),
 		Role:       string(creds.Data[utils.Role]),
 		ShardLocal: true,
-		AddToVault: true,
 	}
-	if spec.Spec.VaultDBEngine.Enabled {
-		userToAdd.Pass = func() string { return "tmp-pass" }
-	} else {
-		userToAdd.Pass = func() string { return string(creds.Data[utils.Password]) }
-	}
+	userToAdd.Pass = func() string { return string(creds.Data[utils.Password]) }
+
 	users := []utils.UserToAdd{userToAdd}
 
 	for _, user := range users {
@@ -64,15 +57,6 @@ func (r *DbaasBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	dbaas.AddStep(&DbaasService{})
 
-	if spec.Spec.VaultRegistration.Enabled {
-		dbaas.AddStep(&steps.MoveSecretToVault{
-			SecretName:            utils.DbaasAggregatorCreds,
-			PolicyName:            utils.Dbaas,
-			Policy:                fmt.Sprintf("length = 10\nrule \"charset\" {\n  charset = \"%s\"\n}\n", utils.Charset),
-			VaultRegistration:     &spec.Spec.VaultRegistration,
-			CtxVarToStorePassword: utils.DbaasAggregatorCreds,
-		})
-	}
 	// dbaas.AddStep(&DbaasConfigMaps{})
 	dbaas.AddStep(&DbaasDeployment{})
 

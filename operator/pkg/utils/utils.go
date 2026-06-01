@@ -288,7 +288,6 @@ func CreateRoleForMongoReplicaCommand(authDb string, role string, privileges str
 		authDb, role, privileges, roles)
 }
 
-// TODO vault
 func GrantRoleToUser(ctx core.ExecutionContext, cmd, user, role string) error {
 	mongoImpl := ctx.Get(MongoHelperImpl).(MongoHelper)
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
@@ -310,7 +309,6 @@ type UserToAdd struct {
 	Pass       func() string
 	Role       string
 	ShardLocal bool
-	AddToVault bool
 }
 
 func AddServicesUsersToContext(ctx core.ExecutionContext, usr UserToAdd) {

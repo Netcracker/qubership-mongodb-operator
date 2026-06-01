@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
-	cUtils "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/utils"
 
 	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
@@ -173,8 +172,6 @@ func (r *PrometheusExporterDeployment) Execute(ctx core.ExecutionContext) error 
 		log.Error(fmt.Sprintf("can't add secret HASH to annotations for %s", dc.Name), zap.Error(err))
 		return err
 	}
-
-	cUtils.VaultPodSpec(&dc.Spec.Template.Spec, []string{"bash", "-c", "/opt/run.sh"}, spec.Spec.VaultRegistration)
 
 	err = utils.CreateRuntimeObjectContextWrapper(ctx, dc, dc.ObjectMeta)
 
