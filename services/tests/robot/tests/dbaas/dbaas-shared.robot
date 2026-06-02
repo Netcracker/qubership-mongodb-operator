@@ -11,7 +11,7 @@ Library  OperatingSystem
 Get Secret Or Env
     [Arguments]    ${env_name}    ${file_path}
 
-    ${value}=    Get Environment Variable    ${env_name}
+    ${value}=    Get Environment Variable    ${env_name}    default=${EMPTY}
 
     IF    not $value
         ${value}=    Get File    ${file_path}
