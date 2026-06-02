@@ -76,7 +76,7 @@ Wait For ${job} Job Completion With ${attempts} Attempts On ${endpoint}
     END
     Log  ${resp}
     Log  ${resp.content}
-    [Return]  ${resp}
+    RETURN  ${resp}
 
 Run ${doc} Job To ${point} Endpoint And Check With ${attempts} Attempts On ${endpoint}
     ${heads}=  Set Variable  ${None}
@@ -92,11 +92,11 @@ Run ${doc} Job To ${point} Endpoint And Check With ${attempts} Attempts On ${end
     Log  ${resp.content}
     Should Be Equal As Strings  ${resp.status_code}  200
 
-    [Return]  ${currbackupjob}
+    RETURN  ${currbackupjob}
 
 Backup ${doc} Data And Check With ${attempts} Attempts On ${endpoint}
     ${job}=  Run ${doc} Job To ${endpoint}/backup Endpoint And Check With ${attempts} Attempts On ${endpoint}
-    [Return]  ${job}
+    RETURN  ${job}
 
 Restore ${doc} Data And Check With ${attempts} Attempts On ${endpoint}
     ${job}=  Run ${doc} Job To ${endpoint}/restore Endpoint And Check With ${attempts} Attempts On ${endpoint}

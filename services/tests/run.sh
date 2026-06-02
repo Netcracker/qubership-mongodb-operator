@@ -26,6 +26,9 @@ read_secret() {
 
   if [ -f "$path" ]; then
     cat "$path"
+  else
+    printf ""
+  fi
 }
 
 
@@ -39,12 +42,12 @@ oc delete dc/mongo-tests || true
 export OPENSHIFT_WORKSPACE_WA="${OPENSHIFT_WORKSPACE}"
 ATTEMPTS="${WAIT_TIMEOUT:=200}"
 
-MONGO_ROOT_USER="$(read_secret /var/run/secrets/mongodb/mongo-root/username)"
-MONGO_ROOT_PASSWORD="$(read_secret /var/run/secrets/mongodb/mongo-root/password)"
-BACKUP_DAEMON_API_CREDENTIALS_USERNAME="$(read_secret /var/run/secrets/mongodb/backup-api/username)"
-BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/backup-api/password)"
-DBAAS_AGGREGATOR_USERNAME="$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/username)"
-DBAAS_AGGREGATOR_PASSWORD="$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/password)"
+MONGO_ROOT_USER="${MONGO_ROOT_USER:-$(read_secret /var/run/secrets/mongodb/mongo-root/username)}"
+MONGO_ROOT_PASSWORD="${MONGO_ROOT_PASSWORD:-$(read_secret /var/run/secrets/mongodb/mongo-root/password)}"
+BACKUP_DAEMON_API_CREDENTIALS_USERNAME="${BACKUP_DAEMON_API_CREDENTIALS_USERNAME:-$(read_secret /var/run/secrets/mongodb/backup-api/username)}"
+BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD:-$(read_secret /var/run/secrets/mongodb/backup-api/password)}"
+DBAAS_AGGREGATOR_USERNAME="${DBAAS_AGGREGATOR_USERNAME:-$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/username)}"
+DBAAS_AGGREGATOR_PASSWORD="${DBAAS_AGGREGATOR_PASSWORD:-$(read_secret /var/run/secrets/mongodb/dbaas-aggregator/password)}"
 
 oc process REPLICAS="1" \
     TEST_IMAGE=${TEST_IMAGE} \
