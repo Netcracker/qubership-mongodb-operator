@@ -13,9 +13,26 @@ Library  RequestsLibrary
 Library  ../lib/KubernetesClient.py
 
 *** Keywords ***
+Get Secret Or Env
+    [Arguments]    ${env_name}    ${file_path}
+
+    ${value}=    Get Environment Variable    ${env_name}
+
+    IF    not $value
+        ${value}=    Get File    ${file_path}
+        ${value}=    Strip String    ${value}
+    END
+
+    RETURN    ${value}
+
 Load Secrets
-    ${mongo_user}=        Get Environment Variable    MONGO_ROOT_USER
-    ${mongo_password}=    Get Environment Variable    MONGO_ROOT_PASSWORD
+    ${mongo_user}=    Get Secret Or Env
+...    MONGO_ROOT_USER
+...    /var/run/secrets/mongodb/mongo-root/username
+
+    ${mongo_password}=    Get Secret Or Env
+...    MONGO_ROOT_PASSWORD
+...    /var/run/secrets/mongodb/mongo-root/password
 
     ${mongo_user}=        Strip String    ${mongo_user}
     ${mongo_password}=    Strip String    ${mongo_password}
