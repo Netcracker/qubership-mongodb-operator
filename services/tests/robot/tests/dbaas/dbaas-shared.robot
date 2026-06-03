@@ -8,9 +8,26 @@ Library	 RequestsLibrary
 Library  OperatingSystem
 
 *** Keywords ***
+Get Secret Or Env
+    [Arguments]    ${env_name}    ${file_path}
+
+    ${value}=    Get Environment Variable    ${env_name}    default=${EMPTY}
+
+    IF    not $value
+        ${value}=    Get File    ${file_path}
+        ${value}=    Strip String    ${value}
+    END
+
+    RETURN    ${value}
+
 Load Dbaas Secrets
-    ${dbaas_user}=        Get Environment Variable    DBAAS_AGGREGATOR_USERNAME
-    ${dbaas_password}=    Get Environment Variable    DBAAS_AGGREGATOR_PASSWORD
+    ${dbaas_user}=    Get Secret Or Env
+...    DBAAS_AGGREGATOR_USERNAME
+...    /var/run/secrets/mongodb/dbaas-aggregator/username
+
+    ${dbaas_password}=    Get Secret Or Env
+...    DBAAS_AGGREGATOR_PASSWORD
+...    /var/run/secrets/mongodb/dbaas-aggregator/password
 
     ${dbaas_user}=        Strip String    ${dbaas_user}
     ${dbaas_password}=    Strip String    ${dbaas_password}
