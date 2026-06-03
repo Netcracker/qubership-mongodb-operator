@@ -37,7 +37,6 @@ const Tmp = "tmp"
 const MongoCluster = "mongo-cluster"
 const Username = "username"
 const Password = "password"
-const NonVaultPassword = "nonVaultPassword"
 const Role = "role"
 const AuthDatabase = "auth-database"
 
@@ -117,12 +116,8 @@ const SchemaSettingsValidationDR = "Cnf Size & Data Size should be even numbers"
 const SchemaSettingsValidationZeros = "Cnf Size, Data Size and Shard Count should be set"
 
 const Policies = "policies"
-const VaultRegistration = "vault-registration"
-const VaultDbEngine = "vault-db-engine"
 
 const IsAnyCommonParameterChanged = "isAnyCommonParameterChanged"
-
-const VaultRoleRotationConfigKey = "vaultRoleRotationConfig"
 
 const Robot = "robot-tests"
 const RobotTestsFilesArgCheck = "ls ./output | wc -l"

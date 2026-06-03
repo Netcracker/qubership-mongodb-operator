@@ -24,20 +24,6 @@ func main() {
 	ctxLogger := utils.AddLoggerContext(logger, context.Background())
 	appName := "mongodb"
 
-	// Vault
-	vaultEnabled := utils.GetEnvAsBool("VAULT_ENABLED", false)
-	var vaultClient *utils.VaultClient
-	if vaultEnabled {
-		vaultConfig := utils.VaultConfig{
-			IsVaultEnabled:  vaultEnabled,
-			Address:         utils.GetEnv("VAULT_ADDR", ""),
-			VaultRole:       utils.GetEnv("VAULT_ROLE", "mongo-sa"),
-			VaultRotPeriod:  utils.GetEnv("VAULT_ROTATION_PERIOD", "86400"),
-			VaultAuthMethod: utils.GetEnv("VAULT_AUTH_METHOD", ""),
-			VaultDBName:     utils.GetEnv("VAULT_DB_ENGINE_NAME", "mongodb"),
-		}
-		vaultClient = utils.NewVaultClient(vaultConfig)
-	}
 	//there must be a better way to set all this vars like https://github.com/caarlos0/env
 	// Defaults
 	appPath := "/" + appName
@@ -52,8 +38,6 @@ func main() {
 		"/var/run/secrets/mongodb/dbaas-aggregator/password",
 		"dbaas-adapter",
 	)
-
-	apiPass = checkForVaultPassword(vaultEnabled, apiPass, vaultClient)
 	aggregatorAdapterAddress := utils.GetEnv("DBAAS_ADAPTER_ADDRESS", fmt.Sprintf("http://dbaas-%s-adapter.%s:8080", appName, namespace))
 	aggregatorRegistrationAddress := utils.GetEnv("DBAAS_AGGREGATOR_REGISTRATION_ADDRESS", "http://dbaas-aggregator.dbaas:8080")
 	aggregatorRegistrationIdentifier := utils.GetEnv("DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER", appName)
@@ -67,7 +51,6 @@ func main() {
 		"/var/run/secrets/mongodb/dbaas-registration/password",
 		"Bnmq5567_PO",
 	)
-	aggregatorRegistrationPass = checkForVaultPassword(vaultEnabled, aggregatorRegistrationPass, vaultClient)
 	aggregatorRegistrationDelay := utils.GetEnvAsInt("DBAAS_AGGREGATOR_REGISTRATION_FIXED_DELAY_MS", 150000)
 	aggregatorRegistrationRetryTime := utils.GetEnvAsInt("DBAAS_AGGREGATOR_REGISTRATION_RETRY_TIME_MS", 60000)
 	aggregatorRegistrationRetryDelay := utils.GetEnvAsInt("DBAAS_AGGREGATOR_REGISTRATION_RETRY_DELAY_MS", 5000)
@@ -95,7 +78,6 @@ func main() {
 		"root",
 	)
 
-	mongoPass = checkForVaultPassword(vaultEnabled, mongoPass, vaultClient)
 	authDb := mUtils.GetSecret(
 		"/var/run/secrets/mongodb/mongo-admin/auth-database",
 		"admin",
@@ -117,8 +99,6 @@ func main() {
 		"/var/run/secrets/mongodb/backup-api/password",
 		credsVoid,
 	)
-
-	backupDaemonApiUPass = checkForVaultPassword(vaultEnabled, backupDaemonApiUPass, vaultClient)
 
 	var backupAdminServiceImpl service.BackupAdministrationService
 	if backupAddress == "" {
@@ -160,7 +140,6 @@ func main() {
 		DescribeDatabases: true,
 		AdditionalKeys: dao.Supports{
 			"backupRestore": backupAdminServiceImpl != nil,
-			"vault":         vaultEnabled,
 		},
 	}
 
@@ -188,7 +167,6 @@ func main() {
 	var dbAdminImpl service.DbAdministration = pkg.GetMongoDbAdministration(
 		logger,
 		mognoHost, mongoPort, mongoUser, mongoPass, authDb,
-		vaultEnabled,
 		apiVersion,
 		[]string{"admin", "rw", "ro", "streaming"},
 		map[string]bool{
@@ -202,8 +180,8 @@ func main() {
 		port,
 		dbAdminImpl,
 		logger,
-		vaultEnabled,
-		vaultClient,
+		false,
+		&utils.VaultClient{},
 		"",
 	)
 
@@ -238,17 +216,4 @@ func main() {
 			profiler, "")
 		return nil
 	}))
-}
-
-func checkForVaultPassword(vaultEnabled bool, password string, vaultClient *utils.VaultClient) string {
-	if vaultEnabled {
-		if utils.IsVaultPassword(password) {
-			passwordFromVault, err := vaultClient.ReadPasswordFromKv(utils.GetSecretPath(password))
-			if err != nil {
-				panic(err)
-			}
-			return passwordFromVault
-		}
-	}
-	return password
 }

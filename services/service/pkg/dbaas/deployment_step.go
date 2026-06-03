@@ -70,16 +70,6 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 			})
 	}
 
-	if spec.Spec.VaultRegistration.Enabled {
-		envs = append(envs,
-			cUtils.GetPlainTextEnvVar("VAULT_ENABLED", strconv.FormatBool(spec.Spec.VaultRegistration.Enabled)),
-			cUtils.GetPlainTextEnvVar("VAULT_AUTH_METHOD", spec.Spec.VaultRegistration.Method),
-			cUtils.GetPlainTextEnvVar("VAULT_ENV_PASSTHROUGH", "VAULT_ADDR,VAULT_ROLE,VAULT_AUTH_METHOD,VAULT_ENABLED"),
-			cUtils.GetPlainTextEnvVar("VAULT_ROTATION_PERIOD", strconv.Itoa(spec.Spec.VaultRegistration.RotationPeriod)),
-			cUtils.GetPlainTextEnvVar("VAULT_DB_ENGINE_NAME", spec.Spec.VaultDBEngine.Name),
-		)
-	}
-
 	secretVolumes := map[string]string{
 		spec.Spec.Dbaas.DbaasAggregatorSecretName:   "/var/run/secrets/mongodb/dbaas-aggregator",
 		spec.Spec.Dbaas.DbaasAdminSecretName:        "/var/run/secrets/mongodb/mongo-admin",
@@ -154,8 +144,6 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 	if tlsEnabled {
 		cUtils.TLSServerSpecUpdate(&dc.Spec.Template.Spec, spec.Spec.TLS, spec.Spec.Dbaas.TLS.DbaasAdapterCASecretName, utils.ServerCertsPath)
 	}
-
-	cUtils.VaultPodSpec(&dc.Spec.Template.Spec, []string{"/usr/local/bin/entrypoint"}, spec.Spec.VaultRegistration)
 
 	err = utils.CreateRuntimeObjectContextWrapper(ctx, dc, dc.ObjectMeta)
 

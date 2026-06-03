@@ -176,8 +176,6 @@ func (in *MongodbDeploymentSpec) DeepCopyInto(out *MongodbDeploymentSpec) {
 		*out = new(Policies)
 		(*in).DeepCopyInto(*out)
 	}
-	in.VaultRegistration.DeepCopyInto(&out.VaultRegistration)
-	in.VaultDBEngine.DeepCopyInto(&out.VaultDBEngine)
 	in.MongoDB.DeepCopyInto(&out.MongoDB)
 	out.TLS = in.TLS
 }

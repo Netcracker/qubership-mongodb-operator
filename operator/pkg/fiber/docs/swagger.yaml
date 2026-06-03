@@ -115,24 +115,6 @@ paths:
       summary: Get Mongo Key File
       tags:
       - Operator API
-  /rotate-roles:
-    post:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-        "500":
-          description: Internal error
-          schema:
-            type: string
-      summary: Rotate Vault Roles
-      tags:
-      - Operator API
   /rs-status:
     get:
       description: Returns output of rs.status()

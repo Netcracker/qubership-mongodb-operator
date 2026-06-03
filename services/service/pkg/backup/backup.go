@@ -1,8 +1,6 @@
 package backup
 
 import (
-	"fmt"
-
 	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
@@ -40,14 +38,12 @@ func (r *BackupBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			Pass:       func() string { return string(backupCreds.Data[utils.Password]) },
 			Role:       string(backupCreds.Data[utils.Role]),
 			ShardLocal: false,
-			AddToVault: true,
 		},
 		{
 			User:       string(restoreCreds.Data[utils.Username]),
 			Pass:       func() string { return string(restoreCreds.Data[utils.Password]) },
 			Role:       string(restoreCreds.Data[utils.Role]),
 			ShardLocal: false,
-			AddToVault: true,
 		},
 	}
 
@@ -95,14 +91,6 @@ func (r *BackupBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	}
 
 	backup.AddStep(&BackupService{})
-	if spec.Spec.VaultRegistration.Enabled {
-		backup.AddStep(&steps.MoveSecretToVault{
-			SecretName:        spec.Spec.Backup.BackupApiSecretName,
-			PolicyName:        utils.Backup,
-			Policy:            fmt.Sprintf("length = 10\nrule \"charset\" {\n  charset = \"%s\"\n}\n", utils.Charset),
-			VaultRegistration: &spec.Spec.VaultRegistration,
-		})
-	}
 	//backup.AddStep(&BackupSecrets{})
 	backup.AddStep(&BackupConfigMaps{})
 

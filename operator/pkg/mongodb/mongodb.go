@@ -101,7 +101,7 @@ func (r *DeleteStatefulsetsCompound) Condition(ctx core.ExecutionContext) (bool,
 	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
 
 	if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode || schema.SchemaType != v1alpha1.DR ||
-		core.GetCurrentDeployType(ctx) == core.CleanDeploy || spec.Spec.VaultRegistration.Enabled { //TODO FIXME vault case
+		core.GetCurrentDeployType(ctx) == core.CleanDeploy {
 		return false, nil
 	}
 
@@ -138,7 +138,6 @@ type MongoDBBuilder struct {
 func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 	singleSchema := spec.Spec.SchemaSettings.SchemaType == v1alpha1.Single
 
 	mongo := MongoDB{}
@@ -216,19 +215,6 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	mongo.AddStep(&CreateSSLSecretStep{})
 
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-
-	configMap := map[string]interface{}{
-		"plugin_name":    spec.Spec.VaultDBEngine.PluginName,
-		"connection_url": fmt.Sprintf("mongodb://{{username}}:{{password}}@%s.%s:27017/%s", utils.Mongos, request.Namespace, spec.Spec.AuthDb),
-		"username":       "vault-admin",
-		"password":       func() string { return "vault-admin" },
-		"allowed_roles":  spec.Spec.VaultDBEngine.AllowedRoles,
-	}
-
-	if spec.Spec.TLS.Enabled {
-		configMap["connection_url"] = fmt.Sprintf("mongodb://{{username}}:{{password}}@%s.%s:27017/%s?tls=true&tlsInsecure=true", utils.Mongos, request.Namespace, spec.Spec.AuthDb)
-	}
-
 	if singleSchema {
 		mongo.AddStep((&SingleMongosStepBuilder{}).Build(ctx))
 	} else {
@@ -241,19 +227,7 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
 	username := string(creds.Data[utils.Username])
-
-	var password string
-	//if it's first deploy with vault - we take current root pass from secret (NonVaultPassword) and in the end reset it
-	//on the next deploy we keep password="" which will result in setting vault-admin user/pass in UpdateContextAuthMongo
-	//otherwise - get pass from secret
-	if spec.Spec.VaultRegistration.Enabled {
-		if _, ok := creds.Data[utils.NonVaultPassword]; ok && len(creds.Data[utils.NonVaultPassword]) > 0 &&
-			!mongoImpl.CheckUserLogin(spec.Spec.MongoDB.DockerImage, spec.Spec.AuthDb, "vault-admin", "vault-admin") {
-			password = string(creds.Data[utils.NonVaultPassword])
-		}
-	} else {
-		password = string(creds.Data[utils.Password])
-	}
+	password := string(creds.Data[utils.Password])
 
 	//create root user during clean install
 	mongo.AddStep(&AddUserStep{
@@ -267,22 +241,6 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	})
 
 	mongo.AddStep(&UpdateContextAuthMongo{User: username, Password: password})
-
-	if spec.Spec.VaultRegistration.Enabled {
-
-		mongo.AddStep(&AddUserStep{
-			Username: "vault-admin",
-			Password: "vault-admin",
-			Role:     "'root'",
-			Sharded:  !singleSchema,
-		})
-
-		addDbEngineSteps(&mongo, spec, request.Namespace, username, configMap)
-
-		mongo.AddStep(&ResetNonVaultPassword{})
-
-		mongo.AddStep(&UpdateContextAuthMongo{})
-	}
 	// mongo.AddStep(&UpdateMongoDBCredentials{})
 
 	mongo.AddStep(&SetdefaultWriteConcernStep{})
@@ -296,24 +254,4 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	}
 
 	return &mongo
-}
-
-func addDbEngineSteps(mongo *MongoDB, spec *v1alpha1.MongodbDeployment, namespace string, username string, configMap map[string]interface{}) {
-	dbEngineStep := steps.NewCreateDBEngine(
-		spec.Spec.VaultDBEngine.Name,
-		configMap,
-		spec.Spec.VaultDBEngine.Role,
-		"/database/static-roles/",
-		map[string]interface{}{
-			"db_name":         spec.Spec.VaultDBEngine.Name,
-			"username":        username,
-			"rotation_period": "175200h", //TODO make a variable
-		})
-	dbEngineStep.ConditionFunc = func() (bool, error) { return true, nil }
-	mongo.AddStep(dbEngineStep)
-	mongo.AddStep(&steps.SetPasswordFromVaultRole{
-		Registration:          spec.Spec.VaultRegistration,
-		RoleName:              spec.Spec.VaultDBEngine.Role,
-		CtxVarToStorePassword: spec.Spec.MongoDB.MongoRootSecretName,
-	})
 }

@@ -27,7 +27,6 @@ type UserToAdd struct {
 	Pass       func() string
 	Role       string
 	ShardLocal bool
-	AddToVault bool
 }
 
 func AddServicesUsersToContext(ctx core.ExecutionContext, usr UserToAdd) {

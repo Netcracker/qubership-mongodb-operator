@@ -20,7 +20,7 @@ func RobotTemplate(namespace string, image string,
 	resources corev1.ResourceRequirements,
 	nodeSelector map[string]string, tolerations []corev1.Toleration,
 	env []corev1.EnvVar, securityContext *corev1.PodSecurityContext,
-	tls types.TLS, vaultRegistration types.VaultRegistration, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy, volumeMounts []corev1.VolumeMount, volumes []corev1.Volume) *v1.Deployment {
+	tls types.TLS, priorityClassName, serviceAccountName string, affinity *corev1.Affinity, imagePullPolicy corev1.PullPolicy, volumeMounts []corev1.VolumeMount, volumes []corev1.Volume) *v1.Deployment {
 	allowPrivilegeEscalation := false
 	readOnlyRootFilesystem := true
 	var replicas int32 = 1
@@ -108,8 +108,6 @@ func RobotTemplate(namespace string, image string,
 			},
 		},
 	}
-
-	utils2.VaultPodSpec(&dc.Spec.Template.Spec, []string{"/docker-entrypoint.sh", "run-robot"}, vaultRegistration)
 
 	utils2.TLSSpecUpdate(&dc.Spec.Template.Spec, utils.RootCertPath, tls)
 

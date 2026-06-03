@@ -5,7 +5,6 @@ import (
 	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
-	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/steps"
 	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -38,21 +37,7 @@ func (r *PrometheusExporterBuilder) Build(ctx core.ExecutionContext) core.Execut
 			Pass:       func() string { return string(creds.Data[utils.Password]) },
 			Role:       string(creds.Data[utils.Role]),
 			ShardLocal: true,
-			AddToVault: false,
 		},
-	}
-
-	if spec.Spec.VaultRegistration.Enabled {
-		step := &steps.MoveSecretToVault{
-			SecretName:            spec.Spec.PrometheusExporter.MonitoringSecretName,
-			VaultRegistration:     &spec.Spec.VaultRegistration,
-			CtxVarToStorePassword: utils.MonitoringContextVar,
-		}
-		if ok, _ := step.Condition(ctx); ok {
-			step.Execute(ctx)
-		}
-
-		users[0].Pass = func() string { return ctx.Get(utils.MonitoringContextVar).(string) }
 	}
 
 	for _, user := range users {

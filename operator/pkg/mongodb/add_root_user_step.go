@@ -69,17 +69,8 @@ func (r *UpdateContextAuthMongo) Execute(ctx core.ExecutionContext) error {
 		creds, rErr := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
 		core.PanicError(rErr, log.Error, "MongoDB Root user credentials secret reading failed")
 
-		var username string
-		var password string
-
-		//we have to use vault-admin instead of root, because vault changes root pass in mongos only, not in shards
-		if spec.Spec.VaultDBEngine.Enabled {
-			username = "vault-admin"
-			password = "vault-admin"
-		} else {
-			username = string(creds.Data[utils.Username])
-			password = string(creds.Data[utils.Password])
-		}
+		username := string(creds.Data[utils.Username])
+		password := string(creds.Data[utils.Password])
 
 		cmd = fmt.Sprintf(
 			utils.MongoCMDAuthTemplate,
@@ -96,21 +87,4 @@ func (r *UpdateContextAuthMongo) Execute(ctx core.ExecutionContext) error {
 	mongoImpl.SetMongoCMD(cmd)
 
 	return nil
-}
-
-type ResetNonVaultPassword struct {
-	core.DefaultExecutable
-}
-
-func (r *ResetNonVaultPassword) Execute(ctx core.ExecutionContext) error {
-	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
-	secret, err := utils.ReadSecret(ctx, spec.Spec.MongoDB.MongoRootSecretName, request.Namespace)
-	if err != nil {
-		return err
-	}
-
-	secret.Data[utils.NonVaultPassword] = []byte{}
-
-	return utils.CreateRuntimeObjectContextWrapper(ctx, secret, secret.ObjectMeta)
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
-	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/steps"
 	"go.uber.org/zap"
 	v1core "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
@@ -182,13 +181,6 @@ func (r *PreDeployBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	ctx.Set(utils.MongoHelperImpl, defaultMongoHelper)
 
 	if !ctx.Get(constants.ContextSpecHasChanges).(bool) {
-		if spec.Spec.VaultRegistration.Enabled {
-			compound.AddStep(&steps.SetPasswordFromVaultRole{
-				Registration:          spec.Spec.VaultRegistration,
-				RoleName:              spec.Spec.VaultDBEngine.Role,
-				CtxVarToStorePassword: spec.Spec.MongoDB.MongoRootSecretName,
-			})
-		}
 		compound.AddStep(&mongodb.UpdateContextAuthMongo{})
 	}
 

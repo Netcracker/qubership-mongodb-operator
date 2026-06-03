@@ -37,8 +37,6 @@ This section describes the various commands to work with MongoDB.
   - [Remove MongoDB from DBAAS Aggregator](#remove-mongodb-from-dbaas-aggregator)
   - [Uninstall Helm Release](#uninstall-helm-release)
   - [Cleanup Namespace:](#cleanup-namespace)
-- [Vault Integration](#vault-integration)
-  - [Credential Rotation](#credential-rotation)
 - [If Operator Needs to be Restarted](#if-operator-needs-to-be-restarted)
 
 
@@ -887,18 +885,6 @@ For OpenShift and Kubernetes:
 
 ```
 [oc | kubectl ]  delete configmap --all -n <mongo namespace>
-```
-
-# Vault Integration
-
-The process of Vault integration is specified below.
-
-## Credential Rotation
-
-To rotate admin credentials, navigate to **Application > Pods** and open the **Terminal** tab on the MongoDB Operator pod. From the pod terminal, execute the following command:
-
-```
-curl -XPOST localhost:8080/rotate-roles
 ```
 
 # If Operator Needs to be Restarted

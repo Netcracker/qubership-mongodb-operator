@@ -57,21 +57,6 @@ func (h *MongoOperatorHandler) GetRSStatus(c *fiber.Ctx) error {
 	return c.JSON(h.service.GetRSStatus())
 }
 
-// RotateRoles godoc
-// @Tags Operator API
-// @Summary Rotate Vault Roles
-// @Produce  json
-// @Success 200 {object} []string
-// @Failure 500 {string} Token "Internal error"
-// @Router /rotate-roles [post]
-func (h *MongoOperatorHandler) RotateRoles(c *fiber.Ctx) error {
-	err := h.service.RotateRoles()
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString(err.Error())
-	}
-	return c.SendStatus(http.StatusOK)
-}
-
 func (h *MongoOperatorHandler) AddDRReplicas(c *fiber.Ctx) error {
 	err := h.service.AddDRReplicas()
 	if err != nil {
@@ -153,7 +138,6 @@ func SetMongoOperatorHandlers(app *fiber.App, service MongoFiberService, logger 
 	app.Get(fmt.Sprintf("/%s", mUtils.KeyFileURI), handler.GetMongoKeyFile)
 	app.Get(fmt.Sprintf("/%s", mUtils.HealthURI), handler.Health)
 	app.Get(fmt.Sprintf("/%s", mUtils.RSStatusURI), handler.GetRSStatus)
-	app.Post(fmt.Sprintf("/%s", mUtils.RotateRolesURI), handler.RotateRoles)
 	app.Post(fmt.Sprintf("/%s", mUtils.AddDRReplicasURI), handler.AddDRReplicas)
 	app.Post(fmt.Sprintf("/%s", mUtils.FlushURI), handler.FlushInMemoryData)
 	app.Post(fmt.Sprintf("/%s/:dbName/:collectionName", mUtils.CompactURI), handler.Compact)
