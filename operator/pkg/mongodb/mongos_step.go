@@ -124,6 +124,17 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 
 	log.Debug("Mongos container args: " + args)
 
+	nodeLabels := ctx.Get(utils.PVNodes).([]map[string]string)
+	nodeSelector := map[string]string{}
+	if len(nodeLabels) > 0 {
+		nodeSelector = nodeLabels[0%len(nodeLabels)]
+	}
+
+	nodeSelector = core.ConcatMaps(
+		mongoDbSpec.AdditionalNodeLabels,
+		nodeSelector,
+	)
+
 	var tolerations []v12.Toleration
 	if spec.Spec.Policies != nil {
 		tolerations = spec.Spec.Policies.Tolerations
@@ -148,6 +159,8 @@ func (r *CreateHAMongosStep) Execute(ctx core.ExecutionContext) error {
 		spec.Spec.TLS,
 		spec.Spec.MongoDB.PriorityClassName,
 		spec.Spec.MongoDB.Affinity)
+
+	template.Spec.Template.Spec.NodeSelector = nodeSelector
 
 	return commonMongosExecute(ctx, template)
 }
