@@ -19,6 +19,7 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set user back to root so gosu can switch to mongodb (uid 1001)
+#test
 USER root
 
 ENTRYPOINT ["docker-entrypoint.sh"]
