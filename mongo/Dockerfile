@@ -3,6 +3,8 @@ FROM mongo:${MONGO_VERSION}
 
 USER root
 
+RUN echo "rebuild trigger"
+
 # Remove the existing mongodb user/group if needed (optional, careful with this)
 RUN deluser mongodb || true && delgroup mongodb || true
 
