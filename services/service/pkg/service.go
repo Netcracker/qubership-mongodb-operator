@@ -166,18 +166,5 @@ func (r *PreDeployBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	}
 	ctx.Set(utils.KubernetesHelperImpl, defaultKubernetesHelper)
 
-	// if !ctx.Get(constants.ContextSpecHasChanges).(bool) {
-	// 	if spec.Spec.VaultRegistration.Enabled {
-	// 		compound.AddStep(&steps.SetPasswordFromVaultRole{
-	// 			Registration:          spec.Spec.VaultRegistration,
-	// 			RoleName:              spec.Spec.VaultDBEngine.Role,
-	// 			CtxVarToStorePassword: utils.MongoRootCreds,
-	// 		})
-	// 	}
-	// 	// compound.AddStep(&mongodb.UpdateContextAuthMongo{})
-	// }
-
-	// compound.AddStep(&common.RunFiberServer{})
-
 	return compound
 }
