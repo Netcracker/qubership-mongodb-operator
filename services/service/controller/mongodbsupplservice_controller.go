@@ -226,10 +226,6 @@ func (s *MongodbServiceInstanceReconciler) GetDeploymentVersion() string {
 	return s.Instance.Spec.DeploymentVersion
 }
 
-func (s *MongodbServiceInstanceReconciler) GetVaultRegistration() *types.VaultRegistration {
-	return &types.VaultRegistration{}
-}
-
 func (s *MongodbServiceInstanceReconciler) GetMessage() string {
 	if len(s.Instance.Status.Conditions) > 0 {
 		return s.Instance.Status.Conditions[0].Message
