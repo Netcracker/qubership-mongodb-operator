@@ -1,0 +1,508 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "mongodb-operator values",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "DEPLOY_W_HELM": { "type": "boolean" },
+    "operator": { "$ref": "#/$defs/operator" },
+    "global": { "$ref": "#/$defs/global" },
+    "schemaSettings": { "$ref": "#/$defs/schemaSettings" },
+    "disasterRecovery": { "$ref": "#/$defs/disasterRecovery" },
+    "imagePullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] },
+    "createIngress": { "type": "boolean" },
+    "recycler": { "$ref": "#/$defs/recycler" },
+    "podSecurityContext": { "$ref": "#/$defs/podSecurityContext" },
+    "policies": { "$ref": "#/$defs/policies" },
+    "crProcessingDelaySeconds": { "type": "integer" },
+    "stopOnFailedResourceUpdate": { "type": "boolean" },
+    "deletePVConUninstall": { "type": "boolean" },
+    "waitSeconds": { "type": "integer" },
+    "drTimeoutSeconds": { "type": "integer" },
+    "debugLog": { "type": "boolean" },
+    "authDb": { "type": "string" },
+    "ipV6": { "type": "boolean" },
+    "mongodb": { "$ref": "#/$defs/mongodb" },
+    "tls": { "$ref": "#/$defs/tls" },
+    "role": { "$ref": "#/$defs/role" },
+    "roleBinding": { "$ref": "#/$defs/roleBinding" },
+    "serviceAccount": { "$ref": "#/$defs/serviceAccount" },
+    "crd": { "$ref": "#/$defs/crd" },
+    "backup": { "$ref": "#/$defs/backup" },
+    "dbaas": { "$ref": "#/$defs/dbaas" },
+    "monitoring": { "$ref": "#/$defs/monitoring" },
+    "prometheusExporter": { "$ref": "#/$defs/prometheusExporter" },
+    "robotTests": { "$ref": "#/$defs/robotTests" }
+  },
+  "$defs": {
+    "resourceRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requests": { "type": "object", "additionalProperties": { "type": "string" } },
+        "limits": { "type": "object", "additionalProperties": { "type": "string" } },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "request": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "affinity": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "nodeAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+            "requiredDuringSchedulingIgnoredDuringExecution": { "type": "object", "additionalProperties": true }
+          }
+        },
+        "podAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+            "requiredDuringSchedulingIgnoredDuringExecution": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+          }
+        },
+        "podAntiAffinity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "preferredDuringSchedulingIgnoredDuringExecution": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+            "requiredDuringSchedulingIgnoredDuringExecution": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+          }
+        }
+      }
+    },
+    "tolerations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string" },
+          "operator": { "type": "string", "enum": ["Equal", "Exists"] },
+          "value": { "type": "string" },
+          "effect": { "type": "string", "enum": ["NoSchedule", "PreferNoSchedule", "NoExecute"] },
+          "tolerationSeconds": { "type": "integer" }
+        }
+      }
+    },
+    "storageRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "emptyDir": { "type": "boolean" },
+        "waitPvcBound": { "type": "boolean" },
+        "size": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "volumes": { "type": "array", "items": { "type": "string" } },
+        "storageClasses": { "type": "array", "items": { "type": "string" } },
+        "nodeLabels": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": { "type": "string" } }
+        },
+        "matchLabelSelectors": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": { "type": "string" } }
+        },
+        "mountSettings": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "tlsCertificates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tls_key": { "type": ["string", "null"] },
+        "tls_crt": { "type": ["string", "null"] },
+        "ca_crt":  { "type": ["string", "null"] }
+      }
+    },
+    "subjectAlternativeName": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "additionalDnsNames": { "type": "array", "items": { "type": "string" } },
+        "additionalIpAddresses": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operatorName": { "type": "string" },
+        "image": { "type": "string" },
+        "initImage": { "type": "string" },
+        "priorityClassName": { "type": ["string", "null"] },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "affinity": { "$ref": "#/$defs/affinity" }
+      }
+    },
+    "global": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": { "type": "string", "enum": ["", "small", "medium", "large"] },
+        "disasterRecovery": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "image": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "schemaSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sharded": { "type": "boolean" },
+        "schemaType": { "type": "string", "enum": ["ha", "single", "dr", "arbiter"] },
+        "cnfReplicaSize": { "type": "integer" },
+        "dataReplicaSize": { "type": "integer" },
+        "mongosReplicas": { "type": "integer" },
+        "shardCount": { "type": "integer" },
+        "dcName": { "type": "string" },
+        "publicCloud": { "type": ["string", "null"] },
+        "thisDomainName": { "type": "string" },
+        "otherDomainName": { "type": ["string", "null"] },
+        "arbiterIndex": { "type": "integer" }
+      }
+    },
+    "disasterRecovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "image": { "type": "string" },
+        "httpAuth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "smSecureAuth": { "type": "boolean" },
+            "smNamespace": { "type": "string" },
+            "smServiceAccountName": { "type": "string" },
+            "restrictedEnvironment": { "type": "boolean" },
+            "customAudience": { "type": "string" }
+          }
+        },
+        "mode": { "type": "string", "enum": ["active", "standby", "disabled"] },
+        "status": { "type": ["string", "null"] },
+        "noWait": { "type": "boolean" },
+        "siteManagerEnabled": { "type": "boolean" },
+        "afterServices": { "type": "array", "items": { "type": "string" } },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "drCASecretName": { "type": "string" },
+            "duration": { "type": "integer" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" },
+            "certificates": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tls_key": { "type": ["string", "null"] },
+                "tls_crt": { "type": ["string", "null"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "recycler": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" }
+      }
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fsGroup": { "type": ["integer", "null"] },
+        "runAsUser": { "type": ["integer", "null"] },
+        "supplementalGroups": { "type": ["string", "null"] },
+        "seLinuxOptions": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tolerations": { "$ref": "#/$defs/tolerations" }
+      }
+    },
+    "mongodb": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" },
+        "clusterAuthMode": { "type": "string" },
+        "flavor": { "type": "string", "enum": ["small", "medium", "large"] },
+        "dockerImage": { "type": "string" },
+        "priorityClassName": { "type": ["string", "null"] },
+        "containerTimeoutSeconds": { "type": "integer" },
+        "containerPeriodSeconds": { "type": "integer" },
+        "additionalNodeLabels": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+        "rootUser": { "type": "string" },
+        "rootPassword": { "type": "string" },
+        "rootUserRole": { "type": "string" },
+        "mongoRootSecretName": { "type": "string" },
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "pdb": { "type": "boolean" },
+        "cnfResources": { "$ref": "#/$defs/resourceRequirements" },
+        "cnfWiredTigerCacheGb": { "type": ["string", "null"] },
+        "cnfOpLogSizeMb": { "type": ["integer", "null"] },
+        "arbiterResources": { "$ref": "#/$defs/resourceRequirements" },
+        "dataResources": { "$ref": "#/$defs/resourceRequirements" },
+        "dataWiredTigerCacheGb": { "type": ["string", "null"] },
+        "dataOpLogSizeMb": { "type": ["integer", "null"] },
+        "customDataRSParameters": { "type": "array", "items": { "type": "string" } },
+        "mongosResources": { "$ref": "#/$defs/resourceRequirements" },
+        "singleWiredTigerCacheGb": { "type": ["string", "number"] },
+        "storage": { "$ref": "#/$defs/storageRequirements" }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["disabled", "allowTLS", "preferTLS", "requireTLS"] },
+        "certificateSecretName": { "type": "string" },
+        "rootCAFileName": { "type": "string" },
+        "privateKeyFileName": { "type": "string" },
+        "signedCRTFileName": { "type": "string" },
+        "combinedKeyAndCRTFileName": { "type": "string" },
+        "rootCASecretName": { "type": ["string", "null"] },
+        "generateCerts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "clusterIssuerName": { "type": "string" },
+            "duration": { "type": "integer" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "certificates": { "$ref": "#/$defs/tlsCertificates" }
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": { "type": "boolean" }
+      }
+    },
+    "roleBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": { "type": "boolean" }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": { "type": "boolean" }
+      }
+    },
+    "crd": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": { "type": "boolean" }
+      }
+    },
+    "backup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" },
+        "storageDirectory": { "type": "string" },
+        "s3": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "bucketName": { "type": "string" },
+            "secretName":  { "type": "string" },
+            "endpointUrl": { "type": "string" },
+            "accessKeyId": { "type": "string" },
+            "accessKeySecret": { "type": "string" }
+          }
+        },
+        "dockerImage": { "type": "string" },
+        "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "backupSchedule": { "type": "string" },
+        "incBackupSchedule": { "type": "string" },
+        "evictionPolicy": { "type": "string" },
+        "incEvicitionPolicy": { "type": "string" },
+        "mongoDatabasePrefixPattern": { "type": "string" },
+        "backupUser": { "type": "string" },
+        "backupPassword": { "type": "string" },
+        "backupUserRole": { "type": "string" },
+        "restoreUser": { "type": "string" },
+        "restorePassword": { "type": "string" },
+        "restoreUserRole": { "type": "string" },
+        "apiUser": { "type": ["string", "null"] },
+        "apiPassword": { "type": ["string", "null"] },
+        "storage": { "$ref": "#/$defs/storageRequirements" },
+        "backupResources": { "$ref": "#/$defs/resourceRequirements" },
+        "numParallelConnections": { "type": "integer" },
+        "granularNumParallelConnections": { "type": "integer" },
+        "mongoBackupDB": { "type": "string" },
+        "mongoSourceDB": { "type": "string" },
+        "enableFullRestore": { "type": "boolean" },
+        "configCollections": { "type": "array", "items": { "type": "string" } },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "backupDaemonCASecretName": { "type": "string" },
+            "duration": { "type": "integer" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        }
+      }
+    },
+    "dbaas": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" },
+        "dockerImage": { "type": "string" },
+        "apiVersion": { "type": "string" },
+        "multiUsers": { "type": "boolean" },
+        "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "dbaasUser": { "type": "string" },
+        "dbaasPassword": { "type": "string" },
+        "dbaasUserRole": { "type": "string" },
+        "dbaasAggregatorUser": { "type": "string" },
+        "dbaasAggregatorPassword": { "type": "string" },
+        "dbaasAggregatorRegistrationAddress": { "type": "string" },
+        "dbaasAggregatorRegistrationUser": { "type": "string" },
+        "dbaasAggregatorRegistrationPassword": { "type": "string" },
+        "dbaasAggregatorRegistrationFixedDelayMS": { "type": "integer" },
+        "dbaasAggregatorRegistrationRetryDelayMS": { "type": "integer" },
+        "dbaasAggregatorRegistrationRetryTimeMS": { "type": "integer" },
+        "dbaasAggregatorPhysicalDatabaseIdentifier": { "type": "string" },
+        "dbaasPhysicalDatabasesCustomLabels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "dbaasStreamingRoleName": { "type": "string" },
+        "dbaasStreamingRoles": { "type": "string" },
+        "dbaasStreamingPrivileges": { "type": "string" },
+        "dbaasResources": { "$ref": "#/$defs/resourceRequirements" },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dbaasAdapterCASecretName": { "type": "string" },
+            "duration": { "type": "integer" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+          }
+        },
+        "gatewayAPI": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "gatewayName": { "type": "string" },
+            "gatewayNamespace": { "type": "string" }
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" }
+      }
+    },
+    "prometheusExporter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" },
+        "dockerImage": { "type": "string" },
+        "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "monitoringUser": { "type": "string" },
+        "monitoringPassword": { "type": "string" },
+        "monitoringUserRole": { "type": "string" },
+        "exporterUser": { "type": "string" },
+        "exporterPassword": { "type": "string" },
+        "collectionInterval": { "type": "integer" },
+        "collectionScrapeTimeout": { "type": "integer" },
+        "exporterResources": { "$ref": "#/$defs/resourceRequirements" },
+        "alerts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "common": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "podRestartCount": { "type": "integer" },
+                "podRestartPeriod": { "type": "string" },
+                "replicationLagSeconds": { "type": "integer" },
+                "cursorTimeoutThreshold": { "type": "integer" },
+                "cpuUsageThreshold": { "type": "integer" },
+                "memoryUsageThreshold": { "type": "integer" },
+                "balancerDisabledFor": { "type": "string" },
+                "chunkMigrationThreshold": { "type": "integer" },
+                "chunkUnevenThreshold": { "type": "integer" },
+                "chunkUnevenFor": { "type": "string" },
+                "connectionsThreshold": { "type": "integer" },
+                "connectionsFor": { "type": "string" },
+                "cachePressureThreshold": { "type": "integer" },
+                "cachePressureFor": { "type": "string" }
+              }
+            },
+            "backup": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "usedSpaceThreshold": { "type": "integer" },
+                "usedInodesThreshold": { "type": "integer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "robotTests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "boolean" },
+        "tags": { "type": "string" },
+        "externalBackupPath": { "type": "string" },
+        "nodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "dockerImage": { "type": "string" },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "mainSide": { "type": "string", "enum": ["left", "right"] },
+        "leftNodesPattern": { "type": "string" },
+        "rightNodesPattern": { "type": "string" }
+      }
+    }
+  }
+}
