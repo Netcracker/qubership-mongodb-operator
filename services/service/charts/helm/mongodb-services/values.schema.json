@@ -154,7 +154,7 @@
     },
     "global": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "profile": { "type": "string", "enum": ["", "small", "medium", "large"] },
         "cloudIntegrationEnabled": { "type": "boolean" },
