@@ -225,7 +225,7 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			// If DR mode is Active, and noWait is false, wait for healthy cluster before reconfiguring
 			if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode && !spec.Spec.DisasterRecovery.NoWait {
 				log.Debug("noWait flag is false — performing cluster health check before reconfiguration")
-				compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up})
+				compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up, BypassCheck: true})
 			}
 
 			compound.AddStep(&dr.ReconfigureCnfrsStep{})
@@ -248,7 +248,7 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			compound.AddStep(&dr.UpdatePrometheusExporterStep{
 				ExportMongos: spec.Spec.DisasterRecovery.Mode == utils.ActiveMode,
 			})
-			compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up})
+			compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up, BypassCheck: false})
 		}
 	}
 	defaultCompound.AddStep(&compound)
