@@ -25,7 +25,7 @@ func (r *CreateSSLSecretStep) Execute(ctx core.ExecutionContext) error {
 	var sslString string
 	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 		url := fmt.Sprintf("http://%s.%s.svc.%s:8069", utils.OperatorServiceName,
-			"mongodb-test", spec.Spec.SchemaSettings.OtherDomainName)
+			"mongodb", spec.Spec.SchemaSettings.OtherDomainName)
 
 		client := utils.NewOperatorClinet(url)
 		result, err := client.GetKeyFile()
