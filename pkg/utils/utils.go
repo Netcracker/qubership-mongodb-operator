@@ -406,13 +406,13 @@ func GetDATAReplicaSetHostName(replicaSize int, shardIndex int, domain string, n
 
 func GetDRCNFReplicaSetHostNames(replicaSize int, mainDomain string, drDomain string, namespace string) []string {
 	mainReplicas := GetCNFReplicaSetHostNames(replicaSize, mainDomain, namespace)
-	drReplicas := GetCNFReplicaSetHostNames(replicaSize, drDomain, namespace)
+	drReplicas := GetCNFReplicaSetHostNames(replicaSize, drDomain, "mongodb")
 	return append(mainReplicas, drReplicas...)
 }
 
 func GetDRDATAReplicaSetHostNames(replicaSize int, shardIndex int, mainDomain string, drDomain string, namespace string) []string {
 	mainReplicas := GetDATAReplicaSetHostName(replicaSize, shardIndex, mainDomain, namespace)
-	drReplicas := GetDATAReplicaSetHostName(replicaSize, shardIndex, drDomain, namespace)
+	drReplicas := GetDATAReplicaSetHostName(replicaSize, shardIndex, drDomain, "mongodb")
 	return append(mainReplicas, drReplicas...)
 }
 
