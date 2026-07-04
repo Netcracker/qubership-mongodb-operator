@@ -3,8 +3,6 @@ github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/Netcracker/qubership-credential-manager v0.0.8 h1:Nl84wDrAEgr47i5DEpcIfT0LBToh/r6EYND75wmB8OY=
 github.com/Netcracker/qubership-credential-manager v0.0.8/go.mod h1:EY5fTjRnjtCzZftbt6YbdiDYMSBWicGokC0rmLE3XGc=
-github.com/Netcracker/qubership-nosqldb-operator-core v1.0.9-0.20260616054245-48c234190ad2 h1:isFkOA0x55PUxYuz3zw9q12KRxbNNcxjQXSF1BG36bg=
-github.com/Netcracker/qubership-nosqldb-operator-core v1.0.9-0.20260616054245-48c234190ad2/go.mod h1:uSoUX8yaoZy8/FJXIR4fXfTtaAhWPnLPEmehfK28hZ8=
 github.com/Netcracker/qubership-nosqldb-operator-core v1.0.9 h1:F4sFAC+NlATxHB778DQGFWATHzbWYP1XFGFxR0+LS/0=
 github.com/Netcracker/qubership-nosqldb-operator-core v1.0.9/go.mod h1:uSoUX8yaoZy8/FJXIR4fXfTtaAhWPnLPEmehfK28hZ8=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
