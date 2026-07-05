@@ -15,7 +15,7 @@ RUN set -x \
     && apk add --update --no-cache build-base 
 
 # Upgrade all tools to avoid vulnerabilities
-#test
+
 RUN set -x && apk upgrade --no-cache --available
 
 RUN set -x \
