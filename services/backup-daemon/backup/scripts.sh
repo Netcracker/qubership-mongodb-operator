@@ -286,9 +286,12 @@ restore_user_databases() {
     fi
 
     # Cleanup
-    for i in $(ls "$vault" | grep -v -e '\.tgz$' | grep -v -e '\.zip$'); do
-        rm -rf "$vault/$i"
-    done
+    if [[ "$archiveFormat" != "gzip-folder" ]]; then
+        for i in $(ls "$vault" | grep -v -e '\.tgz$' | grep -v -e '\.zip$'); do
+            rm -rf "$vault/$i"
+        done
+    fi
+
     rm -rf "$vault/.lock"
 
     if [[ $FAILED -eq 1 ]]; then
