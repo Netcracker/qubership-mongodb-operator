@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-dbaas-mongo
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/Netcracker/qubership-dbaas-adapter-core v0.11.1
