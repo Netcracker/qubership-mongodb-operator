@@ -354,9 +354,12 @@ restore_admin_database() {
         exit 1
     }
 
-    for i in $(ls "$vault" | grep -v -e '\.tgz$' | grep -v -e '\.zip$'); do
-        rm -rf "$vault/$i"
-    done
+    # Cleanup
+    if [[ "$archiveFormat" != "gzip-folder" ]]; then
+        for i in $(ls "$vault" | grep -v -e '\.tgz$' | grep -v -e '\.zip$'); do
+            rm -rf "$vault/$i"
+        done
+    fi
 
     echo "=> Admin database successfully restored"
 }
