@@ -1,6 +1,6 @@
 module github.com/Netcracker/qubership-mongodb-supplementary
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.16
