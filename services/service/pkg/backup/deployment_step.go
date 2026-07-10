@@ -83,6 +83,7 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 			coreUtils.GetPlainTextEnvVar("S3_ENABLED", strconv.FormatBool(backup.S3.Enabled)),
 			coreUtils.GetPlainTextEnvVar("S3_BUCKET", backup.S3.BucketName),
 			coreUtils.GetPlainTextEnvVar("S3_URL", backup.S3.EndpointUrl),
+			coreUtils.GetPlainTextEnvVar("BACKUP_DAEMON_SECRETS_DIR", "/var/run/secrets/mongodb/s3"),
 		)
 		secretVolumes[backup.S3.SecretName] =
 			"/var/run/secrets/mongodb/s3"
