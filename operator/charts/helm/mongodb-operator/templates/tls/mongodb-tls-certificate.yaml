@@ -5,6 +5,11 @@ metadata:
   name: mongodb-certificate
 spec:
   isCA: true
+  usages:
+    - cert sign
+    - crl sign
+    - digital signature
+    - key encipherment
   commonName: mongodb-ca
   secretName: {{ .Values.tls.certificateSecretName }}
   duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
