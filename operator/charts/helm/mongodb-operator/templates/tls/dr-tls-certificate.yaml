@@ -8,6 +8,10 @@ spec:
   duration: {{ default 365 .Values.disasterRecovery.tls.duration | mul 24 }}h
   commonName: mongo-dr-certificate-cn
   isCA: true
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
   privateKey:
     algorithm: RSA
     encoding: PKCS1
