@@ -7,7 +7,6 @@ spec:
   secretName: {{ .Values.dbaas.tls.dbaasAdapterCASecretName }}
   duration: {{ default 365 .Values.dbaas.tls.duration | mul 24 }}h
   commonName: dbaas-certificate-cn
-  isCA: true
   usages:
     - digital signature
     - key encipherment
