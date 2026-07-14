@@ -11,6 +11,7 @@ spec:
     - digital signature
     - key encipherment
     - server auth
+    - client auth
   privateKey:
     algorithm: RSA
     encoding: PKCS1
