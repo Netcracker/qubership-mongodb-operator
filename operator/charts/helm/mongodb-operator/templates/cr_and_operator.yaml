@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   deploymentVersion: {{ $deploymentVersion | quote }}
+  deploymentSessionId: {{ .Values.DEPLOYMENT_SESSION_ID | quote }}
   cloudPublicHost: {{ .Values.CLOUD_PUBLIC_HOST }}
   # Add fields here
   schemaSettings:

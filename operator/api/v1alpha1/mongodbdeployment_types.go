@@ -29,6 +29,7 @@ import (
 type MongodbDeploymentSpec struct {
 	DisasterRecovery           *DisasterRecovery      `json:"disasterRecovery,omitempty"`
 	DeploymentVersion          string                 `json:"deploymentVersion,omitempty"`
+	DeploymentSessionId        string                 `json:"deploymentSessionId,omitempty"`
 	SchemaSettings             SchemaSettings         `json:"schemaSettings,omitempty" common:"true"`
 	Recycler                   Recycler               `json:"recycler,omitempty"`
 	StopOnFailedResourceUpdate bool                   `json:"stopOnFailedResourceUpdate,omitempty"`
@@ -49,6 +50,7 @@ type MongodbDeploymentSpec struct {
 type MongodbDeploymentStatus struct {
 	DisasterRecoveryStatus types.DisasterRecoveryStatus   `json:"disasterRecoveryStatus,omitempty"`
 	Conditions             []types.ServiceStatusCondition `json:"conditions,omitempty"`
+	DeploymentSessionId    string                         `json:"deploymentSessionId,omitempty"`
 }
 
 //+kubebuilder:object:root=true

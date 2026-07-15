@@ -113,6 +113,9 @@ func (s *MongodbDeploymentInstanceReconciler) SetServiceInstance(client client.C
 
 func (s *MongodbDeploymentInstanceReconciler) UpdateStatus(condition types.ServiceStatusCondition) {
 	s.Instance.Status.Conditions = []types.ServiceStatusCondition{condition}
+	if condition.Type == "Successful" {
+		s.Instance.Status.DeploymentSessionId = s.Instance.Spec.DeploymentSessionId
+	}
 }
 
 func (s *MongodbDeploymentInstanceReconciler) UpdateDRStatus(drStatus types.DisasterRecoveryStatus) {

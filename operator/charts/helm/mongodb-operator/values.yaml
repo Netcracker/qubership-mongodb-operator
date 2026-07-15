@@ -4,6 +4,7 @@
 #
 # Do not change
 DEPLOY_W_HELM: true
+DEPLOYMENT_SESSION_ID: ""
 operator:
   operatorName: mongodb-operator
   image: ghcr.io/netcracker/qubership-mongodb-operator:main
