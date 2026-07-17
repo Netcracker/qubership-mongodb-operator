@@ -14,7 +14,8 @@ import (
 
 type WaitExpectedClusterStatusStep struct {
 	core.DefaultExecutable
-	Status string
+	BypassCheck bool
+	Status      string
 }
 
 func (u *WaitExpectedClusterStatusStep) Condition(ctx core.ExecutionContext) (bool, error) {
@@ -26,8 +27,13 @@ func (u *WaitExpectedClusterStatusStep) Execute(ctx core.ExecutionContext) error
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment).Spec
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
+	mode := spec.DisasterRecovery.Mode
+	if u.BypassCheck {
+		mode = utils.StandbyMode
+	}
+
 	err := wait.Poll(2*time.Second, time.Duration(spec.WaitSeconds)*time.Second, func() (done bool, err error) {
-		status, err := mongoImpl.GetClusterStatus(spec.DisasterRecovery.Mode, spec.SchemaSettings.ThisDomainName, spec.SchemaSettings.CnfReplicaSize,
+		status, err := mongoImpl.GetClusterStatus(mode, spec.SchemaSettings.ThisDomainName, spec.SchemaSettings.CnfReplicaSize,
 			spec.SchemaSettings.DataReplicaSize, spec.SchemaSettings.ShardCount, spec.SchemaSettings.Sharded)
 
 		if err != nil {

@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.26.3-alpine3.23 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26.5-alpine3.24 AS builder
 
 ENV GOSUMDB=off GOPRIVATE=github.com/Netcracker
 
@@ -23,7 +23,7 @@ RUN mkdir -p deployments/charts/mongodb-services && \
     cp -R ./charts/helm/mongodb-services/* deployments/charts/mongodb-services/ && \
     cp ./charts/deployment-configuration.json deployments/deployment-configuration.json 
 
-FROM alpine:3.23
+FROM alpine:3.24
 
 ENV OPERATOR=/usr/local/bin/mongodb-services \
     USER_UID=1001 \

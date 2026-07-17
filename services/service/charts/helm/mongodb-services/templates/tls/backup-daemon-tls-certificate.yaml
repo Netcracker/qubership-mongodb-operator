@@ -7,7 +7,11 @@ spec:
   secretName: {{ .Values.backup.tls.backupDaemonCASecretName }}
   duration: {{ default 365 .Values.backup.tls.duration | mul 24 }}h
   commonName: backup-daemon-certificate-cn
-  isCA: true
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
   privateKey:
     algorithm: RSA
     encoding: PKCS1
