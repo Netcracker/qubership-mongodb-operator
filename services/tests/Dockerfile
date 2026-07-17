@@ -1,5 +1,4 @@
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.4.3
-
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.5.6
 ENV ROBOT_OUTPUT=${ROBOT_HOME}/output \
     DISTR_DIR=/tmp/deps
 
@@ -15,6 +14,7 @@ RUN set -x \
     && apk add --update --no-cache build-base 
 
 # Upgrade all tools to avoid vulnerabilities
+
 RUN set -x && apk upgrade --no-cache --available
 
 RUN set -x \
