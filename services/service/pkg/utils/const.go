@@ -86,6 +86,15 @@ const BackupRestoreCreds = "mongodb-restore-credentials.v1"
 const BackupApiCreds = "mongodb-backup-api-credentials.v1"
 const BackupMonitoringConfig = BackupDaemon + ".monitoring-config"
 
+// Marker API labels — signals to Cloud Backuper that marker feature is supported
+// and provides service-discovery metadata so Cloud Backuper can reach the correct
+// backup-daemon instance with proper credentials.
+const MarkerFeatureLabel = "backup.qubership.org/marker-supported"
+const MarkerFeatureLabelValue = "true"
+const BackupApiSecretLabel = "backup.qubership.org/backup-api-secret"
+const DataValidationEnabledLabel = "cloud-backuper.netcracker.com/data-validation-enabled"
+const DataValidationEnabledLabelValue = "true"
+
 const ServicesUsersContextList = "ctxServicesUsersList"
 const ServicesRolesContextList = "ctxServicesRolesList"
 

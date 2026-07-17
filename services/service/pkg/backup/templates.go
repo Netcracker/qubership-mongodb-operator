@@ -96,7 +96,9 @@ func BackupDeploymentTemplate(spec *v1alpha1.MongodbSupplServiceSpec, pvcName st
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: namespace,
 					Labels: map[string]string{
-						utils.Name: utils.BackupDaemon,
+						utils.Name:                 utils.BackupDaemon,
+						utils.MarkerFeatureLabel:   utils.MarkerFeatureLabelValue,
+						utils.BackupApiSecretLabel: spec.Backup.BackupApiSecretName,
 					},
 				},
 				Spec: v1.PodSpec{

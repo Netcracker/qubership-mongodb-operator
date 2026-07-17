@@ -40,6 +40,8 @@ BACKUP_DAEMON_API_CREDENTIALS_PASSWORD="$(read_secret /var/run/secrets/mongodb/b
 MONGO_DUMP="mongodump --gzip"
 MONGORESTORE="mongorestore"
 MONGO_CMD="mongo"
+MONGOIMPORT="mongoimport"
+MONGOEXPORT="mongoexport"
 
 TLS_ENABLED=${TLS_ENABLED:-false}
 DEBUG=${DEBUG:-false}
@@ -48,15 +50,22 @@ if [[ "${TLS_ENABLED}" = true ]]; then
     MONGO_DUMP="${MONGO_DUMP} --ssl --sslCAFile=${TLS_ROOTCERT}"
     MONGORESTORE="${MONGORESTORE} --ssl --sslCAFile=${TLS_ROOTCERT}"
     MONGO_CMD="${MONGO_CMD} --tls --tlsCAFile=${TLS_ROOTCERT}"
+    MONGOIMPORT="${MONGOIMPORT} --ssl --sslCAFile=${TLS_ROOTCERT}"
+    MONGOEXPORT="${MONGOEXPORT} --ssl --sslCAFile=${TLS_ROOTCERT}"
 
     # remove before using production certs
     MONGO_DUMP="${MONGO_DUMP} --sslAllowInvalidCertificates"
     MONGORESTORE="${MONGORESTORE} --sslAllowInvalidCertificates"
     MONGO_CMD="${MONGO_CMD} --tlsInsecure"
+    MONGOIMPORT="${MONGOIMPORT} --sslAllowInvalidCertificates"
+    MONGOEXPORT="${MONGOEXPORT} --sslAllowInvalidCertificates"
 fi
 
 NUM_PARALLEL_CONNECTIONS=${NUM_PARALLEL_CONNECTIONS:-4}
 GRANULAR_NUM_PARALLEL_CONNECTIONS=${GRANULAR_NUM_PARALLEL_CONNECTIONS:-4}
+
+MONGO_MARKER_DB=${MONGO_MARKER_DB:-admin}
+MONGO_MARKER_COLLECTION=${MONGO_MARKER_COLLECTION:-cloudBackupMarkers}
 
 cluster_backup() {
     require MONGO_AUTH_DB
@@ -361,18 +370,79 @@ restore_admin_database() {
     echo "=> Admin database successfully restored"
 }
 
+set_marker() {
+    require MONGO_AUTH_DB
+
+    [[ -z "${MONGO_BACKUP_DB}" ]] && mongoHost=mongos || mongoHost="${MONGO_BACKUP_DB}"
+
+    if [[ -z "${marker_data:+x}" ]]; then
+        echo >&2 "Marker data is required (-d flag)"
+        exit 1
+    fi
+
+    clean_marker=$(echo "$marker_data" | sed "s/^'//;s/'$//" | sed 's/\\"/"/g')
+    singleton_marker=$(echo "${clean_marker}" | jq '. + {"_singleton": 1}')
+
+    echo "=> Writing marker to ${MONGO_MARKER_DB}.${MONGO_MARKER_COLLECTION} on ${mongoHost}..."
+    echo "${singleton_marker}" | ${MONGOIMPORT} \
+        --username="${MONGO_BACKUP_USER}" \
+        --password="${MONGO_BACKUP_PASSWORD}" \
+        --authenticationDatabase="${MONGO_AUTH_DB}" \
+        --host="${mongoHost}" \
+        --db="${MONGO_MARKER_DB}" \
+        --collection="${MONGO_MARKER_COLLECTION}" \
+        --mode=upsert \
+        --upsertFields=_singleton \
+        --type=json || {
+        echo >&2 "!! Failed to write marker"
+        exit 1
+    }
+
+    echo "=> Marker written successfully"
+}
+
+get_marker() {
+    require MONGO_AUTH_DB
+
+    [[ -z "${MONGO_BACKUP_DB}" ]] && mongoHost=mongos || mongoHost="${MONGO_BACKUP_DB}"
+
+    result=$(${MONGOEXPORT} \
+        --username="${MONGO_BACKUP_USER}" \
+        --password="${MONGO_BACKUP_PASSWORD}" \
+        --authenticationDatabase="${MONGO_AUTH_DB}" \
+        --host="${mongoHost}" \
+        --db="${MONGO_MARKER_DB}" \
+        --collection="${MONGO_MARKER_COLLECTION}" \
+        --type=json 2>/dev/null)
+
+    if [[ -z "${result}" ]]; then
+        echo >&2 "!! No marker found"
+        exit 1
+    fi
+
+    marker_value=$(echo "${result}" | jq -r '.marker')
+    if [[ -z "${marker_value}" || "${marker_value}" == "null" ]]; then
+        echo >&2 "!! Marker entry found but 'marker' field is missing"
+        exit 1
+    fi
+
+    echo "${marker_value}"
+}
+
 show_help() {
     echo "Backup daemon script used for backing up mongo dbs"
     echo "Usage:"
     echo "scripts.sh action [-h] -f vault [-d databases] [-m dbmap]"
-    echo "			action: backup/restore/restore-admin"
+    echo "			action: backup/restore/restore-admin/set-marker/get-marker"
     echo "					backup - backups all dbs or specified number of dbs (via -d key)"
     echo "					restore - restores all dbs or specified number of dbs (via -d key). Can rename some dbs using -m key"
     echo "					restore-admin - restores admin database with users"
     echo "					list-dbs - shows backed up databases from vault"
+    echo "					set-marker - writes/overwrites the single marker document to MongoDB native storage (via -d JSON)"
+    echo "					get-marker - fetches the single marker document from MongoDB native storage"
     echo "			-h: print this help"
     echo "			-f: specify full path to vault to backup into\restore from"
-    echo "			-d: JSON of databases"
+    echo "			-d: JSON of databases (or JSON marker document for set-marker)"
     echo "			-m: JSON of databases rename like {\"old_db_name1\":\"new_db_name1\",\"old_db_name2\":\"new_db_name2\"}"
 }
 
@@ -403,7 +473,7 @@ list_databases() {
 # execute command
 
 # get action
-: ${1?"Missed argument: operation: backup/restore-admin/restore"}
+: ${1?"Missed argument: operation: backup/restore-admin/restore/set-marker/get-marker"}
 
 action=$1
 shift
@@ -429,6 +499,7 @@ while getopts "h?f:d:m:s:" option; do
         ;;
     d)
         export databases="$OPTARG"
+        export marker_data="$OPTARG"
         ;;
     m)
         export dbmap="$OPTARG"
@@ -439,7 +510,10 @@ while getopts "h?f:d:m:s:" option; do
     esac
 done
 
-: ${vault?"Missed argument: backup folder: set it using -f flag"}
+case "${action}" in
+"set-marker" | "get-marker") ;;
+*) : ${vault?"Missed argument: backup folder: set it using -f flag"} ;;
+esac
 
 case "${action}" in
 "backup") cluster_backup ;;
@@ -448,6 +522,8 @@ case "${action}" in
 "restore") restore_user_databases ;;
 "inc-restore") incremental_restore ;;
 "list-dbs") list_databases ;;
+"set-marker") set_marker ;;
+"get-marker") get_marker ;;
 "-h") show_help ;;
-*) show_help >2 && exit 1 ;;
+*) show_help >&2 && exit 1 ;;
 esac

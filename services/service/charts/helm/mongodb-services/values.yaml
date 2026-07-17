@@ -212,6 +212,7 @@ backup:
   numParallelConnections: 4
   granularNumParallelConnections: 4
   enableFullRestore: false
+  dataValidationEnabled: true
   configCollections:
   affinity:
 

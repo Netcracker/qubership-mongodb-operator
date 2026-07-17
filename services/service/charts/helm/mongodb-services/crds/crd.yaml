@@ -1039,6 +1039,8 @@ spec:
                     items:
                       type: string
                     type: array
+                  dataValidationEnabled:
+                    type: boolean
                   dockerImage:
                     type: string
                   enableFullRestore:
@@ -1059,6 +1061,10 @@ spec:
                     type: string
                   install:
                     type: boolean
+                  markerCollection:
+                    type: string
+                  markerDB:
+                    type: string
                   mongoBackupDB:
                     type: string
                   mongoDatabasePrefixPattern:
