@@ -26,30 +26,36 @@ spec:
           sourceLabels:
             - member_idx
         {{- end }}
-        - sourceLabels:
+        - action: replace
+          sourceLabels:
             - namespace
           targetLabel: mongo_cluster_namespace
-        - regex: (.*:9216)
+        - action: replace
+          regex: (.*:9216)
           replacement: mongos
           sourceLabels:
             - instance
           targetLabel: instance
-        - regex: (.*:9217)
+        - action: replace
+          regex: (.*:9217)
           replacement: cnfrs
           sourceLabels:
             - instance
           targetLabel: instance
-        - regex: (.*:9218)
+        - action: replace
+          regex: (.*:9218)
           replacement: datars1
           sourceLabels:
             - instance
           targetLabel: instance
-        - regex: (.*:9219)
+        - action: replace
+          regex: (.*:9219)
           replacement: datars2
           sourceLabels:
             - instance
           targetLabel: instance
-        - regex: (.*:9220)
+        - action: replace
+          regex: (.*:9220)
           replacement: datars3
           sourceLabels:
             - instance
