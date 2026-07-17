@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -95,9 +96,21 @@ func WaitForMongoDBOperatorReady(k8sClient client.Client, name, namespace string
 			return false, err
 		}
 
+		expectedSessionId := os.Getenv("DEPLOYMENT_SESSION_ID")
+		statusSessionId, _, _ := unstructured.NestedString(mongoCR.Object, "status", "deploymentSessionId")
+
+		if expectedSessionId != "" && expectedSessionId != statusSessionId {
+			setupLog.Info("Waiting for MongoDB CR sessionId to match", "expected", expectedSessionId, "status", statusSessionId)
+			return false, nil
+		}
+
 		status, found, err := unstructured.NestedSlice(mongoCR.Object, "status", "conditions")
-		if !found || err != nil {
-			return false, fmt.Errorf("unable to find status.conditions in MongoDBCluster")
+		if err != nil {
+			return false, fmt.Errorf("unable to read status.conditions in MongoDBCluster")
+		}
+		if !found || len(status) == 0 {
+			setupLog.Info("MongoDB CR status.conditions not yet populated, retrying...")
+			return false, nil
 		}
 
 		for _, cond := range status {

@@ -386,6 +386,8 @@ spec:
               value: {{ .Values.crProcessingDelaySeconds | quote }}
             - name: DEPLOYMENT_VERSION
               value: {{ $deploymentVersion | quote }}
+            - name: DEPLOYMENT_SESSION_ID
+              value: {{ .Values.DEPLOYMENT_SESSION_ID | quote }}
             - name: DEBUG_LOG
               value: {{ .Values.debugLog | quote }}
           {{- if ne (.Values.tls.mode) "disabled"}}
