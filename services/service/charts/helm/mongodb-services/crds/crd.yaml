@@ -1061,10 +1061,6 @@ spec:
                     type: string
                   install:
                     type: boolean
-                  markerCollection:
-                    type: string
-                  markerDB:
-                    type: string
                   mongoBackupDB:
                     type: string
                   mongoDatabasePrefixPattern:

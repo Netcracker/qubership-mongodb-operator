@@ -66,8 +66,6 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 		coreUtils.GetPlainTextEnvVar("STORAGE", backup.StorageDirectory),
 		coreUtils.GetPlainTextEnvVar("GRANULAR_SCHEDULE", backup.GranularBackupSchedule),
 		coreUtils.GetPlainTextEnvVar("SCHEDULED_DBS", strings.Join(backup.GranularBackupScheduledDbs[:], ",")),
-		coreUtils.GetPlainTextEnvVar("MONGO_MARKER_DB", backup.MarkerDB),
-		coreUtils.GetPlainTextEnvVar("MONGO_MARKER_COLLECTION", backup.MarkerCollection),
 		coreUtils.GetPlainTextEnvVar("DATA_VALIDATION_ENABLED", strconv.FormatBool(backup.DataValidationEnabled)),
 	)
 

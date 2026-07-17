@@ -64,7 +64,7 @@ fi
 NUM_PARALLEL_CONNECTIONS=${NUM_PARALLEL_CONNECTIONS:-4}
 GRANULAR_NUM_PARALLEL_CONNECTIONS=${GRANULAR_NUM_PARALLEL_CONNECTIONS:-4}
 
-MONGO_MARKER_DB=${MONGO_MARKER_DB:-admin}
+MONGO_MARKER_DB=${MONGO_MARKER_DB:-backup_metadata}
 MONGO_MARKER_COLLECTION=${MONGO_MARKER_COLLECTION:-cloudBackupMarkers}
 
 cluster_backup() {
@@ -383,8 +383,8 @@ set_marker() {
         exit 1
     fi
 
-    clean_marker=$(echo "$marker_data" | sed "s/^'//;s/'$//" | sed 's/\\"/"/g')
-    singleton_marker=$(echo "${clean_marker}" | jq '. + {"_singleton": 1}')
+    clean_marker=$(echo "$marker_data" | sed "s/^'//;s/'$//")
+    singleton_marker=$(jq -n --arg marker "${clean_marker}" '{"marker": $marker, "_singleton": 1}')
 
     echo "=> Writing marker to ${MONGO_MARKER_DB}.${MONGO_MARKER_COLLECTION} on ${mongoHost}..."
     echo "${singleton_marker}" | ${MONGOIMPORT} \
