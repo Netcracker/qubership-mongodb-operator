@@ -2,6 +2,7 @@
 apiVersion: integreatly.org/v1alpha1
 kind: GrafanaDashboard
 metadata:
+  annotations: null
   name: mongodb8-{{ .Release.Namespace }}.json
   labels:
     app: grafana

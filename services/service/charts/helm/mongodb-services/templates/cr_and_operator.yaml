@@ -3,6 +3,8 @@
 apiVersion: netcracker.com/v1alpha1
 kind: MongodbSupplService
 metadata:
+  annotations:
+      argocd.argoproj.io/sync-wave: "1"
   name: {{ .Values.operator.operatorName }}
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
