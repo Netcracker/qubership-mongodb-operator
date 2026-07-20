@@ -163,7 +163,7 @@ backup:
   # Credentials
   backupUser: backup
   backupPassword: backup
-  backupUserRole: '{"roles": [{"role":"backup", "db":"admin"}]}'
+  backupUserRole: '{"roles": [{"role":"backup", "db":"admin"},{"role":"readWrite", "db":"backup_metadata"}]}'
   restoreUser: restore
   restorePassword: restore
   restoreUserRole: '{"roles": [{"role":"restore", "db":"admin"}]}'
