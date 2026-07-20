@@ -347,6 +347,7 @@
         "mongoBackupDB": { "type": "string" },
         "mongoSourceDB": { "type": "string" },
         "enableFullRestore": { "type": "boolean" },
+        "dataValidationEnabled": { "type": "boolean" },
         "configCollections": { "type": ["array", "null"], "items": { "type": "string" } },
         "affinity": { "$ref": "#/$defs/affinity" }
       }

@@ -152,6 +152,7 @@ type Backup struct {
 	RestoreUserSecretName          string                     `json:"restoreUserSecretName,omitempty"`
 	BackupSecretName               string                     `json:"backupSecretName,omitempty"`
 	Affinity                       *v1.Affinity               `json:"affinity,omitempty"`
+	DataValidationEnabled          bool                       `json:"dataValidationEnabled,omitempty"`
 }
 
 type S3backup struct {
