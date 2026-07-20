@@ -1,5 +1,5 @@
 *** Variables ***
-${NAMESPACE}                                      %{OPENSHIFT_WORKSPACE_WA}
+${NAMESPACE}                                      %{OPENSHIFT_WORKSPACE_WA=}
 
 *** Settings ***
 Library  String
