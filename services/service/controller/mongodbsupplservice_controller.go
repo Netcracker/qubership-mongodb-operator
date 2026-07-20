@@ -19,6 +19,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -63,6 +65,11 @@ type MongodbSupplServiceReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.3/pkg/reconcile
 func (r *MongodbSupplServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if delaySec := getEnvAsInt("MONGODB_OPERATOR_WAIT_DELAY_SECONDS", 30); delaySec > 0 {
+		setupLog.Info("Applying initial delay before checking MongoDB Operator", "seconds", delaySec)
+		time.Sleep(time.Duration(delaySec) * time.Second)
+	}
+
 	err := WaitForMongoDBOperatorReady(r.Client, "mongodb-operator", req.Namespace)
 	if err != nil {
 		setupLog.Info("MongoDB Operator not ready...")
@@ -71,6 +78,15 @@ func (r *MongodbSupplServiceReconciler) Reconcile(ctx context.Context, req ctrl.
 
 	reconc, err := r.Reconciler.Reconcile(ctx, req)
 	return reconc, err
+}
+
+func getEnvAsInt(key string, defaultVal int) int {
+	if val, ok := os.LookupEnv(key); ok {
+		if i, err := strconv.Atoi(val); err == nil {
+			return i
+		}
+	}
+	return defaultVal
 }
 
 func WaitForMongoDBOperatorReady(k8sClient client.Client, name, namespace string) error {

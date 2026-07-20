@@ -384,6 +384,8 @@ spec:
               value: {{ .Values.operator.operatorName }}
             - name: RECONCILIATION_DELAY_SECONDS
               value: {{ .Values.crProcessingDelaySeconds | quote }}
+            - name: MONGODB_OPERATOR_WAIT_DELAY_SECONDS
+              value: {{ .Values.mongodbOperatorWaitDelaySeconds | default 30 | quote }}
             - name: DEPLOYMENT_VERSION
               value: {{ $deploymentVersion | quote }}
             - name: DEBUG_LOG

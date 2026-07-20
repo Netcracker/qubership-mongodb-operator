@@ -15,6 +15,7 @@
     "podSecurityContext": { "$ref": "#/$defs/podSecurityContext" },
     "policies": { "$ref": "#/$defs/policies" },
     "crProcessingDelaySeconds": { "type": "integer" },
+    "mongodbOperatorWaitDelaySeconds": { "type": "integer", "default": 30 },
     "deletePVConUninstall": { "type": "boolean" },
     "waitSeconds": { "type": "integer" },
     "drTimeoutSeconds": { "type": "integer" },
