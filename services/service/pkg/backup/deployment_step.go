@@ -66,6 +66,7 @@ func (r *BackupDeployment) Execute(ctx core.ExecutionContext) error {
 		coreUtils.GetPlainTextEnvVar("STORAGE", backup.StorageDirectory),
 		coreUtils.GetPlainTextEnvVar("GRANULAR_SCHEDULE", backup.GranularBackupSchedule),
 		coreUtils.GetPlainTextEnvVar("SCHEDULED_DBS", strings.Join(backup.GranularBackupScheduledDbs[:], ",")),
+		coreUtils.GetPlainTextEnvVar("DATA_VALIDATION_ENABLED", strconv.FormatBool(backup.DataValidationEnabled)),
 	)
 
 	secretVolumes := map[string]string{

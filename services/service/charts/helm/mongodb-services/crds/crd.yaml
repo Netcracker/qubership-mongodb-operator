@@ -1039,6 +1039,8 @@ spec:
                     items:
                       type: string
                     type: array
+                  dataValidationEnabled:
+                    type: boolean
                   dockerImage:
                     type: string
                   enableFullRestore:

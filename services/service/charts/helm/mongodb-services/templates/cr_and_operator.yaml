@@ -186,6 +186,7 @@ spec:
     mongoSourceDB: {{ .Values.backup.mongoSourceDB | default "" | quote }}
     mongoBackupDB: {{ .Values.backup.mongoBackupDB | default "" | quote }}
     enableFullRestore: {{ .Values.backup.enableFullRestore }}
+    dataValidationEnabled: {{ .Values.backup.dataValidationEnabled }}
     {{- if .Values.backup.configCollections }}
     configCollections:
       {{- range $key, $value := .Values.backup.configCollections }}

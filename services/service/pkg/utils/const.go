@@ -86,6 +86,10 @@ const BackupRestoreCreds = "mongodb-restore-credentials.v1"
 const BackupApiCreds = "mongodb-backup-api-credentials.v1"
 const BackupMonitoringConfig = BackupDaemon + ".monitoring-config"
 
+
+const DataValidationEnabledLabel = "cloud-backuper.netcracker.com/data-validation-enabled"
+const DataValidationEnabledLabelValue = "true"
+
 const ServicesUsersContextList = "ctxServicesUsersList"
 const ServicesRolesContextList = "ctxServicesRolesList"
 
