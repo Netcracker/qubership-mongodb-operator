@@ -62,6 +62,7 @@ podSecurityContext:
   supplementalGroups:
 
 crProcessingDelaySeconds: 0
+mongodbOperatorWaitDelaySeconds: 30
 #tolerations example
 # policies:
 #   tolerations:
