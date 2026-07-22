@@ -35,26 +35,26 @@ Preparation
 Set Marker
     [Arguments]    ${marker}
     ${body}=    Set Variable    {"marker": "${marker}"}
-    ${resp}=    POST On Session    backupsession    /marker/set    data=${body}    headers=${headers}
+    ${resp}=    POST On Session    backupsession    /api/v1/data-validation/marker   data=${body}    headers=${headers}
     Log    ${resp.content}
     RETURN    ${resp}
 
 Get Marker
-    ${resp}=    GET On Session    backupsession    /marker/get    headers=${headers}
+    ${resp}=    GET On Session    backupsession    /api/v1/data-validation/marker    headers=${headers}
     Log    ${resp.content}
     RETURN    ${resp}
 
 
 *** Test Cases ***
-Test Set Marker Returns 200
+Test Set Marker Returns 201
     [Tags]    mongo    marker
     ${resp}=    Set Marker    ${MARKER_VALUE}
-    Should Be Equal As Strings    ${resp.status_code}    200
+    Should Be Equal As Strings    ${resp.status_code}    201
 
 Test Get Marker Returns Set Value
     [Tags]    mongo    marker
     ${resp}=    Set Marker    ${MARKER_VALUE}
-    Should Be Equal As Strings    ${resp.status_code}    200
+    Should Be Equal As Strings    ${resp.status_code}    201
     ${resp}=    Get Marker
     Should Be Equal As Strings    ${resp.status_code}    200
     Should Contain    ${resp.text}    ${MARKER_VALUE}
@@ -64,9 +64,9 @@ Test Set Marker Overwrites Previous Entry
     ${first_marker}=    Set Variable    my-backup/2026-01-01T00:00:00Z
     ${second_marker}=    Set Variable    my-backup/2026-10-07T17:15:00Z
     ${resp}=    Set Marker    ${first_marker}
-    Should Be Equal As Strings    ${resp.status_code}    200
+    Should Be Equal As Strings    ${resp.status_code}    201
     ${resp}=    Set Marker    ${second_marker}
-    Should Be Equal As Strings    ${resp.status_code}    200
+    Should Be Equal As Strings    ${resp.status_code}    201
     ${resp}=    Get Marker
     Should Be Equal As Strings    ${resp.status_code}    200
     Should Contain      ${resp.text}    ${second_marker}
@@ -76,7 +76,7 @@ Test Get Marker After Set Returns Latest Value
     [Tags]    mongo    marker
     ${updated_marker}=    Generate Random String    10    [LOWER]
     ${resp}=    Set Marker    ${updated_marker}
-    Should Be Equal As Strings    ${resp.status_code}    200
+    Should Be Equal As Strings    ${resp.status_code}    201
     ${resp}=    Get Marker
     Should Be Equal As Strings    ${resp.status_code}    200
     Should Contain    ${resp.text}    ${updated_marker}
