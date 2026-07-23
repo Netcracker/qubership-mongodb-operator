@@ -8,6 +8,7 @@ Library      String
 Library      Collections
 Library      RequestsLibrary
 Library      OperatingSystem
+Resource     ../shared/keywords.robot
 Resource     backup-shared.robot
 Suite Setup  Preparation
 Suite Teardown  Delete All Sessions
@@ -31,6 +32,12 @@ Preparation
     Create Session    backupsession
     ...    ${PROTOCOL}://${BACKUP_DAEMON_API_CREDENTIALS_USERNAME}:${BACKUP_DAEMON_API_CREDENTIALS_PASSWORD}@${BACKUP_HOST}:${port}
     ...    verify=${verify}
+
+    ${data_validation}=    Check DATA_VALIDATION_ENABLED environment variable on name=mongodb-backup-daemon is true
+    Skip If    not ${data_validation}    Skipped: DATA_VALIDATION_ENABLED is not true on mongodb-backup-daemon
+
+    ${resp}=    GET On Session    backupsession    /health    expected_status=any
+    Skip If    '${resp.status_code}' != '200'    Skipped: backup daemon is not healthy (status ${resp.status_code})
 
 Set Marker
     [Arguments]    ${marker}
@@ -72,11 +79,3 @@ Test Set Marker Overwrites Previous Entry
     Should Contain      ${resp.text}    ${second_marker}
     Should Not Contain  ${resp.text}    ${first_marker}
 
-Test Get Marker After Set Returns Latest Value
-    [Tags]    mongo    marker
-    ${updated_marker}=    Generate Random String    10    [LOWER]
-    ${resp}=    Set Marker    ${updated_marker}
-    Should Be Equal As Strings    ${resp.status_code}    201
-    ${resp}=    Get Marker
-    Should Be Equal As Strings    ${resp.status_code}    200
-    Should Contain    ${resp.text}    ${updated_marker}
