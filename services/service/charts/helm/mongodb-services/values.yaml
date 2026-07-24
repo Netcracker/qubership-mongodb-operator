@@ -8,7 +8,7 @@ operator:
   operatorName: mongodb-services-operator
   image: ghcr.io/netcracker/qubership-mongodb-supplementary:main
   initImage: ghcr.io/netcracker/qubership-credential-manager:main
-  priorityClassName:
+# priorityClassName:
   resources:
     requests:
       cpu: 50m
@@ -16,7 +16,7 @@ operator:
     limits:
       cpu: 100m
       memory: 128Mi
-  affinity:
+# affinity:
 
 global: 
   profile: ""
@@ -31,9 +31,9 @@ schemaSettings:
   mongosReplicas: 1
   shardCount: 3
   dcName: mongodb-na
-  publicCloud:
+# publicCloud:
   thisDomainName: cluster.local
-  otherDomainName:
+# otherDomainName:
   # Starts from 0.
   # -1 = middle node is selected as arbiter automatically
   arbiterIndex: -1
@@ -59,7 +59,7 @@ recycler:
 podSecurityContext:
   fsGroup: 1001
   runAsUser: 1001
-  supplementalGroups:
+# supplementalGroups:
 
 crProcessingDelaySeconds: 0
 mongodbOperatorWaitDelaySeconds: 30
@@ -112,10 +112,10 @@ tls:
     subjectAlternativeName:
       additionalDnsNames: []
       additionalIpAddresses: []
-  certificates:
-    tls_key: 
-    tls_crt: 
-    ca_crt: 
+# certificates:
+    # tls_key: 
+    # tls_crt: 
+    # ca_crt: 
 
 backup:
   install: true
@@ -127,23 +127,23 @@ backup:
     sslVerify: false
     sslSecretName: "backup-daemon-s3-tls-secret"
     sslCert: ""
-    bucketName:
-    accessKeyId:
-    accessKeySecret:
-    endpointUrl:
+  # bucketName:
+  # accessKeyId:
+  # accessKeySecret:
+  # endpointUrl:
   tls:
     backupDaemonCASecretName: backup-daemon-certificate
     duration: 365
     subjectAlternativeName:
       additionalDnsNames: [ ]
       additionalIpAddresses: [ ]
-    certificates:
-      tls_key: 
-      tls_crt: 
+  # certificates:
+      # tls_key: 
+      # tls_crt: 
 
   # Mandatory Backup docker image link
   dockerImage: ghcr.io/netcracker/qubership-mongodb-backup-daemon:main
-  priorityClassName:
+# priorityClassName:
 
   # Key-value node labels for backup.
   # Example:
@@ -214,14 +214,14 @@ backup:
   granularNumParallelConnections: 4
   enableFullRestore: false
   dataValidationEnabled: true
-  configCollections:
-  affinity:
+# configCollections:
+# affinity:
 
 dbaas:
   # Mandatory Dbaas docker image link
   pdb: false
   dockerImage: ghcr.io/netcracker/qubership-dbaas-mongo:main
-  priorityClassName:
+# priorityClassName:
   # apiVersion: v1
   multiUsers: true
   gatewayAPI:
@@ -234,9 +234,9 @@ dbaas:
     subjectAlternativeName:
       additionalDnsNames: [ ]
       additionalIpAddresses: [ ]
-    certificates:
-      tls_key: 
-      tls_crt: 
+  # certificates:
+      # tls_key: 
+      # tls_crt: 
 
   # Key-value node labels for dbaas.
   # Example:
@@ -280,7 +280,7 @@ dbaas:
     limits:
       cpu: 20m
       memory: 64Mi
-  affinity:
+# affinity:
 
 prometheusExporter:
   # Mandatory Monitoring docker image link
@@ -305,12 +305,12 @@ prometheusExporter:
       usedSpaceThreshold: 80
       usedInodesThreshold: 80
 
-  priorityClassName:
+# priorityClassName:
   # Key-value node labels for monitoring.
   # Example:
   #   additionalNodeLabels:
   #     "kubernetes.io/hostname": "node-1"
-  additionalNodeLabels:
+# additionalNodeLabels:
 
   # MongoDB Credentials
   monitoringUser: monitoring
@@ -339,13 +339,13 @@ prometheusExporter:
 robotTests:
   install: false
   dockerImage:  ghcr.io/netcracker/qubership-mongodb-tests:main
-  priorityClassName:
-  tags:
+# priorityClassName:
+# tags:
   mainSide: left
   leftNodesPattern: left
   rightNodesPattern: right
-  externalBackupPath:
-  nodeLabels:
+# externalBackupPath:
+# nodeLabels:
   resources:
     requests:
       cpu: 200m
@@ -353,7 +353,7 @@ robotTests:
     limits:
       cpu: 200m
       memory: 256Mi
-  affinity:
+# affinity:
 
 role:
   # Specifies whether a role should be created
