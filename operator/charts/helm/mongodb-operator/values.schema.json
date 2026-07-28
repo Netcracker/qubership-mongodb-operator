@@ -56,7 +56,7 @@
       }
     },
     "affinity": {
-      "type": ["object", "null"],
+      "type": "object",
       "additionalProperties": false,
       "properties": {
         "nodeAffinity": {
@@ -128,9 +128,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "tls_key": { "type": ["string", "null"] },
-        "tls_crt": { "type": ["string", "null"] },
-        "ca_crt":  { "type": ["string", "null"] }
+        "tls_key": { "type": "string" },
+        "tls_crt": { "type": "string" },
+        "ca_crt":  { "type": "string" }
       }
     },
     "subjectAlternativeName": {
@@ -148,7 +148,7 @@
         "operatorName": { "type": "string" },
         "image": { "type": "string" },
         "initImage": { "type": "string" },
-        "priorityClassName": { "type": ["string", "null"] },
+        "priorityClassName": { "type": "string" },
         "resources": { "$ref": "#/$defs/resourceRequirements" },
         "affinity": { "$ref": "#/$defs/affinity" }
       }
@@ -162,7 +162,7 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "image": { "type": ["string", "null"] }
+            "image": { "type": "string" }
           }
         }
       }
@@ -178,9 +178,9 @@
         "mongosReplicas": { "type": "integer" },
         "shardCount": { "type": "integer" },
         "dcName": { "type": "string" },
-        "publicCloud": { "type": ["string", "null"] },
+        "publicCloud": { "type": "string" },
         "thisDomainName": { "type": "string" },
-        "otherDomainName": { "type": ["string", "null"] },
+        "otherDomainName": { "type": "string" },
         "arbiterIndex": { "type": "integer" }
       }
     },
@@ -202,7 +202,7 @@
           }
         },
         "mode": { "type": "string", "enum": ["active", "standby", "disabled"] },
-        "status": { "type": ["string", "null"] },
+        "status": { "type": "string" },
         "noWait": { "type": "boolean" },
         "siteManagerEnabled": { "type": "boolean" },
         "afterServices": { "type": "array", "items": { "type": "string" } },
@@ -218,8 +218,8 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "tls_key": { "type": ["string", "null"] },
-                "tls_crt": { "type": ["string", "null"] }
+                "tls_key": { "type": "string" },
+                "tls_crt": { "type": "string" }
               }
             }
           }
@@ -238,9 +238,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "fsGroup": { "type": ["integer", "null"] },
-        "runAsUser": { "type": ["integer", "null"] },
-        "supplementalGroups": { "type": ["string", "null"] },
+        "fsGroup": { "type": "integer" },
+        "runAsUser": { "type": "integer" },
+        "supplementalGroups": { "type": "string" },
         "seLinuxOptions": { "type": "object", "additionalProperties": true }
       }
     },
@@ -259,10 +259,10 @@
         "clusterAuthMode": { "type": "string" },
         "flavor": { "type": "string", "enum": ["small", "medium", "large"] },
         "dockerImage": { "type": "string" },
-        "priorityClassName": { "type": ["string", "null"] },
+        "priorityClassName": { "type": "string" },
         "containerTimeoutSeconds": { "type": "integer" },
         "containerPeriodSeconds": { "type": "integer" },
-        "additionalNodeLabels": { "type": ["object", "null"], "additionalProperties": { "type": "string" } },
+        "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
         "rootUser": { "type": "string" },
         "rootPassword": { "type": "string" },
         "rootUserRole": { "type": "string" },
@@ -270,15 +270,15 @@
         "affinity": { "$ref": "#/$defs/affinity" },
         "pdb": { "type": "boolean" },
         "cnfResources": { "$ref": "#/$defs/resourceRequirements" },
-        "cnfWiredTigerCacheGb": { "type": ["string", "null"] },
-        "cnfOpLogSizeMb": { "type": ["integer", "null"] },
+        "cnfWiredTigerCacheGb": { "type": "string" },
+        "cnfOpLogSizeMb": { "type": "integer" },
         "arbiterResources": { "$ref": "#/$defs/resourceRequirements" },
         "dataResources": { "$ref": "#/$defs/resourceRequirements" },
-        "dataWiredTigerCacheGb": { "type": ["string", "null"] },
-        "dataOpLogSizeMb": { "type": ["integer", "null"] },
+        "dataWiredTigerCacheGb": { "type": "string" },
+        "dataOpLogSizeMb": { "type": "integer" },
         "customDataRSParameters": { "type": "array", "items": { "type": "string" } },
         "mongosResources": { "$ref": "#/$defs/resourceRequirements" },
-        "singleWiredTigerCacheGb": { "type": ["string", "number"] },
+        "singleWiredTigerCacheGb": { "type": "string" },
         "storage": { "$ref": "#/$defs/storageRequirements" }
       }
     },
@@ -292,7 +292,7 @@
         "privateKeyFileName": { "type": "string" },
         "signedCRTFileName": { "type": "string" },
         "combinedKeyAndCRTFileName": { "type": "string" },
-        "rootCASecretName": { "type": ["string", "null"] },
+        "rootCASecretName": { "type": "string" },
         "generateCerts": {
           "type": "object",
           "additionalProperties": false,
@@ -365,8 +365,8 @@
         "restoreUser": { "type": "string" },
         "restorePassword": { "type": "string" },
         "restoreUserRole": { "type": "string" },
-        "apiUser": { "type": ["string", "null"] },
-        "apiPassword": { "type": ["string", "null"] },
+        "apiUser": { "type": "string" },
+        "apiPassword": { "type": "string" },
         "storage": { "$ref": "#/$defs/storageRequirements" },
         "backupResources": { "$ref": "#/$defs/resourceRequirements" },
         "numParallelConnections": { "type": "integer" },

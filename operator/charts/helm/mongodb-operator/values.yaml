@@ -8,7 +8,7 @@ operator:
   operatorName: mongodb-operator
   image: ghcr.io/netcracker/qubership-mongodb-operator:main
   initImage: ghcr.io/netcracker/qubership-credential-manager:main
-  priorityClassName:
+# priorityClassName:
   resources:
     requests:
       cpu: 50m
@@ -16,7 +16,7 @@ operator:
     limits:
       cpu: 100m
       memory: 128Mi
-  affinity:
+# affinity:
 
 global: 
   profile: ""
@@ -30,9 +30,9 @@ schemaSettings:
   mongosReplicas: 1
   shardCount: 3
   dcName: mongodb-na
-  publicCloud:
+# publicCloud:
   thisDomainName: cluster.local
-  otherDomainName:
+# otherDomainName:
   # Starts from 0.
   # -1 = middle node is selected as arbiter automatically
   arbiterIndex: -1
@@ -62,9 +62,9 @@ disasterRecovery:
     subjectAlternativeName:
       additionalDnsNames: [ ]
       additionalIpAddresses: [ ]
-    certificates:
-      tls_key: 
-      tls_crt: 
+  # certificates:
+    #   tls_key: 
+    #   tls_crt: 
 
 imagePullPolicy: Always
 
@@ -84,7 +84,7 @@ recycler:
 podSecurityContext:
   fsGroup: 1001
   runAsUser: 1001
-  supplementalGroups:
+# supplementalGroups:
 
 crProcessingDelaySeconds: 0
 #tolerations example
@@ -124,7 +124,7 @@ mongodb:
   # flavor: small
   # Mandatory MongoDB docker image link
   dockerImage: ghcr.io/netcracker/qubership-mongodb:main_8.0.15
-  priorityClassName:
+  # priorityClassName:
 
   containerTimeoutSeconds: 10
   containerPeriodSeconds: 10
@@ -140,7 +140,7 @@ mongodb:
   rootPassword: root
   rootUserRole: "'root', '__system'"
   mongoRootSecretName: mongodb-root-credentials.v1
-  affinity:
+# affinity:
 
   pdb: false
 
@@ -152,7 +152,7 @@ mongodb:
     requests:
       memory: 128Mi
       cpu: 100m
-  cnfWiredTigerCacheGb:
+# cnfWiredTigerCacheGb:
   arbiterResources:
     limits:
       memory: 256Mi
@@ -167,7 +167,7 @@ mongodb:
     requests:
       memory: 256Mi
       cpu: 100m
-  dataWiredTigerCacheGb:
+# dataWiredTigerCacheGb:
   # customDataRSParameters:
   #     - transactionLifetimeLimitSeconds=20
   mongosResources:
@@ -177,7 +177,7 @@ mongodb:
     requests:
       memory: 256Mi
       cpu: 100m
-  singleWiredTigerCacheGb: 0.25
+  singleWiredTigerCacheGb: "0.25"
 
   storage:
     waitPvcBound: false
@@ -219,10 +219,10 @@ tls:
     subjectAlternativeName:
       additionalDnsNames: []
       additionalIpAddresses: []
-  certificates:
-    tls_key: 
-    tls_crt: 
-    ca_crt: 
+# certificates:
+  #   tls_key: 
+  #   tls_crt: 
+  #   ca_crt: 
 
 role:
   # Specifies whether a role should be created
