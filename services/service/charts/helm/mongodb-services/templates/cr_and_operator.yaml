@@ -276,7 +276,7 @@ spec:
     {{- if .Values.robotTests.tags }}
     tags: {{ .Values.robotTests.tags }}
     {{- else }}
-    tags: "smokeORbackupORdbaas"
+    tags: "smokeORbackupORdbaasORmarker"
     {{- end }}
     mainSide: {{ .Values.robotTests.mainSide }}
     leftNodesPattern: {{ .Values.robotTests.leftNodesPattern }}
