@@ -6,7 +6,7 @@
 DEPLOY_W_HELM: true
 operator:
   operatorName: mongodb-operator
-  image: ghcr.io/netcracker/qubership-mongodb-operator:main
+  image: ghcr.io/netcracker/qubership-mongodb-operator:2.16.5
   initImage: ghcr.io/netcracker/qubership-credential-manager:main
 # priorityClassName:
   resources:
