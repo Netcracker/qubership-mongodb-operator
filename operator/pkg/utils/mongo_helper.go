@@ -679,18 +679,16 @@ func (r *MongoUtilsHelperImpl) AddDRReplicas(labels map[string]string, replicase
 
 func (r *MongoUtilsHelperImpl) ReconfigureRS(labels map[string]string, replicasetHostnames []string) error {
 	list, err := checkListPodsResult(r.KubernetesHelperImpl.ListPods(r.Namespace, labels))
-
 	if err != nil {
-		return nil
+		return err
 	}
 
 	QuoteReplicaSet(replicasetHostnames)
 
 	arg := fmt.Sprintf(JsTemplate, strings.Join(replicasetHostnames, ","))
-	r.runAndRetry(func() error {
+	return r.runAndRetry(func() error {
 		return r.CheckOutputResult(r.RunOnMongoPod(&list.Items[0], arg))
 	})
-	return err
 }
 
 func (r *MongoUtilsHelperImpl) AddOrUpdateShards(domain string, dataReplicaSize, dataShards int, commandFormatFunc func(shardName, replicas string) string,
@@ -1021,17 +1019,21 @@ func (r *MongoUtilsHelperImpl) RestartConfigRS(cnfReplicaSize int, domain, mode 
 			return fmt.Errorf("error while restarting cnfrs %d pod. Error: %v", i, err)
 		}
 
-		if i == 0 {
-			err := wait.PollImmediate(3*time.Second, time.Second*time.Duration(r.WaitSeconds), func() (done bool, err error) {
-				cnfStatus, statusErr := r.GetReplicaSetStatus(map[string]string{Microservice: CnfNameKey}, GetCNFReplicaSetHostNames(cnfReplicaSize, domain, r.Namespace), mode)
-				if statusErr != nil || cnfStatus != Up {
-					return false, nil
-				}
-				return true, nil
-			})
-			if err != nil {
-				return err
+		// Wait for the replica set to return to a healthy state after every
+		// restart, not just the first. On a live, traffic-serving cluster,
+		// restarting the next pod before this one has rejoined can drop
+		// quorum (e.g. 2-of-3 members down simultaneously), which stalls
+		// config server routing entirely. This must be a true rolling
+		// restart, one confirmed-healthy pod at a time.
+		pollErr := wait.PollImmediate(3*time.Second, time.Second*time.Duration(r.WaitSeconds), func() (done bool, err error) {
+			cnfStatus, statusErr := r.GetReplicaSetStatus(map[string]string{Microservice: CnfNameKey}, GetCNFReplicaSetHostNames(cnfReplicaSize, domain, r.Namespace), mode)
+			if statusErr != nil || cnfStatus != Up {
+				return false, nil
 			}
+			return true, nil
+		})
+		if pollErr != nil {
+			return fmt.Errorf("cnfrs did not return to healthy status after restarting pod %d. Error: %v", i, pollErr)
 		}
 	}
 
@@ -1075,17 +1077,21 @@ func (r *MongoUtilsHelperImpl) RestartDataRS(datarsSize, shardCount int, domain,
 				return err
 			}
 
-			if i == 0 {
-				err := wait.PollImmediate(3*time.Second, time.Second*time.Duration(r.WaitSeconds), func() (done bool, err error) {
-					dataStatus, statusErr := r.GetReplicaSetStatus(map[string]string{Microservice: serviceName}, GetDATAReplicaSetHostName(datarsSize, s, domain, r.Namespace), mode)
-					if statusErr != nil || dataStatus != Up {
-						return false, nil
-					}
-					return true, nil
-				})
-				if err != nil {
-					return err
+			// Wait for the replica set to return to a healthy state after
+			// every restart, not just the first. On a live, traffic-serving
+			// shard, restarting the next pod before this one has rejoined
+			// can drop quorum (e.g. 2-of-3 members down simultaneously),
+			// stalling that shard entirely. This must be a true rolling
+			// restart, one confirmed-healthy pod at a time, per shard.
+			pollErr := wait.PollImmediate(3*time.Second, time.Second*time.Duration(r.WaitSeconds), func() (done bool, err error) {
+				dataStatus, statusErr := r.GetReplicaSetStatus(map[string]string{Microservice: serviceName}, GetDATAReplicaSetHostName(datarsSize, s, domain, r.Namespace), mode)
+				if statusErr != nil || dataStatus != Up {
+					return false, nil
 				}
+				return true, nil
+			})
+			if pollErr != nil {
+				return fmt.Errorf("shard %d datars did not return to healthy status after restarting pod %d. Error: %v", s, i, pollErr)
 			}
 		}
 	}

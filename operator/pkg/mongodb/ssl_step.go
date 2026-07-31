@@ -23,20 +23,39 @@ func (r *CreateSSLSecretStep) Execute(ctx core.ExecutionContext) error {
 
 	log.Info("Mongo SSL step started")
 	var sslString string
-	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
-		url := fmt.Sprintf("http://%s.%s.svc.%s:8069", utils.OperatorServiceName,
-			request.Namespace, spec.Spec.SchemaSettings.OtherDomainName)
 
-		client := utils.NewOperatorClinet(url)
-		result, err := client.GetKeyFile()
-		if err == nil {
+	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
+
+		if core.GetCurrentDeployType(ctx) != core.CleanDeploy {
+			// Rolling update on an already-deployed DR-enabled cluster (e.g.
+			// Running -> Disabled, or Disabled -> Primary). The keyfile secret
+			// already exists and MUST NOT change — internal auth requires it
+			// stay byte-identical across all already-running members. Fetch it
+			// from our own operator rather than generating a new one or
+			// contacting the other cluster, which may not be reachable yet.
+			url := fmt.Sprintf("http://%s.%s.svc.%s:8069", utils.OperatorServiceName,
+				request.Namespace, spec.Spec.SchemaSettings.ThisDomainName)
+
+			client := utils.NewOperatorClinet(url)
+			result, err := client.GetKeyFile()
+			core.PanicError(err, log.Error, "Failed to receive existing keyfile from own operator during rolling update")
 			sslString = result
-		} else if spec.Spec.DisasterRecovery.Mode == utils.StandbyMode && core.GetCurrentDeployType(ctx) == core.CleanDeploy {
-			sslResult, sslErr := helperImpl.OpensslCommand([]string{"rand", "-base64", "755"})
-			core.PanicError(sslErr, log.Error, "Can't create mongo-secret")
-			sslString = string(sslResult)
+
 		} else {
-			core.PanicError(err, log.Error, fmt.Sprintf("Failed to recieve keyfile from %s. Make sure that other operator is running ", url))
+			url := fmt.Sprintf("http://%s.%s.svc.%s:8069", utils.OperatorServiceName,
+				request.Namespace, spec.Spec.SchemaSettings.OtherDomainName)
+
+			client := utils.NewOperatorClinet(url)
+			result, err := client.GetKeyFile()
+			if err == nil {
+				sslString = result
+			} else if spec.Spec.DisasterRecovery.Mode == utils.StandbyMode {
+				sslResult, sslErr := helperImpl.OpensslCommand([]string{"rand", "-base64", "755"})
+				core.PanicError(sslErr, log.Error, "Can't create mongo-secret")
+				sslString = string(sslResult)
+			} else {
+				core.PanicError(err, log.Error, fmt.Sprintf("Failed to recieve keyfile from %s. Make sure that other operator is running ", url))
+			}
 		}
 
 	} else {
