@@ -179,6 +179,10 @@ func (r *TestMongoUtilsHelper) GetClusterStatus(mode string, domain string, cnfR
 	return utils.Up, nil
 }
 
+func (r *TestMongoUtilsHelper) CheckReplicationLag(labels map[string]string, memberHostnames []string, maxLagSeconds int) (bool, error) {
+	return true, nil
+}
+
 func getMaxReplica(schemaSettings v1alpha1.SchemaSettings) int {
 	if schemaSettings.SchemaType == v1alpha1.Single {
 		return 1

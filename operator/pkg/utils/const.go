@@ -210,6 +210,38 @@ const JsCheckMemberHealth = `
          (t.stateStr === 'PRIMARY' || t.stateStr === 'SECONDARY');
 })('%s')`
 
+const JsCheckMemberExists = `
+(function(host) {
+  var cfg = rs.config();
+  return cfg.members.some(function(m) { return m.host === host; });
+})('%s')`
+
+const JsCheckReconfigNeeded = `
+(function(hiddenHosts) {
+  var cfg = rs.config();
+  var needed = false;
+  cfg.members.forEach(function(m) {
+    var shouldBeHidden = hiddenHosts.indexOf(m.host) >= 0;
+    if (shouldBeHidden && (m.priority !== 0 || m.votes !== 0)) needed = true;
+    if (!shouldBeHidden && (m.priority !== 1 || m.votes !== 1)) needed = true;
+  });
+  return needed;
+})([%s])`
+
+const JsCheckAllMembersLag = `
+(function(names, maxLagSec) {
+  var s = rs.status();
+  if (!s || !s.ok) return false;
+  var p = s.members.find(function(m) { return m.stateStr === 'PRIMARY'; });
+  if (!p) return false;
+  for (var i = 0; i < names.length; i++) {
+    var t = s.members.find(function(m) { return m.name === names[i]; });
+    if (!t || t.health !== 1 || t.stateStr !== 'SECONDARY' || !t.optimeDate) return false;
+    if ((p.optimeDate - t.optimeDate) / 1000 > maxLagSec) return false;
+  }
+  return true;
+})([%s], %d)`
+
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
 	"adminDB.dropDatabase();" +

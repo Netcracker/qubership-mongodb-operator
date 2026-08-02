@@ -248,6 +248,7 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			compound.AddStep(&dr.UpdatePrometheusExporterStep{
 				ExportMongos: spec.Spec.DisasterRecovery.Mode == utils.ActiveMode,
 			})
+			compound.AddStep(&dr.WaitReplicationLagStep{MaxLagSeconds: 30})
 			compound.AddStep(&dr.WaitExpectedClusterStatusStep{Status: utils.Up, BypassCheck: false})
 		}
 	}

@@ -15,8 +15,7 @@ type AddCNFReplicas struct {
 
 func (r *AddCNFReplicas) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
-	return core.GetCurrentDeployType(ctx) == core.CleanDeploy &&
-		spec.Spec.SchemaSettings.Sharded && spec.Spec.DisasterRecovery.Mode == utils.ActiveMode, nil
+	return spec.Spec.SchemaSettings.Sharded && spec.Spec.DisasterRecovery.Mode == utils.ActiveMode, nil
 }
 
 func (r *AddCNFReplicas) Execute(ctx core.ExecutionContext) error {
