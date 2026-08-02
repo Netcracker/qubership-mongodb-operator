@@ -44,7 +44,6 @@ func (w *WaitReplicationLagStep) Execute(ctx core.ExecutionContext) error {
 		maxLag = defaultMaxLagSeconds
 	}
 
-	timeout := time.Duration(spec.Spec.WaitSeconds) * time.Second
 	otherDomain := spec.Spec.SchemaSettings.OtherDomainName
 
 	if spec.Spec.SchemaSettings.Sharded {
@@ -52,7 +51,7 @@ func (w *WaitReplicationLagStep) Execute(ctx core.ExecutionContext) error {
 			spec.Spec.SchemaSettings.CnfReplicaSize, otherDomain, request.Namespace)
 		labels := map[string]string{utils.Microservice: utils.CnfNameKey}
 
-		if err := pollLag(mongoImpl, labels, cnfMembers, maxLag, timeout, log, utils.CnfNameKey); err != nil {
+		if err := pollLag(mongoImpl, labels, cnfMembers, maxLag, 0, log, utils.CnfNameKey); err != nil {
 			return err
 		}
 	}
@@ -63,7 +62,7 @@ func (w *WaitReplicationLagStep) Execute(ctx core.ExecutionContext) error {
 		serviceName := fmt.Sprintf(utils.DataNameKey, i+1)
 		labels := map[string]string{utils.Microservice: serviceName}
 
-		if err := pollLag(mongoImpl, labels, dataMembers, maxLag, timeout, log, serviceName); err != nil {
+		if err := pollLag(mongoImpl, labels, dataMembers, maxLag, 0, log, serviceName); err != nil {
 			return err
 		}
 	}
@@ -72,8 +71,10 @@ func (w *WaitReplicationLagStep) Execute(ctx core.ExecutionContext) error {
 	return nil
 }
 
-func pollLag(mongoImpl utils.MongoHelper, labels map[string]string, members []string, maxLag int, timeout time.Duration, log *zap.Logger, rsName string) error {
-	return wait.Poll(5*time.Second, timeout, func() (bool, error) {
+// pollLag polls until all members have lag ≤ maxLag seconds.
+// timeoutSeconds == 0 means poll indefinitely.
+func pollLag(mongoImpl utils.MongoHelper, labels map[string]string, members []string, maxLag int, timeoutSeconds int, log *zap.Logger, rsName string) error {
+	condFunc := func() (bool, error) {
 		ok, err := mongoImpl.CheckReplicationLag(labels, members, maxLag)
 		if err != nil {
 			log.Warn(fmt.Sprintf("Failed to check replication lag for %s: %v", rsName, err))
@@ -83,5 +84,9 @@ func pollLag(mongoImpl utils.MongoHelper, labels map[string]string, members []st
 			log.Debug(fmt.Sprintf("Replication lag for %s still above threshold, waiting", rsName))
 		}
 		return ok, nil
-	})
+	}
+	if timeoutSeconds == 0 {
+		return wait.PollInfinite(5*time.Second, condFunc)
+	}
+	return wait.Poll(5*time.Second, time.Duration(timeoutSeconds)*time.Second, condFunc)
 }
