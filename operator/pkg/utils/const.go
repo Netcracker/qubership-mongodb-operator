@@ -228,23 +228,26 @@ const JsCheckReconfigNeeded = `
   return needed;
 })([%s])`
 
+// JsRenameMemberDomain renames RS member hosts from any domain that is not newDomain or otherDomain to newDomain.
+// Skips members already on newDomain or otherDomain (standby members) to avoid duplicate host errors.
 const JsRenameMemberDomain = `
-(function(newDomain) {
+(function(newDomain, otherDomain) {
   var cfg = rs.config();
   var changed = false;
   cfg.members = cfg.members.map(function(m) {
     var parts = m.host.split('.svc.');
-    if (parts.length === 2 && parts[1] !== newDomain + ':27017' && parts[1].split(':')[0] !== newDomain) {
-      var portPart = parts[1].indexOf(':') >= 0 ? ':' + parts[1].split(':')[1] : ':27017';
-      m.host = parts[0] + '.svc.' + newDomain + portPart;
-      changed = true;
-    }
+    if (parts.length !== 2) return m;
+    var currentDomain = parts[1].split(':')[0];
+    if (currentDomain === newDomain || currentDomain === otherDomain) return m;
+    var port = parts[1].indexOf(':') >= 0 ? ':' + parts[1].split(':')[1] : ':27017';
+    m.host = parts[0] + '.svc.' + newDomain + port;
+    changed = true;
     return m;
   });
   if (!changed) return false;
   rs.reconfig(cfg, {force: true});
   return true;
-})('%s')`
+})('%s', '%s')`
 
 const JsCheckAllMembersLag = `
 (function(names, maxLagSec) {

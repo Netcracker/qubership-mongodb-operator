@@ -70,7 +70,7 @@ type MongoHelper interface {
 	GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
 	UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error
 	CheckReplicationLag(labels map[string]string, memberHostnames []string, maxLagSeconds int) (bool, error)
-	RenameRSMemberDomain(labels map[string]string, newDomain string) error
+	RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -158,12 +158,12 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report Op
 	return nil
 }
 
-func (r *MongoUtilsHelperImpl) RenameRSMemberDomain(labels map[string]string, newDomain string) error {
+func (r *MongoUtilsHelperImpl) RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error {
 	list, err := checkListPodsResult(r.KubernetesHelperImpl.ListPods(r.Namespace, labels))
 	if err != nil {
 		return nil
 	}
-	cmd := fmt.Sprintf(JsRenameMemberDomain, newDomain)
+	cmd := fmt.Sprintf(JsRenameMemberDomain, newDomain, otherDomain)
 	_, err = r.RunWithJSONResult(&list.Items[0], cmd)
 	return err
 }

@@ -183,6 +183,10 @@ func (r *TestMongoUtilsHelper) CheckReplicationLag(labels map[string]string, mem
 	return true, nil
 }
 
+func (r *TestMongoUtilsHelper) RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error {
+	return nil
+}
+
 func getMaxReplica(schemaSettings v1alpha1.SchemaSettings) int {
 	if schemaSettings.SchemaType == v1alpha1.Single {
 		return 1
