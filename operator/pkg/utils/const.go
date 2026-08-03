@@ -242,6 +242,25 @@ const JsCheckAllMembersLag = `
   return true;
 })([%s], %d)`
 
+const JsRenameMemberDomain = `
+(function(newDomain, otherDomain) {
+  var cfg = rs.config();
+  var changed = false;
+  cfg.members = cfg.members.map(function(m) {
+    var parts = m.host.split('.svc.');
+    if (parts.length !== 2) return m;
+    var currentDomain = parts[1].split(':')[0];
+    if (currentDomain === newDomain || currentDomain === otherDomain) return m;
+    var port = parts[1].indexOf(':') >= 0 ? ':' + parts[1].split(':')[1] : ':27017';
+    m.host = parts[0] + '.svc.' + newDomain + port;
+    changed = true;
+    return m;
+  });
+  if (!changed) return false;
+  rs.reconfig(cfg, {force: true});
+  return true;
+})('%s', '%s')`
+
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
 	"adminDB.dropDatabase();" +

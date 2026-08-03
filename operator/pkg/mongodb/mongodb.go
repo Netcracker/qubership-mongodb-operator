@@ -249,6 +249,7 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 		// Reconfigure replicas as left and right sides
 		// mongo.AddStep(&DRConfigurationStep{})
+		mongo.AddStep(&dr.RenameMemberDomainStep{})
 		mongo.AddStep(&dr.AddCNFReplicas{})
 		mongo.AddStep(&dr.AddDATAReplicas{})
 	}

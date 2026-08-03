@@ -185,7 +185,7 @@ func (r *InitCNFStep) Execute(ctx core.ExecutionContext) error {
 	log.Info("CNF Initialization step started")
 
 	domain := "cluster.local"
-	if spec.Spec.SchemaSettings.ThisDomainName != "" {
+	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 		domain = spec.Spec.SchemaSettings.ThisDomainName
 	}
 
