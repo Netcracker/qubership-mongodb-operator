@@ -20,9 +20,6 @@ type WaitReplicationLagStep struct {
 	MaxLagSeconds int
 }
 
-// Condition runs only on HA→DR switch (Active mode, not a clean install).
-// Uses ctx.Get(utils.MongoDBDeploymentType) directly — same pattern as WaitExpectedClusterStatusStep —
-// because the DR builder runs after MicroServiceCompound restores the previous deploy type in context.
 func (w *WaitReplicationLagStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	if spec.Spec.DisasterRecovery.Mode != utils.ActiveMode {
