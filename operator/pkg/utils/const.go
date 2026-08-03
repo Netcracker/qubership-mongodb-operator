@@ -228,6 +228,24 @@ const JsCheckReconfigNeeded = `
   return needed;
 })([%s])`
 
+const JsRenameMemberDomain = `
+(function(newDomain) {
+  var cfg = rs.config();
+  var changed = false;
+  cfg.members = cfg.members.map(function(m) {
+    var parts = m.host.split('.svc.');
+    if (parts.length === 2 && parts[1] !== newDomain + ':27017' && parts[1].split(':')[0] !== newDomain) {
+      var portPart = parts[1].indexOf(':') >= 0 ? ':' + parts[1].split(':')[1] : ':27017';
+      m.host = parts[0] + '.svc.' + newDomain + portPart;
+      changed = true;
+    }
+    return m;
+  });
+  if (!changed) return false;
+  rs.reconfig(cfg, {force: true});
+  return true;
+})('%s')`
+
 const JsCheckAllMembersLag = `
 (function(names, maxLagSec) {
   var s = rs.status();

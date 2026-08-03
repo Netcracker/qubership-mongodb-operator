@@ -216,7 +216,7 @@ func (r *InitDataStep) Execute(ctx core.ExecutionContext) error {
 	arbFunc := ctx.Get(utils.ArbiterIndexSelectorFunc).(func(int) int)
 	arbiterNodeIndex := arbFunc(ctx.Get(utils.MaxReplicaSize).(int))
 	domain := "cluster.local"
-	if spec.Spec.SchemaSettings.ThisDomainName != "" {
+	if spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR {
 		domain = spec.Spec.SchemaSettings.ThisDomainName
 	}
 
