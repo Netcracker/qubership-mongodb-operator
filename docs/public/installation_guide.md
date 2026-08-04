@@ -690,6 +690,51 @@ To deploy MongoDB pods with Calico:
 
 **Note**: The `schemaSettings.schemaType.thisDomainName` and `schemaSettings.schemaType.otherDomainName` parameters change between installations.
 
+### HA to DR Transition
+
+This section describes how to transition a running HA cluster to DR schema without redeployment. This is useful when MongoDB is initially deployed as HA and DR hardware becomes available later.
+
+**Prerequisites**:
+* Both clusters must have unique Kubernetes cluster domains (e.g., `cluster-1.local` and `cluster-2.local`).
+* BGP and Calico CNI plugin must be configured to provide Pod-to-Pod connectivity between Kubernetes clusters.
+* The HA cluster must be healthy before starting the transition.
+
+**Step 1: Deploy HA**
+
+Deploy MongoDB normally with `schemaType: ha`. No special domain configuration is required at this stage — the cluster initializes with the default `cluster.local` domain.
+
+**Step 2: Deploy Standby on the second cluster**
+
+Run the deployment job on the second Kubernetes cluster:
+
+* The `schemaSettings.schemaType` parameter must be set to `dr`.
+* The `schemaSettings.thisDomainName` parameter must be set to the DNS domain of the standby Kubernetes cluster (e.g., `cluster-2.local`).
+* The `schemaSettings.otherDomainName` parameter must be set to the DNS domain of the active Kubernetes cluster (e.g., `cluster-1.local`).
+* The `disasterRecovery.mode` parameter must be set to `standby`.
+
+Wait for the standby deployment to finish successfully.
+
+**Step 3: Switch HA cluster to DR Active**
+
+Update the HA cluster CR with the following changes:
+
+* The `schemaSettings.schemaType` parameter must be changed to `dr`.
+* The `schemaSettings.thisDomainName` parameter must be set to the DNS domain of this Kubernetes cluster (e.g., `cluster-1.local`).
+* The `schemaSettings.otherDomainName` parameter must be set to the DNS domain of the standby Kubernetes cluster (e.g., `cluster-2.local`).
+* The `disasterRecovery.mode` parameter must be set to `active`.
+
+The operator performs the following steps automatically:
+
+1. Renames RS member hostnames from `cluster.local` to `thisDomainName` (skips members already on the correct domain or on `otherDomainName`).
+2. Adds standby cluster members as hidden secondaries.
+3. Verifies cluster health.
+4. Reconfigures RS priorities and votes.
+5. Updates shard metadata, restarts config RS, scales up mongos, backup daemon, and DBaaS adapter.
+6. Waits until all standby members have replication lag ≤ 30 seconds. This step has no timeout — it waits as long as needed for initial sync to complete on large datasets.
+7. Performs a final health check. DR status is set to `done` on success.
+
+**Note**: The replication lag wait in step 6 blocks until the standby cluster has fully replicated all data from the active cluster. For large datasets this may take hours. The operator remains in `running` DR status during this time — this is expected.
+
 ### Backup Daemon With S3 Storage
 
 MongoDB Backup Daemon can be configured to save backups to S3 storage.

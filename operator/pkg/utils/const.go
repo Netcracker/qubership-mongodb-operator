@@ -210,6 +210,57 @@ const JsCheckMemberHealth = `
          (t.stateStr === 'PRIMARY' || t.stateStr === 'SECONDARY');
 })('%s')`
 
+const JsCheckMemberExists = `
+(function(host) {
+  var cfg = rs.config();
+  return cfg.members.some(function(m) { return m.host === host; });
+})('%s')`
+
+const JsCheckReconfigNeeded = `
+(function(hiddenHosts) {
+  var cfg = rs.config();
+  var needed = false;
+  cfg.members.forEach(function(m) {
+    var shouldBeHidden = hiddenHosts.indexOf(m.host) >= 0;
+    if (shouldBeHidden && (m.priority !== 0 || m.votes !== 0)) needed = true;
+    if (!shouldBeHidden && (m.priority !== 1 || m.votes !== 1)) needed = true;
+  });
+  return needed;
+})([%s])`
+
+const JsCheckAllMembersLag = `
+(function(names, maxLagSec) {
+  var s = rs.status();
+  if (!s || !s.ok) return false;
+  var p = s.members.find(function(m) { return m.stateStr === 'PRIMARY'; });
+  if (!p) return false;
+  for (var i = 0; i < names.length; i++) {
+    var t = s.members.find(function(m) { return m.name === names[i]; });
+    if (!t || t.health !== 1 || t.stateStr !== 'SECONDARY' || !t.optimeDate) return false;
+    if ((p.optimeDate - t.optimeDate) / 1000 > maxLagSec) return false;
+  }
+  return true;
+})([%s], %d)`
+
+const JsRenameMemberDomain = `
+(function(newDomain, otherDomain) {
+  var cfg = rs.config();
+  var changed = false;
+  cfg.members = cfg.members.map(function(m) {
+    var parts = m.host.split('.svc.');
+    if (parts.length !== 2) return m;
+    var currentDomain = parts[1].split(':')[0];
+    if (currentDomain === newDomain || currentDomain === otherDomain) return m;
+    var port = parts[1].indexOf(':') >= 0 ? ':' + parts[1].split(':')[1] : ':27017';
+    m.host = parts[0] + '.svc.' + newDomain + port;
+    changed = true;
+    return m;
+  });
+  if (!changed) return false;
+  rs.reconfig(cfg, {force: true});
+  return true;
+})('%s', '%s')`
+
 const shardTemplate = "" +
 	"adminDB=db.getSiblingDB('local');" +
 	"adminDB.dropDatabase();" +

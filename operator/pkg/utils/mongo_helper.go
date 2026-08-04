@@ -69,6 +69,8 @@ type MongoHelper interface {
 	CheckFCV(shardsCount int) (bool, error)
 	GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
 	UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error
+	CheckReplicationLag(labels map[string]string, memberHostnames []string, maxLagSeconds int) (bool, error)
+	RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -154,6 +156,29 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report Op
 	}
 
 	return nil
+}
+
+func (r *MongoUtilsHelperImpl) RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error {
+	list, err := checkListPodsResult(r.KubernetesHelperImpl.ListPods(r.Namespace, labels))
+	if err != nil {
+		return nil
+	}
+	cmd := fmt.Sprintf(JsRenameMemberDomain, newDomain, otherDomain)
+	_, err = r.RunWithJSONResult(&list.Items[0], cmd)
+	return err
+}
+
+func (r *MongoUtilsHelperImpl) CheckReplicationLag(labels map[string]string, memberHostnames []string, maxLagSeconds int) (bool, error) {
+	quoted := make([]string, len(memberHostnames))
+	for i, h := range memberHostnames {
+		quoted[i] = fmt.Sprintf("'%s'", h)
+	}
+	cmd := fmt.Sprintf(JsCheckAllMembersLag, strings.Join(quoted, ","), maxLagSeconds)
+	result, err := r.RunOnPrimaryWithJSONResult(labels, cmd)
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(result) == "true", nil
 }
 
 func (r *MongoUtilsHelperImpl) GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error) {
@@ -664,9 +689,25 @@ func (r *MongoUtilsHelperImpl) AddHiddenReplica(labels map[string]string, host s
 	return nil
 }
 
+func (r *MongoUtilsHelperImpl) isMemberInReplicaSet(labels map[string]string, host string) (bool, error) {
+	checkCmd := fmt.Sprintf(JsCheckMemberExists, host)
+	result, err := r.RunOnPrimaryWithJSONResult(labels, checkCmd)
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(result) == "true", nil
+}
+
 func (r *MongoUtilsHelperImpl) AddDRReplicas(labels map[string]string, replicasetHostnames []string) error {
 	for _, host := range replicasetHostnames {
-		err := r.runAndRetry(func() error {
+		exists, err := r.isMemberInReplicaSet(labels, host)
+		if err != nil {
+			r.Logger.Warn(fmt.Sprintf("Failed to check member existence for %s: %v, will attempt to add", host, err))
+		} else if exists {
+			r.Logger.Info(fmt.Sprintf("DR replica %s already in replica set, skipping add", host))
+			continue
+		}
+		err = r.runAndRetry(func() error {
 			return r.AddHiddenReplica(labels, host)
 		})
 		if err != nil {
@@ -685,6 +726,13 @@ func (r *MongoUtilsHelperImpl) ReconfigureRS(labels map[string]string, replicase
 	}
 
 	QuoteReplicaSet(replicasetHostnames)
+
+	checkCmd := fmt.Sprintf(JsCheckReconfigNeeded, strings.Join(replicasetHostnames, ","))
+	needed, checkErr := r.RunWithJSONResult(&list.Items[0], checkCmd)
+	if checkErr == nil && strings.TrimSpace(needed) == "false" {
+		r.Logger.Info("ReconfigureRS: configuration already correct, skipping")
+		return nil
+	}
 
 	arg := fmt.Sprintf(JsTemplate, strings.Join(replicasetHostnames, ","))
 	r.runAndRetry(func() error {
