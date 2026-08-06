@@ -1225,3 +1225,32 @@ This section describes in detail the alerts, the possible reasons, and the solut
 ### Recommendations
 
 "Not applicable"
+
+
+## Common Issues - MongoDB Connections Refused With "Too Many Open Files" Error
+
+This section provides information about the MongoDB issues related to connections being refused due to the container's open file descriptor limit being exceeded, resulting in ```Error accepting new connection on local endpoint``` and ```Too many open files```.
+
+### Description
+
+MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+"Not applicable"
+
+### How to solve
+
+1. **Increase the open file descriptor limit for MongoDB pods on all affected worker nodes:**
+   - Most commonly this is set at the containerd level — raise `LimitNOFILE` in the containerd service configuration (e.g. a systemd drop-in for `containerd.service`) on each affected worker node, then restart containerd.
+   - If node-level access is not available, set the equivalent limit at the pod level instead (e.g. via `securityContext` ulimits, or an init container that raises it before the MongoDB container starts).
+   - MongoDB's own documentation recommends a `ulimit` of 64000 as the minimum for this setting.
+   - Restart the affected MongoDB pods (and containerd, if that layer was changed) so they pick up the new limit.
+
+### Recommendations
+
+"Not applicable" 
