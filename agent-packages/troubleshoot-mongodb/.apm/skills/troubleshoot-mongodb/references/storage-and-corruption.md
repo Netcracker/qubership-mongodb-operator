@@ -1,6 +1,6 @@
 # Storage, Disk Space, and WiredTiger Corruption
 
-## No Free Space Left on MongoDB PV
+## No Free Space Left on Mongodb PV
 
 **Description:** All MongoDB pods can start rebooting if the underlying PV runs out of free space.
 
