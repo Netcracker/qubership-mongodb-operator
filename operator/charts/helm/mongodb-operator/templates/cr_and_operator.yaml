@@ -182,6 +182,10 @@ spec:
         {{- end }}
         {{- end }}
      {{- end }}
+     {{- if .Values.mongodb.storage.annotations }}
+      annotations:
+        {{- toYaml .Values.mongodb.storage.annotations | nindent 8 }}
+      {{- end }}
 
   tls:
     {{- if ne (.Values.tls.mode) "disabled"}}

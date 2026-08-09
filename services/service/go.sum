@@ -11,8 +11,8 @@ github.com/Netcracker/qubership-credential-manager v0.0.16 h1:P7zFSjjgLxRXzWaGsJ
 github.com/Netcracker/qubership-credential-manager v0.0.16/go.mod h1:KZ2v0axmIJ4+w8YAWqTWFgN3t2nu1ed4UXFZMsz5Gv8=
 github.com/Netcracker/qubership-mongodb-driver v1.0.0 h1:jenOgYd0juHMaaIlPwUWtBB9U7CC9ELcvSlN6jFS/2A=
 github.com/Netcracker/qubership-mongodb-driver v1.0.0/go.mod h1:C1kh7k4B+7EH48aUG5LalXq6g5827alXxPs8v4mf5dU=
-github.com/Netcracker/qubership-nosqldb-operator-core v1.0.9 h1:F4sFAC+NlATxHB778DQGFWATHzbWYP1XFGFxR0+LS/0=
-github.com/Netcracker/qubership-nosqldb-operator-core v1.0.9/go.mod h1:uSoUX8yaoZy8/FJXIR4fXfTtaAhWPnLPEmehfK28hZ8=
+github.com/Netcracker/qubership-nosqldb-operator-core v1.0.10 h1:0f6UBsf9maOoUkCfpn6kO9842oIh/z+B34H1e3NWINQ=
+github.com/Netcracker/qubership-nosqldb-operator-core v1.0.10/go.mod h1:uSoUX8yaoZy8/FJXIR4fXfTtaAhWPnLPEmehfK28hZ8=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=

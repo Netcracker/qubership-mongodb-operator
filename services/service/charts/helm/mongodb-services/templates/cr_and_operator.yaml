@@ -179,6 +179,10 @@ spec:
           {{- end }}
       {{- end }}
       waitPvcBound: {{ .Values.backup.storage.waitPvcBound }}
+      {{- if .Values.backup.storage.annotations }}
+      annotations:
+        {{- toYaml .Values.backup.storage.annotations | nindent 8 }}
+      {{- end }}
     backupResources:
       {{ template "getBackupResourcesForProfile" (dict "envVar" .Values.MONGODB_PROFILE "dotVar" .Values.global.profile "values" .Values) }}
     numParallelConnections: {{ .Values.backup.numParallelConnections }}
