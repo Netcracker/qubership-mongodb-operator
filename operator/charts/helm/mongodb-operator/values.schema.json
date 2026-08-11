@@ -112,6 +112,7 @@
           ]
         },
         "volumes": { "type": "array", "items": { "type": "string" } },
+        "annotations": { "type": "object", "additionalProperties": { "type": "string" } },
         "storageClasses": { "type": "array", "items": { "type": "string" } },
         "nodeLabels": {
           "type": "array",

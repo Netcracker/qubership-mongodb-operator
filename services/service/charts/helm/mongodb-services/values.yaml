@@ -201,6 +201,11 @@ backup:
     #       - class-2
     #       - class-3
     # matchLabelSelectors:
+    # Optional annotations to apply to PVCs created for backup storage.
+    # Use this to protect PVCs from ArgoCD pruning or add custom metadata.
+    # Example: Prevent ArgoCD from deleting PVCs during sync:
+    # annotations:
+    #   argocd.argoproj.io/sync-options: Prune=false
     
 
   backupResources:
