@@ -56,7 +56,7 @@ Covers MongoDB clusters deployed and reconciled by the custom Kubernetes operato
   `mongosh admin -u root -p <pass> --eval='rs.status().members.forEach(m=>{print(m.name);print("\t"+m.stateStr)})'`
 - Check shard-to-primary mapping from a mongos pod:
   `mongosh admin -u root -p <pass> --eval="sh.status()"`
-- **Safety rule that applies across nearly every reference file:** at least one member of a replica set must remain PRIMARY or SECONDARY before attempting any data-clearing recovery step. If an entire replica set is down, the data on it is not recoverable except from backup — don't run resync/clear-data steps in that case, and say so.
+- **Safety rule that applies across nearly every reference file:** at least one member of a replica set must remain PRIMARY or SECONDARY before attempting any data-clearing recovery step. If an entire replica set is down, the data on it is not recoverable except from backup — don't run resync/clear-data steps in that case, and say so .
 
 ## When nothing in the index matches
 
