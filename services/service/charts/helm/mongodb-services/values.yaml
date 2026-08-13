@@ -22,6 +22,18 @@ global:
   profile: ""
   cloudIntegrationEnabled: true
 
+# Global PVC annotations applied to all PersistentVolumeClaims created by the operator.
+# Use this to protect PVCs from ArgoCD pruning or add custom metadata.
+# Storage-specific annotations will override these global annotations if both are set.
+# Example:
+# pvc:
+#   metadata:
+#     annotations:
+#       argocd.argoproj.io/sync-options: Prune=false
+pvc:
+  metadata:
+    annotations: {}
+
 schemaSettings:
   sharded: true
   schemaType: "ha"
@@ -201,11 +213,6 @@ backup:
     #       - class-2
     #       - class-3
     # matchLabelSelectors:
-    # Optional annotations to apply to PVCs created for backup storage.
-    # Use this to protect PVCs from ArgoCD pruning or add custom metadata.
-    # Example: Prevent ArgoCD from deleting PVCs during sync:
-    # annotations:
-    #   argocd.argoproj.io/sync-options: Prune=false
     
 
   backupResources:

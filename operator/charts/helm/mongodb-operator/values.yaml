@@ -21,6 +21,18 @@ operator:
 global: 
   profile: ""
 
+# Global PVC annotations applied to all PersistentVolumeClaims created by the operator.
+# Use this to protect PVCs from ArgoCD pruning or add custom metadata.
+# Storage-specific annotations will override these global annotations if both are set.
+# Example:
+# pvc:
+#   metadata:
+#     annotations:
+#       argocd.argoproj.io/sync-options: Prune=false
+pvc:
+  metadata:
+    annotations: {}
+
 schemaSettings:
   sharded: true
   schemaType: "ha"
@@ -204,11 +216,6 @@ mongodb:
     #       - class-1
     #       - class-2
     #       - class-3
-    #     Optional annotations to apply to PVCs created for MongoDB storage.
-    #     Use this to protect PVCs from ArgoCD pruning or add custom metadata.
-    #     Example: Prevent ArgoCD from deleting PVCs during sync:
-    #     annotations:
-    #       argocd.argoproj.io/sync-options: Prune=false
 
 tls:
   mode: disabled

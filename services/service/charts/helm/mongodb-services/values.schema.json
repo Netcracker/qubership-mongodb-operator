@@ -32,7 +32,8 @@
     "role": { "$ref": "#/$defs/role" },
     "roleBinding": { "$ref": "#/$defs/roleBinding" },
     "serviceAccount": { "$ref": "#/$defs/serviceAccount" },
-    "crd": { "$ref": "#/$defs/crd" }
+    "crd": { "$ref": "#/$defs/crd" },
+    "pvc": { "$ref": "#/$defs/pvc" }
   },
   "$defs": {
     "resourceRequirements": {
@@ -517,6 +518,24 @@
       "additionalProperties": false,
       "properties": {
         "create": { "type": "boolean" }
+      }
+    },
+    "pvc": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Global PVC configuration",
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "Global annotations applied to all PVCs. Storage-specific annotations will override these."
+            }
+          }
+        }
       }
     }
   }
