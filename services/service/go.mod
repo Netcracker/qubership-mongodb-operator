@@ -5,7 +5,7 @@ go 1.26.5
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.16
 	github.com/Netcracker/qubership-mongodb-driver v1.0.0
-	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.10
+	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.11-0.20260813161351-d48e6dd5a163
 	go.uber.org/zap v1.27.1
 	k8s.io/api v0.35.3
 	k8s.io/apimachinery v0.35.3
