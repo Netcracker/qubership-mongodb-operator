@@ -257,6 +257,7 @@ The list of Operator parameters is as follows:
 | `disasterRecovery.httpAuth.restrictedEnvironment` | false     | bool    | `false`                           | If the parameter is `true`, the `system:auth-delegator` cluster role is bound to the Mongo Service operator service account. The cluster role is not bound if the disaster recovery mode is disabled, or the disaster recovery server authentication is disabled.                            |
 | `disasterRecovery.mode`                           | Mandatory | Type    | Default                           | The current side is active during service installation in the Disaster Recovery mode. If you do not specify this parameter, the service is deployed in a regular mode, and not in the Disaster Recovery mode. For more information, see [Disaster Recovery Modes](#disaster-recovery-modes). |
 | `disasterRecovery.afterServices`                  | false     | array   | `[]`                              | The list of `SiteManager` names for services after which the Mongo service switchover is to be run.                                                                                                                                                                                          |
+| pvc.metadata.annotations   | map[string]string | no | n/a    | Global annotations applied to all PVCs created by the operator. Use `argocd.argoproj.io/sync-options: Prune=false` to protect all PVCs from ArgoCD pruning. Storage-specific annotations override global ones. |
 
 ### Disaster Recovery Modes
 
