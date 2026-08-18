@@ -1,0 +1,11 @@
+name: troubleshoot-mongodb
+version: 1.0.0
+description: Troubleshooting guidance for operator-managed MongoDB clusters.
+targets:
+- claude
+- copilot
+- cursor
+dependencies:
+  apm: []
+  mcp: []
+includes: auto

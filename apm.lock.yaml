@@ -1,0 +1,12 @@
+lockfile_version: '1'
+generated_at: '2026-08-18T06:29:36.066253+00:00'
+apm_version: 0.27.0
+dependencies:
+- repo_url: _local/troubleshoot-mongodb
+  name: troubleshoot-mongodb
+  version: 1.0.0
+  package_type: apm_package
+  source: local
+  local_path: ./agent-packages/troubleshoot-mongodb/
+  is_dev: true
+deployments: []
