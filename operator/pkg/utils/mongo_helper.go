@@ -70,7 +70,7 @@ type MongoHelper interface {
 	GetOplogSizes(replKey string, shardsCount int, creds *v1.Secret, namespace, domainName, dockerImage, AuthDB string) (*OplogSizeReport, error)
 	UpdateOplogSize(desiredOplogSize int64, report OplogSizeReport) error
 	CheckReplicationLag(labels map[string]string, memberHostnames []string, maxLagSeconds int) (bool, error)
-	RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error
+	RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string, creds *v1.Secret, dockerImage, AuthDB, rootCAFileName string, tlsEnabled bool) error
 }
 
 var _ MongoHelper = &MongoUtilsHelperImpl{}
@@ -158,14 +158,30 @@ func (r *MongoUtilsHelperImpl) UpdateOplogSize(desiredOplogSize int64, report Op
 	return nil
 }
 
-func (r *MongoUtilsHelperImpl) RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string) error {
+func (r *MongoUtilsHelperImpl) RenameRSMemberDomain(labels map[string]string, newDomain string, otherDomain string, creds *v1.Secret, dockerImage, AuthDB, rootCAFileName string, tlsEnabled bool) error {
 	list, err := checkListPodsResult(r.KubernetesHelperImpl.ListPods(r.Namespace, labels))
 	if err != nil {
 		return nil
 	}
-	cmd := fmt.Sprintf(JsRenameMemberDomain, newDomain, otherDomain)
-	_, err = r.RunWithJSONResult(&list.Items[0], cmd)
-	return err
+
+	renameMemeberCmd := fmt.Sprintf(JsRenameMemberDomain, newDomain, otherDomain)
+	r.Cmd = fmt.Sprintf(
+		MongoCMDAuthTemplate,
+		MongoBinary(dockerImage),
+		string(creds.Data[Username]),
+		string(creds.Data[Password]),
+		AuthDB,
+	)
+
+	if tlsEnabled {
+		r.Cmd = fmt.Sprint(r.Cmd, fmt.Sprintf(" --tls --tlsCAFile %s%s --tlsAllowInvalidCertificates", RootCertPath, rootCAFileName))
+	}
+	_, err = r.RunOnMongoPod(&list.Items[0], renameMemeberCmd)
+	if err != nil {
+		return fmt.Errorf("failed to rename member")
+	}
+
+	return nil
 }
 
 func (r *MongoUtilsHelperImpl) CheckReplicationLag(labels map[string]string, memberHostnames []string, maxLagSeconds int) (bool, error) {
