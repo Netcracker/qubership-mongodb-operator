@@ -12,13 +12,15 @@ import (
 
 type RenameMemberDomainStep struct {
 	core.DefaultExecutable
+	Member string
 }
 
 func (r *RenameMemberDomainStep) Condition(ctx core.ExecutionContext) (bool, error) {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	return spec.Spec.SchemaSettings.SchemaType == v1alpha1.DR &&
 		spec.Spec.SchemaSettings.ThisDomainName != "" &&
-		spec.Spec.DisasterRecovery.Mode == utils.ActiveMode, nil
+		spec.Spec.DisasterRecovery.Mode == utils.ActiveMode &&
+		core.GetCurrentDeployType(ctx) == core.Update, nil
 }
 
 func (r *RenameMemberDomainStep) Execute(ctx core.ExecutionContext) error {

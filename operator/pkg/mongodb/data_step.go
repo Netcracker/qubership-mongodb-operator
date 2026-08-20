@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
+	"github.com/Netcracker/qubership-mongodb-operator/pkg/dr"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
@@ -340,7 +341,8 @@ func (r *DataStepBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	step := &core.DefaultCompound{}
 
 	step.AddStep(&CreateDataStep{})
-	step.AddStep(&InitDataStep{}) //DR
+	step.AddStep(&InitDataStep{})                                       //DR
+	step.AddStep(&dr.RenameMemberDomainStep{Member: utils.DataNameKey}) //DR
 	step.AddStep(&UpdateDataOplogStep{})
 
 	return step

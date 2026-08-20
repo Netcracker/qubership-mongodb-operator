@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
+	"github.com/Netcracker/qubership-mongodb-operator/pkg/dr"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
@@ -293,7 +294,8 @@ func (r *CNFStepBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	step.AddStep(&CreateCNFServiceStep{})
 	step.AddStep(&CreateCNFStep{})
-	step.AddStep(&InitCNFStep{}) //DR
+	step.AddStep(&InitCNFStep{})                                       //DR
+	step.AddStep(&dr.RenameMemberDomainStep{Member: utils.CnfNameKey}) //DR
 	step.AddStep(&UpdateCnfOplogStep{})
 	return step
 }
