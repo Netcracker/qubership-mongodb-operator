@@ -1,3 +1,4 @@
+{{- if eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.prometheusExporter.install "envVar" .Values.MONITORING_ENABLED "default" true )) "true" }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
