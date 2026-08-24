@@ -232,11 +232,11 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			compound.AddStep(&dr.ReconfigureDataRSStep{})
 
 			if spec.Spec.DisasterRecovery.Mode == utils.ActiveMode {
-				// compound.AddStep(&dr.UpdateConfigRSInDATARSStep{})
+				compound.AddStep(&dr.UpdateConfigRSInDATARSStep{})
 				compound.AddStep(&dr.UpdateShardsStep{})
 				compound.AddStep(&dr.RestartConfigRSStep{})
 				compound.AddStep(&dr.ScaleMongosStep{Replicas: spec.Spec.SchemaSettings.MongosReplicas})
-				// compound.AddStep(&dr.RestartDATARSStep{})
+				compound.AddStep(&dr.RestartDATARSStep{})
 				compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 1})
 				compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 1})
 
