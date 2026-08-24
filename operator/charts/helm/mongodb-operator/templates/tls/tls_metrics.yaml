@@ -12,3 +12,4 @@ spec:
     - name: {{ .Release.Namespace }}-{{ .Release.Name }}
       rules:
         {{- include "global.tlsStaticMetric" (dict "namespace" .Release.Namespace "application" "mongodb" "service" "Mongodb" "enabledSsl" (ne .Values.tls.mode "disabled") "secret" .Values.tls.rootCASecretName "certProvider" "cert-manager" "certificate" "mongodb-tls-certificate") | nindent 8 }}
+{{- end }}
