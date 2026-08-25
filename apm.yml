@@ -1,6 +1,10 @@
 name: qubership-mongodb-operator
 version: 1.0.0
 description: APM project for mongodb operator
+targets:
+  - claude
+  - copilot
+  - cursor
 dependencies:
   apm: []
   mcp: []
