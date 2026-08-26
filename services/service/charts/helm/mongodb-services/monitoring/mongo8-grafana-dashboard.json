@@ -3669,7 +3669,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk( 10, avg by (instance,database) (mongodb_dbstats_storageSize{namespace=\"$namespace\", instance=~\"$data_set\"}))",
+              "expr": "topk(10, mongodb_dbstats_storageSize{instance=~\"mongos.*\"})",
               "legendFormat": "{{instance}}: {{database}}",
               "range": true,
               "refId": "A"
