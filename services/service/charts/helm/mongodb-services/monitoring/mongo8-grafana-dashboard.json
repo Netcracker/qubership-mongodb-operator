@@ -3488,57 +3488,22 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "description": "",
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
+                "fillOpacity": 0,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
                 "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
               },
               "unit": "short"
             },
@@ -3548,31 +3513,32 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 218
+            "y": 14
           },
           "id": 287,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "list",
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
               "placement": "right",
               "showLegend": true
             },
             "tooltip": {
-              "mode": "multi",
-              "sort": "none"
+              "mode": "single"
             }
           },
-          "pluginVersion": "10.4.5",
+          "pluginVersion": "11.6.5",
           "targets": [
             {
               "datasource": {
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "exemplar": true,
               "expr": "max by (db,shard) (mongodb_mongos_db_collections_total{namespace=\"$namespace\", shard=~\"$data_set\"})",
-              "interval": "",
               "legendFormat": "{{shard}}: {{db}}",
               "range": true,
               "refId": "A"
@@ -3592,50 +3558,16 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
+                "fillOpacity": 0,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
                 "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
               },
               "unit": "short"
             },
@@ -3645,22 +3577,25 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 225
+            "y": 21
           },
           "id": 469,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "list",
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
               "placement": "right",
               "showLegend": true
             },
             "tooltip": {
-              "mode": "multi",
-              "sort": "none"
+              "mode": "single"
             }
           },
-          "pluginVersion": "10.4.5",
+          "pluginVersion": "11.6.5",
           "targets": [
             {
               "datasource": {
@@ -3669,7 +3604,6 @@
               "editorMode": "code",
               "exemplar": true,
               "expr": "topk(10, avg by (db, shard) (mongodb_mongos_db_data_size_bytes{namespace=\"$namespace\", shard=~\"$data_set\"} ))",
-              "interval": "",
               "legendFormat": "{{shard}}: {{db}}",
               "range": true,
               "refId": "A"
@@ -3690,50 +3624,16 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
+                "fillOpacity": 0,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
                 "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
               },
               "unit": "decbytes"
             },
@@ -3743,22 +3643,25 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 257
+            "y": 28
           },
           "id": 468,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "list",
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
               "placement": "right",
               "showLegend": true
             },
             "tooltip": {
-              "mode": "multi",
-              "sort": "none"
+              "mode": "single"
             }
           },
-          "pluginVersion": "10.4.5",
+          "pluginVersion": "11.6.5",
           "targets": [
             {
               "datasource": {
@@ -3766,8 +3669,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(10, mongodb_dbstats_storageSize{instance=~\"mongos.*\"})",
-              "interval": "",
+              "expr": "topk( 10, avg by (instance,database) (mongodb_dbstats_storageSize{namespace=\"$namespace\", instance=~\"$data_set\"}))",
               "legendFormat": "{{instance}}: {{database}}",
               "range": true,
               "refId": "A"
@@ -3787,52 +3689,18 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
+                "fillOpacity": 0,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
                 "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
               },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "bytes"
+              "unit": "decbytes"
             },
             "overrides": []
           },
@@ -3840,22 +3708,25 @@
             "h": 6,
             "w": 12,
             "x": 0,
-            "y": 264
+            "y": 35
           },
           "id": 285,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "list",
+              "calcs": [
+                "min",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
               "placement": "right",
               "showLegend": true
             },
             "tooltip": {
-              "mode": "multi",
-              "sort": "none"
+              "mode": "single"
             }
           },
-          "pluginVersion": "10.4.5",
+          "pluginVersion": "11.6.5",
           "repeat": "data_set",
           "repeatDirection": "v",
           "targets": [
@@ -3865,7 +3736,6 @@
               },
               "exemplar": true,
               "expr": "mongodb_mongos_db_data_size_bytes{namespace=\"$namespace\", shard=\"$data_set\"}",
-              "interval": "",
               "legendFormat": "{{db}}",
               "refId": "A"
             }
@@ -3874,87 +3744,57 @@
           "type": "timeseries"
         },
         {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": {
             "uid": "$datasource"
           },
           "description": "Sum of the space allocated to all indexes in the database, including free index space.",
           "fieldConfig": {
             "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "bytes"
+              "links": []
             },
             "overrides": []
           },
+          "fill": 1,
+          "fillGradient": 0,
           "gridPos": {
             "h": 6,
             "w": 12,
             "x": 12,
-            "y": 264
+            "y": 59
           },
+          "hiddenSeries": false,
           "id": 295,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": false
           },
-          "pluginVersion": "10.4.5",
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "9.5.2",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
           "repeat": "data_set",
           "repeatDirection": "v",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
           "targets": [
             {
               "datasource": {
@@ -3967,8 +3807,46 @@
               "refId": "A"
             }
           ],
+          "thresholds": [],
+          "timeRegions": [],
           "title": "DB index size $data_set",
-          "type": "timeseries"
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:576",
+              "format": "bytes",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "$$hashKey": "object:577",
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "refId": "A"
         }
       ],
       "title": "Data size",
