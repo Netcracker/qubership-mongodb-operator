@@ -873,25 +873,23 @@
       },
       "id": 406,
       "panels": [
-      {
+        {
       "datasource": {
         "uid": "$datasource"
       },
       "description": "Shows data read/write in bytes",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "showPoints": "never",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          }
+        },
         "overrides": []
       },
-      "bars": false,
-      "lines": true,
-      "linewidth": 1,
-      "fill": 1,
-      "points": false,
-      "pointradius": 5,
-      "nullPointMode": "null",
-      "steppedLine": false,
-      "stack": false,
-      "percentage": false,
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -899,10 +897,8 @@
         "y": 157
       },
       "id": 412,
-      "options": {
-        "alertThreshold": true
-      },
-      "pluginVersion": "8.2.1",
+      "options": {},
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -925,8 +921,8 @@
           "refId": "B"
         }
       ],
-      "title": "Disk I/O Utilization",
-      "type": "graph"
+      "title": "Disk I/O Utilization Test",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -935,20 +931,17 @@
       "description": "Shows data read/write in bytes by pods",
       "fieldConfig": {
         "defaults": {
-          "unit": "Bps"
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "showPoints": "never",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "spanNulls": true
+          }
         },
         "overrides": []
       },
-      "bars": false,
-      "lines": true,
-      "linewidth": 1,
-      "fill": 1,
-      "points": false,
-      "pointradius": 5,
-      "nullPointMode": "null",
-      "steppedLine": false,
-      "stack": false,
-      "percentage": false,
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -956,10 +949,8 @@
         "y": 157
       },
       "id": 414,
-      "options": {
-        "alertThreshold": true
-      },
-      "pluginVersion": "8.2.1",
+      "options": {},
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -988,8 +979,8 @@
         }
       ],
       "title": "Disk I/O Utilization By Pods",
-      "type": "graph"
-        },
+      "type": "timeseries"
+    },
         {
           "datasource": {
             "uid": "$datasource"
