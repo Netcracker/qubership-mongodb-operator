@@ -25,7 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 469,
+  "id": 784,
   "links": [],
   "panels": [
     {
@@ -900,7 +900,7 @@
               "refId": "B"
             }
           ],
-          "title": "Disk I/O Utilization",
+          "title": "Disk I/O Utilization test7",
           "type": "graph"
         },
         {
@@ -5026,5 +5026,7 @@
   },
   "timezone": "browser",
   "title": "MongoDB 7 Prometheus",
-  "version": 3
+  "uid": "",
+  "version": 2,
+  "weekStart": ""
 }
