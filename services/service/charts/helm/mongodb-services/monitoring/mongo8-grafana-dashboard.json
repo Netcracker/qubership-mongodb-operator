@@ -873,137 +873,122 @@
       },
       "id": 406,
       "panels": [
+      {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Shows data read/write in bytes",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "bars": false,
+      "lines": true,
+      "linewidth": 1,
+      "fill": 1,
+      "points": false,
+      "pointradius": 5,
+      "nullPointMode": "null",
+      "steppedLine": false,
+      "stack": false,
+      "percentage": false,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 157
+      },
+      "id": 412,
+      "options": {
+        "alertThreshold": true
+      },
+      "pluginVersion": "8.2.1",
+      "targets": [
         {
           "datasource": {
             "uid": "$datasource"
           },
-          "description": "Shows data read/write in bytes",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
-            "overrides": []
+          "exemplar": true,
+          "expr": "sum (rate(container_fs_reads_bytes_total{namespace=~\"$namespace\", container!~\"POD|\"}[5m])) by (namespace)",
+          "interval": "$inter",
+          "legendFormat": "Reads",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
           },
-          "gridPos": {
-            "h": 7,
-            "w": 12,
-            "x": 0,
-            "y": 157
+          "exemplar": true,
+          "expr": "sum (rate(container_fs_writes_bytes_total{namespace=~\"$namespace\", container!=\"\"}[5m])) by (namespace)",
+          "interval": "$inter",
+          "legendFormat": "Writes",
+          "refId": "B"
+        }
+      ],
+      "title": "Disk I/O Utilization",
+      "type": "graph"
+    },
+    {
+      "datasource": {
+        "uid": "${datasource}"
+      },
+      "description": "Shows data read/write in bytes by pods",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "bars": false,
+      "lines": true,
+      "linewidth": 1,
+      "fill": 1,
+      "points": false,
+      "pointradius": 5,
+      "nullPointMode": "null",
+      "steppedLine": false,
+      "stack": false,
+      "percentage": false,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 157
+      },
+      "id": 414,
+      "options": {
+        "alertThreshold": true
+      },
+      "pluginVersion": "8.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "${datasource}"
           },
-          "id": 412,
-          "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "13.0.1",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "exemplar": true,
-              "expr": "sum (rate(container_fs_reads_bytes_total{namespace=~\"$namespace\", container!~\"POD|\"}[5m])) by (namespace)",
-              "interval": "$inter",
-              "legendFormat": "Reads",
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "exemplar": true,
-              "expr": "sum (rate(container_fs_writes_bytes_total{namespace=~\"$namespace\", container!=\"\"}[5m])) by (namespace)",
-              "interval": "$inter",
-              "legendFormat": "Writes",
-              "refId": "B"
-            }
-          ],
-          "title": "Disk I/O Utilization",
-          "type": "timeseries"
+          "exemplar": true,
+          "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+          "format": "time_series",
+          "instant": false,
+          "interval": "$inter",
+          "legendFormat": "reads: {{pod}}",
+          "refId": "A"
         },
         {
           "datasource": {
             "uid": "${datasource}"
           },
-          "description": "Shows data read/write in bytes by pods",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "Bps",
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 12,
-            "x": 12,
-            "y": 157
-          },
-          "id": 414,
-          "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "13.0.1",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "${datasource}"
-              },
-              "exemplar": true,
-              "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
-              "format": "time_series",
-              "instant": false,
-              "interval": "$inter",
-              "legendFormat": "reads: {{pod}}",
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "uid": "${datasource}"
-              },
-              "exemplar": true,
-              "expr": "sum(rate(container_fs_writes_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "$inter",
-              "legendFormat": "writes: {{pod}}",
-              "refId": "B"
-            }
-          ],
-          "title": "Disk I/O Utilization By Pods",
-          "type": "timeseries"
+          "exemplar": true,
+          "expr": "sum(rate(container_fs_writes_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "$inter",
+          "legendFormat": "writes: {{pod}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Disk I/O Utilization By Pods",
+      "type": "graph"
         },
         {
           "datasource": {
