@@ -42,120 +42,17 @@
       "type": "row"
     },
     {
+      "columns": [],
       "datasource": {
         "type": "prometheus",
         "uid": "PC3E95692D54ABCC0"
       },
       "description": "",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Time"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Time"
-              },
-              {
-                "id": "custom.hidden",
-                "value": true
-              },
-              {
-                "id": "custom.align",
-                "value": null
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "service_name"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Service Name"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              },
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "MongoDB Instance Summary - ${__cell}",
-                    "url": "/graph/d/mongodb-instance-summary/mongodb-instance-summary?var-service_name=${__cell}",
-                    "targetBlank": true
-                  }
-                ]
-              },
-              {
-                "id": "custom.align",
-                "value": null
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "mongodb"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Version"
-              },
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              },
-              {
-                "id": "custom.align",
-                "value": null
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "decimals",
-                "value": 2
-              },
-              {
-                "id": "custom.hidden",
-                "value": true
-              },
-              {
-                "id": "custom.align",
-                "value": null
-              }
-            ]
-          }
-        ]
+        "defaults": {},
+        "overrides": []
       },
+      "fontSize": "100%",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -164,17 +61,74 @@
       },
       "hideTimeOverride": true,
       "id": 465,
-      "options": {
-        "cellHeight": "sm",
-        "showHeader": true,
-        "sortBy": [
-          {
-            "displayName": "",
-            "desc": true
-          }
-        ]
+      "options": {},
+      "pluginVersion": "11.6.5",
+      "showHeader": true,
+      "sort": {
+        "col": 0,
+        "desc": true
       },
-      "pluginVersion": "13.0.1",
+      "styles": [
+        {
+          "alias": "Time",
+          "align": "auto",
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "pattern": "Time",
+          "type": "hidden"
+        },
+        {
+          "alias": "Service Name",
+          "align": "auto",
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "link": true,
+          "linkTargetBlank": true,
+          "linkTooltip": "MongoDB Instance Summary - ${__cell}",
+          "linkUrl": "/graph/d/mongodb-instance-summary/mongodb-instance-summary?var-service_name=${__cell}",
+          "mappingType": 1,
+          "pattern": "service_name",
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
+        },
+        {
+          "alias": "Version",
+          "align": "auto",
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "mongodb",
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
+        },
+        {
+          "alias": "",
+          "align": "auto",
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "Value",
+          "thresholds": [],
+          "type": "hidden",
+          "unit": "short"
+        }
+      ],
       "targets": [
         {
           "datasource": {
@@ -193,7 +147,8 @@
       ],
       "timeFrom": "1m",
       "title": "MongoDB Versions",
-      "type": "table"
+      "transform": "table",
+      "type": "table-old"
     },
     {
       "datasource": {
@@ -275,6 +230,10 @@
       "type": "stat"
     },
     {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": {
         "uid": "$datasource"
       },
@@ -283,33 +242,42 @@
         "defaults": {
           "links": []
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Field"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "hidden"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
+      "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 9,
         "x": 9,
         "y": 1
       },
+      "hiddenSeries": false,
       "id": 301,
-      "options": {
-        "alertThreshold": true,
-        "groupWidth": 1
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
       },
-      "pluginVersion": "13.0.1",
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "11.6.5",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
           "datasource": {
@@ -322,22 +290,39 @@
           "refId": "A"
         }
       ],
+      "thresholds": [],
+      "timeRegions": [],
       "title": "Sharding databases",
-      "type": "barchart",
-      "transformations": [
+      "tooltip": {
+        "shared": false,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "series",
+        "show": true,
+        "values": [
+          "current"
+        ]
+      },
+      "yaxes": [
         {
-          "id": "reduce",
-          "options": {
-            "reducers": [
-              "lastNotNull"
-            ]
-          }
+          "$$hashKey": "object:265",
+          "format": "short",
+          "logBase": 1,
+          "show": true
         },
         {
-          "id": "transpose",
-          "options": {}
+          "$$hashKey": "object:266",
+          "format": "short",
+          "logBase": 1,
+          "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false
+      }
     },
     {
       "datasource": {
@@ -874,113 +859,102 @@
       "id": 406,
       "panels": [
         {
-      "datasource": {
-        "uid": "$datasource"
-      },
-      "description": "Shows data read/write in bytes",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "line",
-            "showPoints": "never",
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "spanNulls": true
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 157
-      },
-      "id": 412,
-      "options": {},
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
           "datasource": {
             "uid": "$datasource"
           },
-          "exemplar": true,
-          "expr": "sum (rate(container_fs_reads_bytes_total{namespace=~\"$namespace\", container!~\"POD|\"}[5m])) by (namespace)",
-          "interval": "$inter",
-          "legendFormat": "Reads",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
+          "description": "Shows data read/write in bytes",
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
           },
-          "exemplar": true,
-          "expr": "sum (rate(container_fs_writes_bytes_total{namespace=~\"$namespace\", container!=\"\"}[5m])) by (namespace)",
-          "interval": "$inter",
-          "legendFormat": "Writes",
-          "refId": "B"
-        }
-      ],
-      "title": "Disk I/O Utilization Test",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "uid": "${datasource}"
-      },
-      "description": "Shows data read/write in bytes by pods",
-      "fieldConfig": {
-        "defaults": {
-          "unit": "Bps",
-          "custom": {
-            "drawStyle": "line",
-            "showPoints": "never",
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "spanNulls": true
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 157
-      },
-      "id": 414,
-      "options": {},
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "uid": "${datasource}"
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 157
           },
-          "exemplar": true,
-          "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
-          "format": "time_series",
-          "instant": false,
-          "interval": "$inter",
-          "legendFormat": "reads: {{pod}}",
-          "refId": "A"
+          "id": 412,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum (rate(container_fs_reads_bytes_total{namespace=~\"$namespace\", container!~\"POD|\"}[5m])) by (namespace)",
+              "interval": "$inter",
+              "legendFormat": "Reads",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum (rate(container_fs_writes_bytes_total{namespace=~\"$namespace\", container!=\"\"}[5m])) by (namespace)",
+              "interval": "$inter",
+              "legendFormat": "Writes",
+              "refId": "B"
+            }
+          ],
+          "title": "Disk I/O Utilization",
+          "type": "graph"
         },
         {
           "datasource": {
             "uid": "${datasource}"
           },
-          "exemplar": true,
-          "expr": "sum(rate(container_fs_writes_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "$inter",
-          "legendFormat": "writes: {{pod}}",
-          "refId": "B"
-        }
-      ],
-      "title": "Disk I/O Utilization By Pods",
-      "type": "timeseries"
-    },
+          "description": "Shows data read/write in bytes by pods",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 157
+          },
+          "id": 414,
+          "options": {
+            "alertThreshold": true
+          },
+          "pluginVersion": "8.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+              "format": "time_series",
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "reads: {{pod}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "exemplar": true,
+              "expr": "sum(rate(container_fs_writes_bytes_total{namespace=\"$namespace\", container!=\"\"}[5m])) by (pod)",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "$inter",
+              "legendFormat": "writes: {{pod}}",
+              "refId": "B"
+            }
+          ],
+          "title": "Disk I/O Utilization By Pods",
+          "type": "graph"
+        },
         {
           "datasource": {
             "uid": "$datasource"
@@ -1131,15 +1105,7 @@
           "description": "Count of writes/reads completed",
           "fieldConfig": {
             "defaults": {
-              "unit": "ops",
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "unit": "ops"
             },
             "overrides": []
           },
@@ -1151,18 +1117,9 @@
           },
           "id": 418,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
               "datasource": {
@@ -1186,7 +1143,7 @@
             }
           ],
           "title": "IOps",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -1195,15 +1152,7 @@
           "description": "Count of writes/reads completed by pods",
           "fieldConfig": {
             "defaults": {
-              "unit": "ops",
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "unit": "ops"
             },
             "overrides": []
           },
@@ -1215,18 +1164,9 @@
           },
           "id": 420,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "8.2.1",
           "targets": [
             {
               "datasource": {
@@ -1253,7 +1193,7 @@
             }
           ],
           "title": "IOps By Pods",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -1420,15 +1360,7 @@
           "description": "Shows the overall incoming and outgoing network traffic in bytes per second",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -1440,18 +1372,9 @@
           },
           "id": 430,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "8.1.1",
           "targets": [
             {
               "datasource": {
@@ -1476,7 +1399,7 @@
             }
           ],
           "title": "Receive/Transmit Bandwidth",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -1485,15 +1408,7 @@
           "description": "Shows the overall incoming and outgoing network traffic in bytes per second by pods",
           "fieldConfig": {
             "defaults": {
-              "unit": "Bps",
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "unit": "Bps"
             },
             "overrides": []
           },
@@ -1505,18 +1420,9 @@
           },
           "id": 432,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "8.1.1",
           "targets": [
             {
               "datasource": {
@@ -1543,7 +1449,7 @@
             }
           ],
           "title": "Receive/Transmit Bandwidth Usage By Pods",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -1720,15 +1626,7 @@
           "description": "Shows the overall incoming and outgoing packets per second for the namespace",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -1740,18 +1638,9 @@
           },
           "id": 436,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "8.1.1",
           "targets": [
             {
               "datasource": {
@@ -1798,7 +1687,7 @@
             }
           ],
           "title": "Rate of Received/Transmitted Packets",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -1807,15 +1696,7 @@
           "description": "Shows the overall incoming and outgoing packets per second by pods for the namespace",
           "fieldConfig": {
             "defaults": {
-              "unit": "pps",
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "unit": "pps"
             },
             "overrides": []
           },
@@ -1827,18 +1708,9 @@
           },
           "id": 438,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "8.1.1",
           "targets": [
             {
               "datasource": {
@@ -1865,7 +1737,7 @@
             }
           ],
           "title": "Rate of Received/Transmitted Packets By Pods",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -2465,15 +2337,7 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -2485,18 +2349,9 @@
           },
           "id": 359,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "repeat": "instances_all",
           "repeatDirection": "v",
           "targets": [
@@ -2534,7 +2389,7 @@
             }
           ],
           "title": "$instances_all CPU Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -2542,15 +2397,7 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -2562,18 +2409,9 @@
           },
           "id": 357,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "repeat": "instances_all",
           "repeatDirection": "v",
           "targets": [
@@ -2612,7 +2450,7 @@
             }
           ],
           "title": "$instances_all RAM Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -2620,15 +2458,7 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -2640,18 +2470,9 @@
           },
           "id": 4,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -2668,7 +2489,7 @@
             }
           ],
           "title": "Memory",
-          "type": "timeseries"
+          "type": "graph"
         }
       ],
       "title": "CPU/RAM usage",
@@ -3099,6 +2920,10 @@
           "type": "timeseries"
         },
         {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": {
             "uid": "$datasource"
           },
@@ -3106,41 +2931,47 @@
           "fieldConfig": {
             "defaults": {
               "links": [],
-              "unit": "decbytes",
-              "custom": {
-                "axisPlacement": "auto",
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "unit": "decbytes"
             },
             "overrides": []
           },
+          "fill": 1,
+          "fillGradient": 0,
           "gridPos": {
             "h": 6,
             "w": 12,
             "x": 12,
             "y": 35
           },
+          "hiddenSeries": false,
           "id": 295,
-          "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "right",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": false
           },
-          "pluginVersion": "13.0.1",
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "11.6.5",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
           "repeat": "data_set",
           "repeatDirection": "v",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
           "targets": [
             {
               "datasource": {
@@ -3153,8 +2984,37 @@
               "refId": "A"
             }
           ],
+          "thresholds": [],
+          "timeRegions": [],
           "title": "DB index size $data_set",
-          "type": "timeseries"
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:576",
+              "format": "decbytes",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "$$hashKey": "object:577",
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
         }
       ],
       "title": "Data size",
@@ -3225,7 +3085,7 @@
                   }
                 ]
               },
-              "unit": "\u00b5s"
+              "unit": "µs"
             },
             "overrides": []
           },
@@ -3584,15 +3444,7 @@
           "description": "",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -3604,18 +3456,9 @@
           },
           "id": 283,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -3639,7 +3482,7 @@
             }
           ],
           "title": "Connections",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -3648,15 +3491,7 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -3668,18 +3503,9 @@
           },
           "id": 7,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "repeat": "data_set",
           "repeatDirection": "v",
           "targets": [
@@ -3700,7 +3526,7 @@
             }
           ],
           "title": "Query Operations $data_set[$inter rate]",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -3709,15 +3535,7 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -3729,18 +3547,9 @@
           },
           "id": 293,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "repeat": "data_set",
           "repeatDirection": "v",
           "targets": [
@@ -3758,7 +3567,7 @@
             }
           ],
           "title": "Page faults $data_set[$inter rate]",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -3881,15 +3690,7 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -3901,18 +3702,9 @@
           },
           "id": 6,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -3932,7 +3724,7 @@
             }
           ],
           "title": "Oplog Size",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -3941,15 +3733,7 @@
           "description": "",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -3961,18 +3745,9 @@
           },
           "id": 16,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -3991,7 +3766,7 @@
             }
           ],
           "title": "Oplog Recovery Window",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4104,15 +3879,7 @@
           "description": "",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -4124,18 +3891,9 @@
           },
           "id": 464,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -4154,7 +3912,7 @@
             }
           ],
           "title": "Oplog Recovery Window",
-          "type": "timeseries"
+          "type": "graph"
         }
       ],
       "title": "Replication Metrics",
@@ -4283,15 +4041,7 @@
           "description": "Shows CPU usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -4303,18 +4053,9 @@
           },
           "id": 327,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "11.2.1",
           "targets": [
             {
               "datasource": {
@@ -4360,7 +4101,7 @@
             }
           ],
           "title": "CPU Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4369,15 +4110,7 @@
           "description": "Shows memory usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -4389,18 +4122,9 @@
           },
           "id": 329,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "11.2.1",
           "targets": [
             {
               "datasource": {
@@ -4442,7 +4166,7 @@
             }
           ],
           "title": "Memory Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4450,16 +4174,7 @@
           },
           "description": "Time spent in GC pause",
           "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
+            "defaults": {},
             "overrides": []
           },
           "gridPos": {
@@ -4470,18 +4185,9 @@
           },
           "id": 323,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "11.2.1",
           "targets": [
             {
               "datasource": {
@@ -4494,7 +4200,7 @@
             }
           ],
           "title": "GC Duration",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4502,16 +4208,7 @@
           },
           "description": "The current number of threads",
           "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
+            "defaults": {},
             "overrides": []
           },
           "gridPos": {
@@ -4522,18 +4219,9 @@
           },
           "id": 331,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "11.2.1",
           "targets": [
             {
               "datasource": {
@@ -4546,7 +4234,7 @@
             }
           ],
           "title": "Threads",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4556,16 +4244,7 @@
           },
           "description": "The total number of requests DBaaS Adapter received per response status",
           "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
+            "defaults": {},
             "overrides": []
           },
           "gridPos": {
@@ -4576,18 +4255,9 @@
           },
           "id": 333,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "11.2.1",
           "targets": [
             {
               "datasource": {
@@ -4603,7 +4273,7 @@
             }
           ],
           "title": "Requests Count",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4613,16 +4283,7 @@
           },
           "description": "The requests duration per each DBaaS Adapter endpoint",
           "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
+            "defaults": {},
             "overrides": []
           },
           "gridPos": {
@@ -4633,18 +4294,9 @@
           },
           "id": 335,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "11.2.1",
           "targets": [
             {
               "datasource": {
@@ -4659,7 +4311,7 @@
             }
           ],
           "title": "DBaaS API Requests Duration",
-          "type": "timeseries"
+          "type": "graph"
         }
       ],
       "title": "DBaaS adapter",
@@ -4789,15 +4441,7 @@
           "description": "Shows CPU usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -4809,18 +4453,9 @@
           },
           "id": 341,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "9.5.2",
           "targets": [
             {
               "datasource": {
@@ -4866,7 +4501,7 @@
             }
           ],
           "title": "CPU Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4875,15 +4510,7 @@
           "description": "Shows memory usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -4895,18 +4522,9 @@
           },
           "id": 343,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "9.5.2",
           "targets": [
             {
               "datasource": {
@@ -4948,7 +4566,7 @@
             }
           ],
           "title": "Memory Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -4956,16 +4574,7 @@
           },
           "description": "Size of last successful backup ",
           "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
+            "defaults": {},
             "overrides": []
           },
           "gridPos": {
@@ -4976,18 +4585,9 @@
           },
           "id": 347,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "9.5.2",
           "targets": [
             {
               "datasource": {
@@ -5001,7 +4601,7 @@
             }
           ],
           "title": "Last Backup Size",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -5009,16 +4609,7 @@
           },
           "description": "Current number of dumps",
           "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
-            },
+            "defaults": {},
             "overrides": []
           },
           "gridPos": {
@@ -5029,18 +4620,9 @@
           },
           "id": 349,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "9.5.2",
           "targets": [
             {
               "datasource": {
@@ -5054,7 +4636,7 @@
             }
           ],
           "title": "Dumps count",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -5063,15 +4645,7 @@
           "description": "Shows used by backups space against total space",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -5083,18 +4657,9 @@
           },
           "id": 351,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "9.5.2",
           "targets": [
             {
               "datasource": {
@@ -5123,7 +4688,7 @@
             }
           ],
           "title": "Storage Space Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
@@ -5132,15 +4697,7 @@
           "description": "Shows inodes usage",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "custom": {
-                "drawStyle": "line",
-                "showPoints": "never",
-                "lineWidth": 1,
-                "fillOpacity": 10,
-                "spanNulls": false
-              },
-              "nullValueMode": "null"
+              "links": []
             },
             "overrides": []
           },
@@ -5152,18 +4709,9 @@
           },
           "id": 353,
           "options": {
-            "legend": {
-              "displayMode": "list",
-              "showLegend": true,
-              "placement": "bottom",
-              "calcs": []
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "13.0.1",
+          "pluginVersion": "9.5.2",
           "targets": [
             {
               "datasource": {
@@ -5192,7 +4740,7 @@
             }
           ],
           "title": "Storage Inodes Usage",
-          "type": "timeseries"
+          "type": "graph"
         },
         {
           "datasource": {
