@@ -25,11 +25,11 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 462,
+  "id": 120,
   "links": [],
   "panels": [
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -37,528 +37,605 @@
         "y": 0
       },
       "id": 291,
-      "panels": [],
-      "title": "Cluster overview",
-      "type": "row"
-    },
-    {
-      "columns": [],
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PC3E95692D54ABCC0"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fontSize": "100%",
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 0,
-        "y": 1
-      },
-      "hideTimeOverride": true,
-      "id": 465,
-      "options": {},
-      "pluginVersion": "11.6.5",
-      "showHeader": true,
-      "sort": {
-        "col": 0,
-        "desc": true
-      },
-      "styles": [
-        {
-          "alias": "Time",
-          "align": "auto",
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "pattern": "Time",
-          "type": "hidden"
-        },
-        {
-          "alias": "Service Name",
-          "align": "auto",
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "link": true,
-          "linkTargetBlank": true,
-          "linkTooltip": "MongoDB Instance Summary - ${__cell}",
-          "linkUrl": "/graph/d/mongodb-instance-summary/mongodb-instance-summary?var-service_name=${__cell}",
-          "mappingType": 1,
-          "pattern": "service_name",
-          "thresholds": [],
-          "type": "string",
-          "unit": "short"
-        },
-        {
-          "alias": "Version",
-          "align": "auto",
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "mongodb",
-          "thresholds": [],
-          "type": "string",
-          "unit": "short"
-        },
-        {
-          "alias": "",
-          "align": "auto",
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        }
-      ],
-      "targets": [
+      "panels": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "PC3E95692D54ABCC0"
           },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "avg by (instance,mongodb) (mongodb_version_info{namespace=\"$namespace\"})",
-          "format": "table",
-          "instant": true,
-          "interval": "5m",
-          "legendFormat": "{{mongodb}}",
-          "refId": "B"
-        }
-      ],
-      "timeFrom": "1m",
-      "title": "MongoDB Versions",
-      "transform": "table",
-      "type": "table-old"
-    },
-    {
-      "datasource": {
-        "uid": "$datasource"
-      },
-      "description": "Total # of Shards in the Cluster",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
               },
-              "type": "special"
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Time"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Time"
+                  },
+                  {
+                    "id": "custom.align"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "service_name"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Service Name"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "short"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 2
+                  },
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "MongoDB Instance Summary - ${__cell}",
+                        "url": "/graph/d/mongodb-instance-summary/mongodb-instance-summary?var-service_name=${__cell}"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.align"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "mongodb"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Version"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "short"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.align"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "short"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.align"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 0,
+            "y": 1
+          },
+          "hideTimeOverride": true,
+          "id": 465,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "avg by (instance,mongodb) (mongodb_version_info{namespace=\"$namespace\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "5m",
+              "legendFormat": "{{mongodb}}",
+              "refId": "B"
             }
           ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 6,
-        "y": 1
-      },
-      "id": 303,
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.6.5",
-      "targets": [
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "exemplar": true,
-          "expr": "avg(mongodb_mongos_sharding_shards_total{namespace=\"$namespace\"}) by (instance)",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Shards",
-      "type": "stat"
-    },
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": {
-        "uid": "$datasource"
-      },
-      "description": "Total # of Databases in the Cluster",
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 0,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 5,
-        "w": 9,
-        "x": 9,
-        "y": 1
-      },
-      "hiddenSeries": false,
-      "id": 301,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "11.6.5",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "exemplar": true,
-          "expr": "avg(mongodb_mongos_sharding_databases_total{namespace=\"$namespace\"}) by (type)",
-          "interval": "",
-          "legendFormat": "{{type}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeRegions": [],
-      "title": "Sharding databases",
-      "tooltip": {
-        "shared": false,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "mode": "series",
-        "show": true,
-        "values": [
-          "current"
-        ]
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:265",
-          "format": "short",
-          "logBase": 1,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:266",
-          "format": "short",
-          "logBase": 1,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false
-      }
-    },
-    {
-      "datasource": {
-        "uid": "$datasource"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 18,
-        "y": 1
-      },
-      "id": 321,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.6.5",
-      "targets": [
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "exemplar": true,
-          "expr": "sum(mongodb_mongos_db_collections_total{namespace=\"$namespace\"})",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Collections",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "uid": "$datasource"
-      },
-      "description": "Total # of Collections with Sharding enabled",
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 3,
-        "x": 21,
-        "y": 1
-      },
-      "id": 299,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.6.5",
-      "targets": [
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "exemplar": true,
-          "expr": "avg(mongodb_mongos_sharding_collections_total{namespace=\"$namespace\"}) by (instance)",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Sharded collections",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "uid": "$datasource"
-      },
-      "description": "Show status of mongos",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "custom": {
-            "axisPlacement": "auto",
-            "fillOpacity": 100,
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineWidth": 9,
-            "spanNulls": false
-          },
-          "mappings": [
+          "timeFrom": "1m",
+          "title": "MongoDB Versions",
+          "transformations": [
             {
+              "id": "organize",
               "options": {
-                "0": {
-                  "text": "DOWN"
+                "excludeByName": {
+                  "Time": true,
+                  "Value": true
                 },
-                "1": {
-                  "text": "UP"
-                },
-                "DOWN": {
-                  "color": "#E02F44"
-                },
-                "N/A": {
-                  "color": "#CCC"
-                },
-                "UP": {
-                  "color": "#56A64B"
-                },
-                "null": {
-                  "text": "N/A"
+                "includeByName": {},
+                "indexByName": {},
+                "renameByName": {
+                  "mongodb": "Version"
                 }
-              },
-              "type": "value"
-            },
-            {
-              "options": {
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "range"
+              }
             }
           ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
+          "type": "table"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 24,
-        "x": 0,
-        "y": 6
-      },
-      "id": 400,
-      "options": {
-        "alignValue": "left",
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Total # of Shards in the Cluster",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 6,
+            "y": 1
+          },
+          "id": 303,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(mongodb_mongos_sharding_shards_total{namespace=\"$namespace\"}) by (instance)",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "Shards",
+          "type": "stat"
+        },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "uid": "$datasource"
+        },
+        "description": "Total # of Databases in the Cluster",
+        "fieldConfig": {
+          "defaults": {
+            "links": []
+          },
+          "overrides": []
+        },
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 5,
+          "w": 9,
+          "x": 9,
+          "y": 1
+        },
+        "hiddenSeries": false,
+        "id": 301,
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
         },
-        "mergeValues": true,
-        "rowHeight": 0.9,
-        "showValue": "auto",
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "11.2.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "exemplar": true,
+            "expr": "avg(mongodb_mongos_sharding_databases_total{namespace=\"$namespace\"}) by (type)",
+            "interval": "",
+            "legendFormat": "{{type}}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Sharding databases",
         "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
+          "shared": false,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "mode": "series",
+          "show": true,
+          "values": [
+            "current"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:265",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:266",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
         }
       },
-      "pluginVersion": "11.6.5",
-      "targets": [
         {
           "datasource": {
             "uid": "$datasource"
           },
-          "exemplar": true,
-          "expr": "mongodb_up{cluster=~\"$cluster\", namespace=\"$namespace\", instance=\"mongos\"}",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "{{instance}} - {{cluster}}",
-          "refId": "A"
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 18,
+            "y": 1
+          },
+          "id": 321,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "sum(mongodb_mongos_db_collections_total{namespace=\"$namespace\"})",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "Collections",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Total # of Collections with Sharding enabled",
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 3,
+            "x": 21,
+            "y": 1
+          },
+          "id": 299,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(mongodb_mongos_sharding_collections_total{namespace=\"$namespace\"}) by (instance)",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "Sharded collections",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Show status of mongos",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 9,
+                "spanNulls": false
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "text": "DOWN"
+                    },
+                    "1": {
+                      "text": "UP"
+                    },
+                    "DOWN": {
+                      "color": "#E02F44"
+                    },
+                    "N/A": {
+                      "color": "#CCC"
+                    },
+                    "UP": {
+                      "color": "#56A64B"
+                    },
+                    "null": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "value"
+                },
+                {
+                  "options": {
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "range"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 24,
+            "x": 0,
+            "y": 6
+          },
+          "id": 400,
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "mongodb_up{cluster=~\"$cluster\", namespace=\"$namespace\", instance=\"mongos\"}",
+              "instant": false,
+              "interval": "",
+              "legendFormat": "{{instance}} - {{cluster}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Mongos status",
+          "type": "state-timeline"
         }
       ],
-      "title": "Mongos status",
-      "type": "state-timeline"
+      "title": "Cluster overview",
+      "type": "row"
     },
     {
       "collapsed": true,
@@ -566,7 +643,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 1
       },
       "id": 458,
       "panels": [
@@ -595,7 +672,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -611,7 +689,7 @@
             "h": 4,
             "w": 3,
             "x": 0,
-            "y": 72
+            "y": 35
           },
           "id": 390,
           "maxDataPoints": 100,
@@ -620,6 +698,7 @@
             "graphMode": "none",
             "justifyMode": "auto",
             "orientation": "horizontal",
+            "percentChangeColorMode": "standard",
             "reduceOptions": {
               "calcs": [
                 "mean"
@@ -627,10 +706,12 @@
               "fields": "",
               "values": false
             },
+            "showPercentChange": false,
             "text": {},
-            "textMode": "name"
+            "textMode": "name",
+            "wideLayout": true
           },
-          "pluginVersion": "9.5.2",
+          "pluginVersion": "11.2.1",
           "repeat": "replica_sets",
           "repeatDirection": "v",
           "targets": [
@@ -639,7 +720,7 @@
                 "uid": "$datasource"
               },
               "exemplar": true,
-              "expr": "label_replace(avg(mongodb_members_state{cluster=\"$cluster\", namespace=\"$namespace\", instance=\"$replica_sets\"} == 1) by (instance, member_idx),\"short_name\", \"$1\", \"member_idx\", \"(.*)-0.*\")",
+              "expr": "label_replace(avg(mongodb_members_state{cluster=~\"$cluster\", namespace=\"$namespace\", instance=\"$replica_sets\"} == 1) by (instance, member_idx),\"short_name\", \"$1\", \"member_idx\", \"(.*)-0.*\")",
               "instant": true,
               "interval": "",
               "legendFormat": "{{short_name}}",
@@ -791,7 +872,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -803,7 +885,7 @@
             "h": 4,
             "w": 21,
             "x": 3,
-            "y": 89
+            "y": 35
           },
           "id": 391,
           "options": {
@@ -854,7 +936,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 51
       },
       "id": 406,
       "panels": [
@@ -864,20 +946,95 @@
           },
           "description": "Shows data read/write in bytes",
           "fieldConfig": {
-            "defaults": {},
-            "overrides": []
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "Bps"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Writes.*/"
+                },
+                "properties": [
+                  {
+                    "id": "custom.transform",
+                    "value": "negative-Y"
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 157
+            "y": 215
           },
           "id": 412,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -901,7 +1058,7 @@
             }
           ],
           "title": "Disk I/O Utilization",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -910,21 +1067,93 @@
           "description": "Shows data read/write in bytes by pods",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 100,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
               "unit": "Bps"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*writes.*/"
+                },
+                "properties": [
+                  {
+                    "id": "custom.transform",
+                    "value": "negative-Y"
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 157
+            "y": 215
           },
           "id": 414,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -953,7 +1182,7 @@
             }
           ],
           "title": "Disk I/O Utilization By Pods",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -970,7 +1199,8 @@
                 "cellOptions": {
                   "type": "auto"
                 },
-                "filterable": false
+                "filterable": false,
+                "inspect": false
               },
               "decimals": 1,
               "mappings": [],
@@ -1038,14 +1268,23 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 164
+            "y": 222
           },
           "id": 416,
           "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1105,21 +1344,94 @@
           "description": "Count of writes/reads completed",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
               "unit": "ops"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Writes.*/"
+                },
+                "properties": [
+                  {
+                    "id": "custom.transform",
+                    "value": "negative-Y"
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 171
+            "y": 254
           },
           "id": 418,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1143,7 +1455,7 @@
             }
           ],
           "title": "IOps",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1152,6 +1464,54 @@
           "description": "Count of writes/reads completed by pods",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 100,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
               "unit": "ops"
             },
             "overrides": []
@@ -1160,13 +1520,24 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 171
+            "y": 254
           },
           "id": 420,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1193,7 +1564,7 @@
             }
           ],
           "title": "IOps By Pods",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1210,7 +1581,8 @@
                 "cellOptions": {
                   "type": "auto"
                 },
-                "filterable": false
+                "filterable": false,
+                "inspect": false
               },
               "decimals": 3,
               "mappings": [],
@@ -1278,14 +1650,23 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 178
+            "y": 261
           },
           "id": 422,
           "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "8.2.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1349,7 +1730,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 52
       },
       "id": 424,
       "panels": [
@@ -1360,21 +1741,95 @@
           "description": "Shows the overall incoming and outgoing network traffic in bytes per second",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "Bps"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Transmitted"
+                },
+                "properties": [
+                  {
+                    "id": "custom.transform",
+                    "value": "negative-Y"
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 162
+            "y": 216
           },
           "id": 430,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.1.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1399,7 +1854,7 @@
             }
           ],
           "title": "Receive/Transmit Bandwidth",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1408,6 +1863,54 @@
           "description": "Shows the overall incoming and outgoing network traffic in bytes per second by pods",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 100,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
               "unit": "Bps"
             },
             "overrides": []
@@ -1416,13 +1919,24 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 162
+            "y": 216
           },
           "id": 432,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.1.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1449,7 +1963,7 @@
             }
           ],
           "title": "Receive/Transmit Bandwidth Usage By Pods",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1466,7 +1980,8 @@
                 "cellOptions": {
                   "type": "auto"
                 },
-                "filterable": false
+                "filterable": false,
+                "inspect": false
               },
               "decimals": 1,
               "mappings": [],
@@ -1558,14 +2073,23 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 169
+            "y": 223
           },
           "id": 434,
           "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "8.1.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1626,21 +2150,95 @@
           "description": "Shows the overall incoming and outgoing packets per second for the namespace",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "pps"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Transmitted"
+                },
+                "properties": [
+                  {
+                    "id": "custom.transform",
+                    "value": "negative-Y"
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 176
+            "y": 255
           },
           "id": 436,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.1.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1687,7 +2285,7 @@
             }
           ],
           "title": "Rate of Received/Transmitted Packets",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1696,6 +2294,54 @@
           "description": "Shows the overall incoming and outgoing packets per second by pods for the namespace",
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 100,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
               "unit": "pps"
             },
             "overrides": []
@@ -1704,13 +2350,24 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 176
+            "y": 255
           },
           "id": 438,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "8.1.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1737,7 +2394,7 @@
             }
           ],
           "title": "Rate of Received/Transmitted Packets By Pods",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1754,7 +2411,8 @@
                 "cellOptions": {
                   "type": "auto"
                 },
-                "filterable": false
+                "filterable": false,
+                "inspect": false
               },
               "decimals": 1,
               "mappings": [],
@@ -1846,14 +2504,23 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 183
+            "y": 262
           },
           "id": 440,
           "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "8.1.1",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -1945,7 +2612,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 53
       },
       "id": 313,
       "panels": [
@@ -1960,6 +2627,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -2079,7 +2747,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 96
+            "y": 217
           },
           "id": 479,
           "options": {
@@ -2149,6 +2817,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -2271,7 +2940,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 96
+            "y": 217
           },
           "id": 480,
           "options": {
@@ -2337,21 +3006,138 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FADE2A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 104
+            "y": 225
           },
           "id": 359,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "repeat": "instances_all",
           "repeatDirection": "v",
           "targets": [
@@ -2389,7 +3175,7 @@
             }
           ],
           "title": "$instances_all CPU Usage",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -2397,21 +3183,153 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "datars20-0"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FADE2A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 104
+            "y": 225
           },
           "id": 357,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "repeat": "instances_all",
           "repeatDirection": "v",
           "targets": [
@@ -2450,67 +3368,12 @@
             }
           ],
           "title": "$instances_all RAM Usage",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
             "uid": "$datasource"
           },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 24,
-            "x": 0,
-            "y": 120
-          },
-          "id": 4,
-          "options": {
-            "alertThreshold": true
-          },
-          "pluginVersion": "10.1.5",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "exemplar": true,
-              "expr": "avg(mongodb_memory{namespace=\"$namespace\", type=~\"resident|virtual\"}) by (instance, type)",
-              "format": "time_series",
-              "interval": "$inter",
-              "intervalFactor": 2,
-              "legendFormat": "{{instance}}: {{type}}",
-              "refId": "A",
-              "step": 240
-            }
-          ],
-          "title": "Memory",
-          "type": "graph"
-        }
-      ],
-      "title": "CPU/RAM usage",
-      "type": "row"
-    },
-    {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
-      "id": 289,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "description": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2520,12 +3383,11 @@
                 "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
-                "axisLabel": "",
+                "axisLabel": "MB",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
-                "fillOpacity": 0,
+                "fillOpacity": 10,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
@@ -2539,7 +3401,7 @@
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
@@ -2562,6 +3424,86 @@
                     "value": 80
                   }
                 ]
+              },
+              "unit": "decmbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 266
+          },
+          "id": 4,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.4.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "exemplar": true,
+              "expr": "avg(mongodb_memory{namespace=\"$namespace\", type=~\"resident|virtual\"}) by (instance, type)",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 2,
+              "legendFormat": "{{instance}}: {{type}}",
+              "refId": "A",
+              "step": 240
+            }
+          ],
+          "title": "Memory",
+          "type": "timeseries"
+        }
+      ],
+      "title": "CPU/RAM usage",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 289,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                }
               },
               "unit": "short"
             },
@@ -2586,9 +3528,7 @@
               "showLegend": true
             },
             "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
+              "mode": "single"
             }
           },
           "pluginVersion": "11.6.5",
@@ -2598,9 +3538,7 @@
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "exemplar": true,
               "expr": "max by (db,shard) (mongodb_mongos_db_collections_total{namespace=\"$namespace\", shard=~\"$data_set\"})",
-              "interval": "",
               "legendFormat": "{{shard}}: {{db}}",
               "range": true,
               "refId": "A"
@@ -2620,51 +3558,16 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
               },
               "unit": "short"
             },
@@ -2689,9 +3592,7 @@
               "showLegend": true
             },
             "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
+              "mode": "single"
             }
           },
           "pluginVersion": "11.6.5",
@@ -2703,7 +3604,6 @@
               "editorMode": "code",
               "exemplar": true,
               "expr": "topk(10, avg by (db, shard) (mongodb_mongos_db_data_size_bytes{namespace=\"$namespace\", shard=~\"$data_set\"} ))",
-              "interval": "",
               "legendFormat": "{{shard}}: {{db}}",
               "range": true,
               "refId": "A"
@@ -2724,51 +3624,16 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
               },
               "unit": "decbytes"
             },
@@ -2793,9 +3658,7 @@
               "showLegend": true
             },
             "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
+              "mode": "single"
             }
           },
           "pluginVersion": "11.6.5",
@@ -2806,8 +3669,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk( 10, avg by (instance,database) (mongodb_dbstats_storageSize{namespace=\"$namespace\", instance=~\"$data_set\"}))",
-              "interval": "",
+              "expr": "topk(10, mongodb_dbstats_storageSize{instance=~\"mongos.*\"})",
               "legendFormat": "{{instance}}: {{database}}",
               "range": true,
               "refId": "A"
@@ -2827,51 +3689,16 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
                 }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
               },
               "unit": "decbytes"
             },
@@ -2896,9 +3723,7 @@
               "showLegend": true
             },
             "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
+              "mode": "single"
             }
           },
           "pluginVersion": "11.6.5",
@@ -2911,7 +3736,6 @@
               },
               "exemplar": true,
               "expr": "mongodb_mongos_db_data_size_bytes{namespace=\"$namespace\", shard=\"$data_set\"}",
-              "interval": "",
               "legendFormat": "{{db}}",
               "refId": "A"
             }
@@ -2930,8 +3754,7 @@
           "description": "Sum of the space allocated to all indexes in the database, including free index space.",
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unit": "decbytes"
+              "links": []
             },
             "overrides": []
           },
@@ -2941,7 +3764,7 @@
             "h": 6,
             "w": 12,
             "x": 12,
-            "y": 35
+            "y": 59
           },
           "hiddenSeries": false,
           "id": 295,
@@ -2962,7 +3785,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "11.6.5",
+          "pluginVersion": "9.5.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -3001,7 +3824,7 @@
           "yaxes": [
             {
               "$$hashKey": "object:576",
-              "format": "decbytes",
+              "format": "bytes",
               "logBase": 1,
               "show": true
             },
@@ -3017,6 +3840,15 @@
           }
         }
       ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PC3E95692D54ABCC0"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Data size",
       "type": "row"
     },
@@ -3026,12 +3858,13 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 55
       },
       "id": 20,
       "panels": [
         {
           "datasource": {
+            "default": true,
             "type": "prometheus",
             "uid": "PC3E95692D54ABCC0"
           },
@@ -3042,11 +3875,13 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 20,
                 "gradientMode": "none",
@@ -3093,7 +3928,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 98
+            "y": 211
           },
           "id": 459,
           "options": {
@@ -3119,10 +3954,46 @@
                 "uid": "PC3E95692D54ABCC0"
               },
               "editorMode": "code",
-              "expr": "avg by (instance,type) (rate(mongodb_mongod_op_latencies_latency_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) / (rate(mongodb_mongod_op_latencies_ops_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) > 0) or irate(mongodb_mongod_op_latencies_latency_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) / (irate(mongodb_mongod_op_latencies_ops_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) > 0))",
-              "legendFormat": "{{instance}}: {{type}}",
+              "expr": "avg by (instance,type) (rate(mongodb_common_serverStatus_opLatencies_reads_latency{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) / (rate(mongodb_common_serverStatus_opLatencies_reads_ops{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) > 0) or irate(mongodb_common_serverStatus_opLatencies_reads_latency{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) / (irate(mongodb_common_serverStatus_opLatencies_reads_ops{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) > 0))",
+              "legendFormat": "{{instance}}: reads",
               "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance,type) (rate(mongodb_common_serverStatus_opLatencies_writes_latency{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) / (rate(mongodb_common_serverStatus_opLatencies_writes_ops{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) > 0) or irate(mongodb_common_serverStatus_opLatencies_writes_latency{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) / (irate(mongodb_common_serverStatus_opLatencies_writes_ops{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) > 0))",
+              "hide": false,
+              "legendFormat": "{{instance}}: writes",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance,type) (rate(mongodb_common_serverStatus_opLatencies_commands_latency{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) / (rate(mongodb_common_serverStatus_opLatencies_commands_ops{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) > 0) or irate(mongodb_common_serverStatus_opLatencies_commands_latency{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) / (irate(mongodb_common_serverStatus_opLatencies_commands_ops{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) > 0))",
+              "hide": false,
+              "legendFormat": "{{instance}}: commands",
+              "range": true,
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance,type) (rate(mongodb_mongod_op_latencies_latency_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) / (rate(mongodb_mongod_op_latencies_ops_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) > 0) or irate(mongodb_mongod_op_latencies_latency_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) / (irate(mongodb_mongod_op_latencies_ops_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]) > 0))",
+              "hide": false,
+              "legendFormat": "{{instance}}: transactions",
+              "range": true,
+              "refId": "D"
             }
           ],
           "title": "Latency Detail",
@@ -3130,6 +4001,7 @@
         },
         {
           "datasource": {
+            "default": true,
             "type": "prometheus",
             "uid": "PC3E95692D54ABCC0"
           },
@@ -3140,11 +4012,13 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 20,
                 "gradientMode": "none",
@@ -3191,7 +4065,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 106
+            "y": 219
           },
           "id": 461,
           "options": {
@@ -3217,7 +4091,7 @@
                 "uid": "PC3E95692D54ABCC0"
               },
               "editorMode": "code",
-              "expr": "(sum(rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned\"}[$__interval])) by (instance)/\r\nsum(rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned_objects\"}[$__interval])) by (instance) \r\nor\r\nsum(irate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned\"}[5m])) by (instance)/\r\nsum(irate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\", state=\"scanned_objects\"}[5m])) by (instance))",
+              "expr": "(sum(rate(mongodb_common_serverStatus_metrics_queryExecutor_scanned{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (instance)/\r\nsum(rate(mongodb_common_serverStatus_metrics_queryExecutor_scannedObjects{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (instance) \r\nor\r\nsum(irate(mongodb_common_serverStatus_metrics_queryExecutor_scanned{namespace=\"$namespace\", instance=~\"$data_set\"}[5m])) by (instance)/\r\nsum(irate(mongodb_common_serverStatus_metrics_queryExecutor_scannedObjects{namespace=\"$namespace\", instance=~\"$data_set\"}[5m])) by (instance))",
               "hide": false,
               "legendFormat": "Index {{instance}}",
               "range": true,
@@ -3241,21 +4115,24 @@
         },
         {
           "datasource": {
+            "default": true,
             "type": "prometheus",
             "uid": "PC3E95692D54ABCC0"
           },
-          "description": "This panel shows the number of objects (both data (scanned_objects) and index (scanned))",
+          "description": "Docs per second inserted, updated, deleted or returned.",
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 20,
                 "gradientMode": "none",
@@ -3302,7 +4179,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 115
+            "y": 228
           },
           "id": 463,
           "options": {
@@ -3328,33 +4205,72 @@
                 "uid": "PC3E95692D54ABCC0"
               },
               "editorMode": "code",
-              "expr": "avg by (instance, state) (rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "expr": "avg by (instance, state) (rate(mongodb_common_serverStatus_metrics_document_deleted{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_common_serverStatus_metrics_document_deleted{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
               "hide": false,
-              "legendFormat": "{{instance}}: {{state}}",
+              "legendFormat": "{{instance}}: Deleted",
               "range": true,
               "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance, state) (rate(mongodb_common_serverStatus_metrics_document_inserted{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_common_serverStatus_metrics_document_inserted{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "hide": false,
+              "legendFormat": "{{instance}}: Inserted",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance, state) (rate(mongodb_common_serverStatus_metrics_document_updated{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_common_serverStatus_metrics_document_updated{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "hide": false,
+              "legendFormat": "{{instance}}: Updated",
+              "range": true,
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance,state) (rate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "hide": false,
+              "legendFormat": "{{instance}}: Returned",
+              "range": true,
+              "refId": "D"
             }
           ],
-          "title": "Scanned Objects",
+          "title": "Document Operations",
           "type": "timeseries"
         },
         {
           "datasource": {
+            "default": true,
             "type": "prometheus",
             "uid": "PC3E95692D54ABCC0"
           },
-          "description": "Docs per second inserted, updated, deleted or returned.",
+          "description": "This panel shows the number of objects (both data (scanned_objects) and index (scanned))",
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 20,
                 "gradientMode": "none",
@@ -3401,7 +4317,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 124
+            "y": 262
           },
           "id": 462,
           "options": {
@@ -3427,71 +4343,215 @@
                 "uid": "PC3E95692D54ABCC0"
               },
               "editorMode": "code",
-              "expr": "avg by (instance,state) (rate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_mongod_metrics_document_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "expr": "avg by (instance,state) (rate(mongodb_common_serverStatus_metrics_queryExecutor_scanned{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_common_serverStatus_metrics_queryExecutor_scanned{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
               "hide": false,
-              "legendFormat": "{{state}}",
+              "legendFormat": "{{instance}}: Scanned",
               "range": true,
               "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "expr": "avg by (instance, state) (rate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval]) or \r\nirate(mongodb_mongod_metrics_query_executor_total{namespace=\"$namespace\", instance=~\"$data_set\"}[5m]))",
+              "hide": false,
+              "legendFormat": "{{instance}}: ScannedObjects",
+              "range": true,
+              "refId": "A"
             }
           ],
-          "title": "Document Operations",
+          "title": "Scanned Objects",
           "type": "timeseries"
         },
         {
           "datasource": {
+            "default": false,
+            "type": "prometheus",
             "uid": "$datasource"
           },
           "description": "",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*/"
+                },
+                "properties": [
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 132
+            "y": 270
           },
           "id": 283,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
                 "uid": "$datasource"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(mongodb_connections{namespace=\"$namespace\", state=\"current\"}) by (instance, state)",
+              "expr": "avg(mongodb_common_serverStatus_connections_current{namespace=\"$namespace\"}) by (instance, state)",
               "interval": "",
-              "legendFormat": "{{instance}}: {{state}}",
+              "legendFormat": "{{instance}}: current",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "uid": "$datasource"
               },
+              "editorMode": "code",
               "exemplar": true,
               "expr": "avg(mongodb_connections{namespace=\"$namespace\", state=\"available\"}) by (instance, state)",
               "interval": "",
-              "legendFormat": "{{instance}}: {{state}}",
+              "legendFormat": "{{instance}}: available",
+              "range": true,
               "refId": "B"
             }
           ],
           "title": "Connections",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
+            "default": false,
             "type": "prometheus",
             "uid": "$datasource"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ops"
             },
             "overrides": []
           },
@@ -3499,13 +4559,25 @@
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 140
+            "y": 278
           },
           "id": 7,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "repeat": "data_set",
           "repeatDirection": "v",
           "targets": [
@@ -3515,27 +4587,158 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(mongodb_op_counters_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "expr": "avg(rate(mongodb_common_serverStatus_opcounters_command{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
               "format": "time_series",
               "interval": "$inter",
               "intervalFactor": 1,
-              "legendFormat": "{{type}}",
+              "legendFormat": "command",
               "range": true,
               "refId": "A",
+              "step": 240
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_common_serverStatus_opcounters_delete{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "delete",
+              "range": true,
+              "refId": "B",
+              "step": 240
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_common_serverStatus_opcounters_getmore{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "getmore",
+              "range": true,
+              "refId": "C",
+              "step": 240
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_common_serverStatus_opcounters_insert{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "insert",
+              "range": true,
+              "refId": "D",
+              "step": 240
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_common_serverStatus_opcounters_query{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "query",
+              "range": true,
+              "refId": "E",
+              "step": 240
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "avg(rate(mongodb_op_counters_total{namespace=\"$namespace\", instance=~\"$data_set\"}[$__interval])) by (type)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "update",
+              "range": true,
+              "refId": "F",
               "step": 240
             }
           ],
           "title": "Query Operations $data_set[$inter rate]",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
+            "default": false,
             "type": "prometheus",
             "uid": "$datasource"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
             },
             "overrides": []
           },
@@ -3543,13 +4746,22 @@
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 140
+            "y": 278
           },
           "id": 293,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "right",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "repeat": "data_set",
           "repeatDirection": "v",
           "targets": [
@@ -3567,10 +4779,11 @@
             }
           ],
           "title": "Page faults $data_set[$inter rate]",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
+            "default": true,
             "type": "prometheus",
             "uid": "PC3E95692D54ABCC0"
           },
@@ -3581,11 +4794,13 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -3631,7 +4846,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 147
+            "y": 285
           },
           "id": 470,
           "options": {
@@ -3660,10 +4875,75 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "rate(mongodb_asserts_total{namespace=\"$namespace\"}[$inter])",
-              "legendFormat": "{{instance}}:{{type}}",
+              "expr": "rate(mongodb_common_serverStatus_asserts_msg{namespace=\"$namespace\"}[$inter])",
+              "legendFormat": "{{instance}}:msg",
               "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "rate(mongodb_common_serverStatus_asserts_regular{namespace=\"$namespace\"}[$inter])",
+              "hide": false,
+              "legendFormat": "{{instance}}:regular",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "rate(mongodb_common_serverStatus_asserts_rollovers{namespace=\"$namespace\"}[$inter])",
+              "hide": false,
+              "legendFormat": "{{instance}}:rollovers",
+              "range": true,
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "rate(mongodb_common_serverStatus_asserts_tripwire{namespace=\"$namespace\"}[$inter])",
+              "hide": false,
+              "legendFormat": "{{instance}}:tripwire",
+              "range": true,
+              "refId": "D"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "rate(mongodb_common_serverStatus_asserts_user{namespace=\"$namespace\"}[$inter])",
+              "hide": false,
+              "legendFormat": "{{instance}}:user",
+              "range": true,
+              "refId": "E"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PC3E95692D54ABCC0"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "rate(mongodb_asserts_total{namespace=\"$namespace\"}[$inter])",
+              "hide": false,
+              "legendFormat": "{{instance}}:warning",
+              "range": true,
+              "refId": "F"
             }
           ],
           "title": "MongoDB Assertions per [$inter rate]",
@@ -3679,7 +4959,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 56
       },
       "id": 23,
       "panels": [
@@ -3690,7 +4970,57 @@
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decbytes"
             },
             "overrides": []
           },
@@ -3698,13 +5028,24 @@
             "h": 6,
             "w": 12,
             "x": 0,
-            "y": 99
+            "y": 212
           },
           "id": 6,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -3724,7 +5065,7 @@
             }
           ],
           "title": "Oplog Size",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -3733,7 +5074,58 @@
           "description": "",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 2,
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
             },
             "overrides": []
           },
@@ -3741,13 +5133,24 @@
             "h": 6,
             "w": 12,
             "x": 12,
-            "y": 99
+            "y": 212
           },
           "id": 16,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -3766,7 +5169,7 @@
             }
           ],
           "title": "Oplog Recovery Window",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -3780,11 +5183,13 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -3833,7 +5238,7 @@
             "h": 6,
             "w": 12,
             "x": 0,
-            "y": 105
+            "y": 218
           },
           "id": 374,
           "options": {
@@ -3879,7 +5284,58 @@
           "description": "",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 2,
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
             },
             "overrides": []
           },
@@ -3887,13 +5343,24 @@
             "h": 6,
             "w": 12,
             "x": 12,
-            "y": 105
+            "y": 218
           },
           "id": 464,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "10.1.5",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -3912,7 +5379,7 @@
             }
           ],
           "title": "Oplog Recovery Window",
-          "type": "graph"
+          "type": "timeseries"
         }
       ],
       "title": "Replication Metrics",
@@ -3924,7 +5391,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 57
       },
       "id": 337,
       "panels": [
@@ -3985,7 +5452,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -4001,7 +5469,7 @@
             "h": 3,
             "w": 24,
             "x": 0,
-            "y": 83
+            "y": 107
           },
           "id": 325,
           "options": {
@@ -4041,21 +5509,167 @@
           "description": "Shows CPU usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Cores",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FF9830",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 103
+            "y": 110
           },
           "id": 327,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "11.2.1",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
@@ -4101,7 +5715,7 @@
             }
           ],
           "title": "CPU Usage",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -4110,21 +5724,167 @@
           "description": "Shows memory usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Bytes",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 3,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FF9830",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 103
+            "y": 110
           },
           "id": 329,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "11.2.1",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
@@ -4166,7 +5926,7 @@
             }
           ],
           "title": "Memory Usage",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -4174,20 +5934,85 @@
           },
           "description": "Time spent in GC pause",
           "fieldConfig": {
-            "defaults": {},
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
             "overrides": []
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 111
+            "y": 118
           },
           "id": 323,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max",
+                "min"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
-          "pluginVersion": "11.2.1",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
@@ -4200,7 +6025,7 @@
             }
           ],
           "title": "GC Duration",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -4208,20 +6033,85 @@
           },
           "description": "The current number of threads",
           "fieldConfig": {
-            "defaults": {},
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
             "overrides": []
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 111
+            "y": 118
           },
           "id": 331,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max",
+                "min"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
-          "pluginVersion": "11.2.1",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
@@ -4234,84 +6124,203 @@
             }
           ],
           "title": "Threads",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
-            "default": false,
-            "type": "prometheus",
             "uid": "$datasource"
           },
           "description": "The total number of requests DBaaS Adapter received per response status",
           "fieldConfig": {
-            "defaults": {},
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
             "overrides": []
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 0,
-            "y": 118
+            "y": 125
           },
           "id": 333,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
-          "pluginVersion": "11.2.1",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "uid": "$datasource"
               },
-              "editorMode": "code",
               "expr": "sum(sum by (pod, status_code)(\r\nincrease(requests_total{namespace=\"$namespace\",job=~\"dbaas-mongo-adapter\"}[1m]))) by (pod, status_code)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Status: {{status_code}}",
-              "range": true,
               "refId": "A"
             }
           ],
           "title": "Requests Count",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
-            "default": false,
-            "type": "prometheus",
             "uid": "$datasource"
           },
           "description": "The requests duration per each DBaaS Adapter endpoint",
           "fieldConfig": {
-            "defaults": {},
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
             "overrides": []
           },
           "gridPos": {
             "h": 7,
             "w": 12,
             "x": 12,
-            "y": 118
+            "y": 125
           },
           "id": 335,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
-          "pluginVersion": "11.2.1",
+          "pluginVersion": "11.3.1",
           "targets": [
             {
               "datasource": {
                 "uid": "$datasource"
               },
-              "editorMode": "code",
               "expr": "max(label_replace(rate(request_duration_seconds_sum{namespace=\"$namespace\"}[$inter]) / rate(request_duration_seconds_count{namespace=\"$namespace\"}[$inter]),\"urit\",\"$1\",\"path\",\".*mongo(\\\\/\\\\w+).*\")) by (method, urit)",
               "interval": "",
               "legendFormat": "{{method}}: {{urit}}",
-              "range": true,
               "refId": "A"
             }
           ],
           "title": "DBaaS API Requests Duration",
-          "type": "graph"
+          "type": "timeseries"
         }
       ],
       "title": "DBaaS adapter",
@@ -4323,7 +6332,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 58
       },
       "id": 355,
       "panels": [
@@ -4400,7 +6409,7 @@
             "h": 3,
             "w": 24,
             "x": 0,
-            "y": 83
+            "y": 222
           },
           "id": 455,
           "options": {
@@ -4441,21 +6450,165 @@
           "description": "Shows CPU usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Cores",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FF9830",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 128
+            "y": 225
           },
           "id": 341,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "9.5.2",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -4501,7 +6654,7 @@
             }
           ],
           "title": "CPU Usage",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -4510,21 +6663,165 @@
           "description": "Shows memory usage per container in pod against resource requests and limits",
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Bytes",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 3,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FF9830",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 128
+            "y": 225
           },
           "id": 343,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "9.5.2",
+          "pluginVersion": "10.4.5",
           "targets": [
             {
               "datasource": {
@@ -4566,181 +6863,7 @@
             }
           ],
           "title": "Memory Usage",
-          "type": "graph"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "description": "Size of last successful backup ",
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 6,
-            "x": 0,
-            "y": 139
-          },
-          "id": 347,
-          "options": {
-            "alertThreshold": true
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "backup_storage_last_successful_size{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
-              "interval": "",
-              "intervalFactor": 1,
-              "legendFormat": "ID: {{id}}",
-              "refId": "A"
-            }
-          ],
-          "title": "Last Backup Size",
-          "type": "graph"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "description": "Current number of dumps",
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 6,
-            "x": 6,
-            "y": 139
-          },
-          "id": 349,
-          "options": {
-            "alertThreshold": true
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "backup_storage_dump_count{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
-              "interval": "",
-              "intervalFactor": 1,
-              "legendFormat": "Count",
-              "refId": "A"
-            }
-          ],
-          "title": "Dumps count",
-          "type": "graph"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "description": "Shows used by backups space against total space",
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 6,
-            "x": 12,
-            "y": 139
-          },
-          "id": 351,
-          "options": {
-            "alertThreshold": true
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "backup_storage_size{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
-              "format": "time_series",
-              "interval": "$inter",
-              "intervalFactor": 1,
-              "legendFormat": "Usage",
-              "refId": "A",
-              "step": 10
-            },
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "backup_storage_space_total{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}\n",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 1,
-              "legendFormat": "Limits",
-              "refId": "C",
-              "step": 10
-            }
-          ],
-          "title": "Storage Space Usage",
-          "type": "graph"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "description": "Shows inodes usage",
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 6,
-            "x": 18,
-            "y": 139
-          },
-          "id": 353,
-          "options": {
-            "alertThreshold": true
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "backup_storage_used_inodes{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
-              "format": "time_series",
-              "interval": "$inter",
-              "intervalFactor": 1,
-              "legendFormat": "Usage",
-              "refId": "A",
-              "step": 10
-            },
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "backup_storage_inodes_total{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}\n",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 1,
-              "legendFormat": "Limits",
-              "refId": "C",
-              "step": 10
-            }
-          ],
-          "title": "Storage Inodes Usage",
-          "type": "graph"
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -4818,7 +6941,7 @@
             "h": 3,
             "w": 24,
             "x": 0,
-            "y": 341
+            "y": 258
           },
           "id": 456,
           "options": {
@@ -4851,6 +6974,588 @@
           ],
           "title": "Status",
           "type": "state-timeline"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Size of last successful backup ",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 0,
+            "y": 261
+          },
+          "id": 347,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "10.4.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_last_successful_size{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "ID: {{id}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Last Backup Size",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Current number of dumps",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 6,
+            "y": 261
+          },
+          "id": 349,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "10.4.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_dump_count{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Count",
+              "refId": "A"
+            }
+          ],
+          "title": "Dumps count",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows used by backups space against total space",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Bytes",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 3,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FF9830",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 12,
+            "y": 261
+          },
+          "id": 351,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.4.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_size{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Usage",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_space_total{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Limits",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "Storage Space Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Shows inodes usage",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Bytes",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 3,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Limits.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#F2495C",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Requests.*/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FF9830",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 6,
+            "x": 18,
+            "y": 261
+          },
+          "id": 353,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.4.5",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_used_inodes{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}",
+              "format": "time_series",
+              "interval": "$inter",
+              "intervalFactor": 1,
+              "legendFormat": "Usage",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "backup_storage_inodes_total{namespace=\"$namespace\",job=~\"mongodb-backup-daemon\"}\n",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "Limits",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "title": "Storage Inodes Usage",
+          "type": "timeseries"
         }
       ],
       "title": "Backup daemon",
@@ -4859,7 +7564,7 @@
   ],
   "preload": false,
   "refresh": "",
-  "schemaVersion": 41,
+  "schemaVersion": 40,
   "tags": [
     "prometheus"
   ],
@@ -4867,7 +7572,7 @@
     "list": [
       {
         "current": {
-          "text": "Platform Monitoring Prometheus",
+          "text": "Prometheus",
           "value": "PC3E95692D54ABCC0"
         },
         "includeAll": false,
@@ -4902,8 +7607,8 @@
       },
       {
         "current": {
-          "text": "mongodb",
-          "value": "mongodb"
+          "text": "mongo",
+          "value": "mongo"
         },
         "datasource": {
           "type": "prometheus",
@@ -4990,7 +7695,9 @@
       },
       {
         "current": {
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
@@ -5016,7 +7723,9 @@
       },
       {
         "current": {
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
@@ -5041,7 +7750,9 @@
       },
       {
         "current": {
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
@@ -5084,6 +7795,7 @@
   },
   "timezone": "browser",
   "title": "MongoDB 8 Prometheus",
-  "uid": "663104bf16155344f440d1a6379a942134ca382f",
-  "version": 3
+  "uid": "",
+  "version": 2,
+  "weekStart": ""
 }
