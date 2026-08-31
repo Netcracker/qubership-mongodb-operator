@@ -214,6 +214,13 @@ func main() {
 			supports.ToMap(),
 			logger,
 			profiler, "")
+
+		prefix := fmt.Sprintf("/api/%s/dbaas/adapter/mongodb/databases/", apiVersion)
+		app.Put(prefix+":dbName/settings", dbAdminImpl.(*pkg.MongoDbAdministration).UpdateMongodbSettingsHandler)
+		app.Get("/api/version", func(c *fiber.Ctx) error {
+			return c.SendString(apiVersion)
+		})
+
 		return nil
 	}))
 }

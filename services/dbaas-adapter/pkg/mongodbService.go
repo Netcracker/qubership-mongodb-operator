@@ -627,6 +627,10 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+
 	for _, record := range settings.ShardingSettings {
 		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
 			err := service.CreateCollection(ctx, dbName, record.CollectionName)
@@ -635,17 +639,16 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 			}
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 
-		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
-			err := service.ShardCollection(ctx, dbName, record)
-			if err != nil && !strings.Contains(err.Error(), "already sharded") {
-				return fmt.Errorf("failed to shard collection %s: %w", record.CollectionName, err)
-			}
-			return nil
-		})
+		if err = r.ShardNonShardedCollection(ctx, dbName, record); err != nil {
+			return err
+		}
 	}
 
-	return err
+	return nil
 }
 
 func (r *MongoServiceImpl) EnableSharding(ctx context.Context, dbName string) error {
@@ -689,4 +692,95 @@ func (r *MongoServiceImpl) ShardCollection(ctx context.Context, dbName string, s
 	}
 
 	return nil
+}
+
+// IsCollectionSharded checks config.collections for the current shard key of a namespace.
+func (r *MongoServiceImpl) IsCollectionSharded(ctx context.Context, dbName, collectionName string) (bool, bson.D, error) {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return false, nil, err
+	}
+
+	ns := fmt.Sprintf("%s.%s", dbName, collectionName)
+	var result struct {
+		Key bson.D `bson:"key"`
+	}
+
+	err = client.Database("config").Collection("collections").
+		FindOne(ctx, bson.D{{"_id", ns}}).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil, nil
+		}
+		return false, nil, fmt.Errorf("failed to check sharding status for %s: %w", ns, err)
+	}
+	return true, result.Key, nil
+}
+
+// shardKeyMatches compares an existing config.collections key to the requested shard settings.
+func shardKeyMatches(currentKey bson.D, settings mUtils.ShardingSettings) bool {
+	if len(currentKey) != 1 || currentKey[0].Key != settings.ShardKey {
+		return false
+	}
+	if settings.Strategy == "hashed" {
+		v, ok := currentKey[0].Value.(string)
+		return ok && v == "hashed"
+	}
+	switch v := currentKey[0].Value.(type) {
+	case int32:
+		return v == 1
+	case int64:
+		return v == 1
+	case float64:
+		return v == 1
+	}
+	return false
+}
+
+// CreateShardKeyIndex creates the index required before sharding on the given key/strategy.
+func (r *MongoServiceImpl) CreateShardKeyIndex(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+
+	var keyValue interface{} = 1
+	if settings.Strategy == "hashed" {
+		keyValue = "hashed"
+	}
+
+	_, err = client.Database(dbName).Collection(settings.CollectionName).Indexes().
+		CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{settings.ShardKey, keyValue}}})
+	if err != nil {
+		return fmt.Errorf("failed to create index on %s.%s for shard key %s: %w",
+			dbName, settings.CollectionName, settings.ShardKey, err)
+	}
+	return nil
+}
+
+// ShardNonShardedCollection creates the required index and shards the collection, unless it's
+// already sharded with the requested key (no-op) or sharded with a different key (error).
+func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	sharded, currentKey, err := r.IsCollectionSharded(ctx, dbName, settings.CollectionName)
+	if err != nil {
+		return err
+	}
+	if sharded {
+		if shardKeyMatches(currentKey, settings) {
+			return nil
+		}
+		return fmt.Errorf("collection %s.%s is already sharded with a different key %v",
+			dbName, settings.CollectionName, currentKey)
+	}
+
+	if err := r.CreateShardKeyIndex(ctx, dbName, settings); err != nil {
+		return err
+	}
+
+	return r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+		if err := service.ShardCollection(ctx, dbName, settings); err != nil && !strings.Contains(err.Error(), "already sharded") {
+			return fmt.Errorf("failed to shard collection %s: %w", settings.CollectionName, err)
+		}
+		return nil
+	})
 }
