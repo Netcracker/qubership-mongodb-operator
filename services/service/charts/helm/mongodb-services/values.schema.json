@@ -489,7 +489,32 @@
         "leftNodesPattern": { "type": "string" },
         "rightNodesPattern": { "type": "string" },
         "resources": { "$ref": "#/$defs/resourceRequirements" },
-        "affinity": { "$ref": "#/$defs/affinity" }
+        "affinity": { "$ref": "#/$defs/affinity" },
+        "atpReport": { "$ref": "#/$defs/atpReport" },
+        "environmentName": { "type": "string" },
+        "enableJiraIntegration": { "type": "boolean" },
+        "atpReportViewUiUrl": { "type": "string" }
+      }
+    },
+    "atpReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "atpStorage": { "$ref": "#/$defs/atpStorage" }
+      }
+    },
+    "atpStorage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string" },
+        "serverUrl": { "type": "string" },
+        "serverUiUrl": { "type": "string" },
+        "bucket": { "type": "string" },
+        "region": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" }
       }
     },
     "role": {
