@@ -791,7 +791,7 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 		dbName, settings.CollectionName, settings.ShardKey, settings.Strategy))
 
 	return r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
-		if err := service.ShardCollection(ctx, dbName, settings); err != nil && !strings.Contains(err.Error(), "already sharded") {
+		if err := service.ShardCollection(ctx, dbName, settings); err != nil {
 			return fmt.Errorf("failed to shard collection %s: %w", settings.CollectionName, err)
 		}
 		return nil
