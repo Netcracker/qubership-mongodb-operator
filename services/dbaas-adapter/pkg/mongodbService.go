@@ -632,10 +632,14 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 		return nil
 	})
 	if err != nil {
+		logger.Sugar().Infof("EnableSharding error, %v", err.Error())
 		return err
 	}
 
+	logger.Info("EnableSharding Completed")
+
 	for _, record := range settings.ShardingSettings {
+		logger.Sugar().Infof("record : %v", record)
 		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
 			err := service.CreateCollection(ctx, dbName, record.CollectionName)
 			if err != nil && !strings.Contains(err.Error(), "already exists") {
@@ -644,8 +648,11 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 			return nil
 		})
 		if err != nil {
+			logger.Sugar().Infof("EnableSharding error, %v", err.Error())
 			return err
 		}
+
+		logger.Info("CreateCollection Completed")
 
 		if err = r.ShardNonShardedCollection(ctx, dbName, record); err != nil {
 			return err
