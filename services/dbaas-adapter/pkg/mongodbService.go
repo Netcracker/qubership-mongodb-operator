@@ -719,22 +719,40 @@ func (r *MongoServiceImpl) IsCollectionSharded(ctx context.Context, dbName, coll
 
 // shardKeyMatches compares an existing config.collections key to the requested shard settings.
 func shardKeyMatches(currentKey bson.D, settings mUtils.ShardingSettings) bool {
-	if len(currentKey) != 1 || currentKey[0].Key != settings.ShardKey {
+	if len(currentKey) == 0 || currentKey[0].Key != settings.ShardKey {
 		return false
 	}
+
+	// Validate the configured shard key's first component.
 	if settings.Strategy == "hashed" {
 		v, ok := currentKey[0].Value.(string)
-		return ok && v == "hashed"
+		if !ok || v != "hashed" {
+			return false
+		}
+	} else {
+		switch v := currentKey[0].Value.(type) {
+		case int32:
+			if v != 1 {
+				return false
+			}
+		case int64:
+			if v != 1 {
+				return false
+			}
+		case float64:
+			if v != 1 {
+				return false
+			}
+		case int:
+			if v != 1 {
+				return false
+			}
+		default:
+			return false
+		}
 	}
-	switch v := currentKey[0].Value.(type) {
-	case int32:
-		return v == 1
-	case int64:
-		return v == 1
-	case float64:
-		return v == 1
-	}
-	return false
+
+	return true
 }
 
 // CreateShardKeyIndex creates the index required before sharding on the given key/strategy.
