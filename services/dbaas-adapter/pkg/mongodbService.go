@@ -761,21 +761,34 @@ func (r *MongoServiceImpl) CreateShardKeyIndex(ctx context.Context, dbName strin
 // ShardNonShardedCollection creates the required index and shards the collection, unless it's
 // already sharded with the requested key (no-op) or sharded with a different key (error).
 func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	logger := utils.AddLoggerContext(r.logger, ctx)
+
 	sharded, currentKey, err := r.IsCollectionSharded(ctx, dbName, settings.CollectionName)
 	if err != nil {
 		return err
 	}
 	if sharded {
 		if shardKeyMatches(currentKey, settings) {
+			logger.Info(fmt.Sprintf("collection %s.%s already sharded with key %s (%s), skipping",
+				dbName, settings.CollectionName, settings.ShardKey, settings.Strategy))
 			return nil
 		}
 		return fmt.Errorf("collection %s.%s is already sharded with a different key %v",
 			dbName, settings.CollectionName, currentKey)
 	}
 
-	if err := r.CreateShardKeyIndex(ctx, dbName, settings); err != nil {
+	err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+		if err := r.CreateShardKeyIndex(ctx, dbName, settings); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
 		return err
 	}
+
+	logger.Debug(fmt.Sprintf("sharding collection %s.%s on key %s (%s)",
+		dbName, settings.CollectionName, settings.ShardKey, settings.Strategy))
 
 	return r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
 		if err := service.ShardCollection(ctx, dbName, settings); err != nil && !strings.Contains(err.Error(), "already sharded") {
