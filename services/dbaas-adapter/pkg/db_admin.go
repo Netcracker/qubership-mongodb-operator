@@ -3,7 +3,6 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
@@ -101,26 +100,36 @@ func (c *MongoDbAdministration) getConnectionProperties(dbName string, username 
 }
 
 func (c *MongoDbAdministration) UpdateMongodbSettingsHandler(ctx *fiber.Ctx) error {
-
-	logger := utils.AddLoggerContext(c.logger, ctx.Context())
-	logger.Info("UpdateMongodbSettings request accepted")
-	log.Println("UpdateMongodbSettings request accepted")
+	logger := utils.AddLoggerContext(c.logger, context.Background())
 	dbName := ctx.Params("dbName")
 
-	var settings map[string]interface{}
-	if err := ctx.BodyParser(&settings); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	if !mUtils.ValidateDbIdentifierParam(context.Background(), "dbName", dbName, dbNameRegexp.String()) {
+		return mUtils.SendInvalidParameterResponse(ctx, "dbName", dbName, dbNameRegexp.String())
 	}
 
-	shardSettings, err := c.parseShardingSettings(settings)
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	var updateSettingsRequest mUtils.MongodbUpdateSettingsRequest
+	if err := ctx.BodyParser(&updateSettingsRequest); err != nil {
+		logger.Error("Failed to parse request in update settings handler", zap.Error(err))
+		return ctx.Status(500).SendString(err.Error())
+	}
+
+	shardSettings, parseErr := c.parseShardingSettings(updateSettingsRequest.NewSettings)
+	if parseErr != nil {
+		logger.Error("Invalid shardingSettings in update settings request", zap.Error(parseErr))
+		return ctx.Status(400).SendString(parseErr.Error())
+	}
+
+	if len(shardSettings.ShardingSettings) == 0 {
+		logger.Info("No shardingSettings provided in update request, nothing to do")
+		return ctx.SendStatus(fiber.StatusOK)
 	}
 
 	if err := c.mongodService.EnableShardingAndCreateCollection(ctx.Context(), dbName, shardSettings); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		logger.Error("Failed to update sharding settings", zap.Error(err))
+		return ctx.Status(500).SendString(err.Error())
 	}
 
+	logger.Info("Sharding settings updated successfully")
 	return ctx.SendStatus(fiber.StatusOK)
 }
 

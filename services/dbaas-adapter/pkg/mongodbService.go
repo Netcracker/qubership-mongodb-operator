@@ -620,10 +620,6 @@ func (r *MongoConfigurationImpl) IsTLSEnabled() bool {
 }
 
 func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context, dbName string, settings *mUtils.Settings) error {
-
-	logger := utils.AddLoggerContext(r.logger, ctx)
-	logger.Info("EnableShardingAndCreateCollection entered")
-
 	err := r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
 		err := service.EnableSharding(ctx, dbName)
 		if err != nil && !strings.Contains(err.Error(), "already enabled") {
@@ -632,14 +628,10 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 		return nil
 	})
 	if err != nil {
-		logger.Sugar().Infof("EnableSharding error, %v", err.Error())
 		return err
 	}
 
-	logger.Info("EnableSharding Completed")
-
 	for _, record := range settings.ShardingSettings {
-		logger.Sugar().Infof("record : %v", record)
 		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
 			err := service.CreateCollection(ctx, dbName, record.CollectionName)
 			if err != nil && !strings.Contains(err.Error(), "already exists") {
@@ -648,11 +640,8 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 			return nil
 		})
 		if err != nil {
-			logger.Sugar().Infof("EnableSharding error, %v", err.Error())
 			return err
 		}
-
-		logger.Info("CreateCollection Completed")
 
 		if err = r.ShardNonShardedCollection(ctx, dbName, record); err != nil {
 			return err
@@ -707,10 +696,6 @@ func (r *MongoServiceImpl) ShardCollection(ctx context.Context, dbName string, s
 
 // IsCollectionSharded checks config.collections for the current shard key of a namespace.
 func (r *MongoServiceImpl) IsCollectionSharded(ctx context.Context, dbName, collectionName string) (bool, bson.D, error) {
-
-	logger := utils.AddLoggerContext(r.logger, ctx)
-	logger.Info("IsCollectionSharded entered ")
-
 	client, err := GetMongoClient(r.configuration)
 	if err != nil {
 		return false, nil, err
@@ -777,8 +762,6 @@ func (r *MongoServiceImpl) CreateShardKeyIndex(ctx context.Context, dbName strin
 // already sharded with the requested key (no-op) or sharded with a different key (error).
 func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
 	logger := utils.AddLoggerContext(r.logger, ctx)
-	logger.Info("ShardNonShardedCollection entered ")
-
 	sharded, currentKey, err := r.IsCollectionSharded(ctx, dbName, settings.CollectionName)
 	if err != nil {
 		return err
