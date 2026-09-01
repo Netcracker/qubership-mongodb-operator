@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -100,6 +101,10 @@ func (c *MongoDbAdministration) getConnectionProperties(dbName string, username 
 }
 
 func (c *MongoDbAdministration) UpdateMongodbSettingsHandler(ctx *fiber.Ctx) error {
+
+	logger := utils.AddLoggerContext(c.logger, ctx.Context())
+	logger.Info("UpdateMongodbSettings request accepted")
+	log.Println("UpdateMongodbSettings request accepted")
 	dbName := ctx.Params("dbName")
 
 	var settings map[string]interface{}
