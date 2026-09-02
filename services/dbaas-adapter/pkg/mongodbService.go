@@ -622,7 +622,7 @@ func (r *MongoConfigurationImpl) IsTLSEnabled() bool {
 }
 
 func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context, dbName string, settings *mUtils.Settings) error {
-	err := r.RunWithGrants(ctx, "admin", func(service MongoService) error {
+	err := r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		err := service.EnableSharding(ctx, dbName)
 		if err != nil && !strings.Contains(err.Error(), "already enabled") {
 			return fmt.Errorf("failed to enable sharding on db %s: %w", dbName, err)
@@ -800,7 +800,7 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 		}
 	}
 
-	err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+	err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
 		return service.CreateShardKeyIndex(ctx, dbName, settings)
 	})
 	if err != nil {
