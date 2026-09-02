@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -638,19 +637,29 @@ func (c *MongoDbAdministration) parseShardingSettings(settings map[string]interf
 			return nil, &utils.ExecutionError{Msg: "collectionName is required and must be a non-empty string"}
 		}
 
-		if v, ok := collectionSetting["shardKey"].(string); ok && v != "" {
-			record.ShardKey = v
-		} else {
-			return nil, &utils.ExecutionError{Msg: fmt.Sprintf("shardKey is required and must be a non-empty string for collection %s", record.CollectionName)}
+		rawKeys, ok := collectionSetting["shardKey"].([]interface{})
+		if !ok || len(rawKeys) == 0 {
+			return nil, &utils.ExecutionError{Msg: fmt.Sprintf("shardKey must be a non-empty array for collection %s", record.CollectionName)}
 		}
 
-		if v, ok := collectionSetting["strategy"].(string); ok {
-			record.Strategy = strings.ToLower(v)
-			if record.Strategy != "hashed" && record.Strategy != "ranged" {
-				return nil, &utils.ExecutionError{Msg: fmt.Sprintf("strategy must be 'Hashed' or 'Ranged' for collection %s", record.CollectionName)}
+		hashedCount := 0
+		for _, keyItem := range rawKeys {
+			fieldMap, ok := keyItem.(map[string]interface{})
+			if !ok {
+				return nil, &utils.ExecutionError{Msg: fmt.Sprintf("each shardKey entry must be an object for collection %s", record.CollectionName)}
 			}
-		} else {
-			return nil, &utils.ExecutionError{Msg: fmt.Sprintf("strategy is required and must be a string for collection %s", record.CollectionName)}
+			fieldName, ok := fieldMap["field"].(string)
+			if !ok || fieldName == "" {
+				return nil, &utils.ExecutionError{Msg: fmt.Sprintf("shardKey.field is required for collection %s", record.CollectionName)}
+			}
+			hashed, _ := fieldMap["hashed"].(bool)
+			if hashed {
+				hashedCount++
+			}
+			record.ShardKeys = append(record.ShardKeys, mUtils.ShardKeyField{Field: fieldName, Hashed: hashed})
+		}
+		if hashedCount > 1 {
+			return nil, &utils.ExecutionError{Msg: fmt.Sprintf("only one field may be hashed in a compound shard key for collection %s", record.CollectionName)}
 		}
 
 		s.ShardingSettings = append(s.ShardingSettings, record)

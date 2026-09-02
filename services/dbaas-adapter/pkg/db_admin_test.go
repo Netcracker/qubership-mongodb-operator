@@ -192,6 +192,14 @@ func (m *MongoServiceTest) CreateCollection(ctx context.Context, dbName string, 
 	return nil // Always success for tests
 }
 
+func (m *MongoServiceTest) RefineShardKey(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	return nil // Always success for tests
+}
+
+func (m *MongoServiceTest) CreateShardKeyIndex(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	return nil // Always success for tests
+}
+
 func (m *MongoServiceTest) EnsureDBOnShard(ctx context.Context, dbName string, primaryShard string) error {
 	return nil // Always success for tests
 }

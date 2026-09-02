@@ -32,8 +32,12 @@ type MongodbUpdateSettingsRequest struct {
 
 type ShardingSettings struct {
 	CollectionName string `json:"collectionName"`
-	ShardKey       string `json:"shardKey"`
-	Strategy       string `json:"strategy"` // "Hashed" or "Ranged"
+	ShardKeys      []ShardKeyField
+}
+
+type ShardKeyField struct {
+	Field  string `json:"field"`
+	Hashed bool   `json:"hashed"`
 }
 
 func IsTLSEnabled() bool {
