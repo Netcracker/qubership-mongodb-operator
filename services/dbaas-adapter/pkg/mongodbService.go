@@ -634,7 +634,7 @@ func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context
 	}
 
 	for _, record := range settings.ShardingSettings {
-		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+		err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
 			err := service.CreateCollection(ctx, dbName, record.CollectionName)
 			if err != nil && !strings.Contains(err.Error(), "already exists") {
 				return fmt.Errorf("failed to create collection %s: %w", record.CollectionName, err)
@@ -780,14 +780,14 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 			logger.Info(fmt.Sprintf("collection %s.%s sharded with narrower key %v, refining to %v",
 				dbName, settings.CollectionName, currentKey, settings.ShardKeys))
 
-			err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+			err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
 				return service.CreateShardKeyIndex(ctx, dbName, settings)
 			})
 			if err != nil {
 				return err
 			}
 
-			return r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
+			return r.RunWithGrants(ctx, "admin", func(service MongoService) error {
 				if err := service.RefineShardKey(ctx, dbName, settings); err != nil {
 					return fmt.Errorf("failed to refine shard key for %s: %w", settings.CollectionName, err)
 				}
