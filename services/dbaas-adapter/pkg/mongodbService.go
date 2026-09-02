@@ -70,7 +70,7 @@ func (r *MongoServiceImpl) RunWithGrants(ctx context.Context, dbName string, ff 
 }
 
 func (r *MongoServiceImpl) RunWithClusterGrants(ctx context.Context, dbName string, ff func(service MongoService) error) (err error) {
-	result, err := r.GrantRole(ctx, "admin", clusterAdmin)
+	result, err := r.GrantRole(ctx, dbName, clusterAdmin)
 	if err != nil {
 		return err
 	} else if result != nil && result.Err() != nil {
@@ -78,7 +78,7 @@ func (r *MongoServiceImpl) RunWithClusterGrants(ctx context.Context, dbName stri
 	}
 
 	defer func() {
-		result, err = r.RevokeRole(ctx, "admin", clusterAdmin)
+		result, err = r.RevokeRole(ctx, dbName, clusterAdmin)
 		if result != nil && result.Err() != nil {
 			err = result.Err()
 		}
@@ -435,7 +435,7 @@ func (r *MongoServiceImpl) MovePrimary(ctx context.Context, dbName string, targe
 
 func (r *MongoServiceImpl) EnsureDBOnShard(ctx context.Context, dbName string, primaryName string) error {
 
-	err := r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+	err := r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		err := service.MovePrimary(ctx, dbName, primaryName)
 		if err != nil && !strings.Contains(err.Error(), "already enabled") {
 			return fmt.Errorf("failed to move db [%s] on shard [%s] error : ", dbName, primaryName, err)
@@ -622,7 +622,7 @@ func (r *MongoConfigurationImpl) IsTLSEnabled() bool {
 }
 
 func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context, dbName string, settings *mUtils.Settings) error {
-	err := r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+	err := r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		err := service.EnableSharding(ctx, dbName)
 		if err != nil && !strings.Contains(err.Error(), "already enabled") {
 			return fmt.Errorf("failed to enable sharding on db %s: %w", dbName, err)
@@ -787,7 +787,7 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 				return err
 			}
 
-			return r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+			return r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 				if err := service.RefineShardKey(ctx, dbName, settings); err != nil {
 					return fmt.Errorf("failed to refine shard key for %s: %w", settings.CollectionName, err)
 				}
@@ -809,7 +809,7 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 
 	logger.Debug(fmt.Sprintf("sharding collection %s.%s on key %v", dbName, settings.CollectionName, settings.ShardKeys))
 
-	return r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+	return r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		if err := service.ShardCollection(ctx, dbName, settings); err != nil {
 			return fmt.Errorf("failed to shard collection %s: %w", settings.CollectionName, err)
 		}
