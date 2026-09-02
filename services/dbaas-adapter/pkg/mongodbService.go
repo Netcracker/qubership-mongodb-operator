@@ -787,7 +787,7 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 				return err
 			}
 
-			return r.RunWithGrants(ctx, "admin", func(service MongoService) error {
+			return r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 				if err := service.RefineShardKey(ctx, dbName, settings); err != nil {
 					return fmt.Errorf("failed to refine shard key for %s: %w", settings.CollectionName, err)
 				}
