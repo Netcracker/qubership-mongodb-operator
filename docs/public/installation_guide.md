@@ -957,3 +957,126 @@ schemaSettings:
 12. After successful completion of the upgrade job, check the list of databases again (as in step 2). Make sure that all databases were migrated.
 
 13. Check that the remaining shard is operating in normal mode, i.e. has 1 primary and 2 secondary replicas - execute `rs.status()` on any datars1 replica.
+
+
+# Sharding Settings — Payload Guide
+
+Defines how to shard, refine, or check sharding status for MongoDB collections via the `shardingSettings` block. Applies to both database creation and the settings-update endpoint.
+
+## Payload Structure
+
+```json
+{
+  "shardingSettings": [
+    {
+      "collectionName": "myCollection",
+      "shardKey": [
+        { "field": "customerId", "hashed": true },
+        { "field": "createdAt", "hashed": false }
+      ]
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `collectionName` | string | yes | Target collection name |
+| `shardKey` | array | yes | Ordered list of key fields — order matters |
+| `shardKey[].field` | string | yes | Document field name |
+| `shardKey[].hashed` | boolean | no | Defaults to `false` (ranged) if omitted |
+
+Send one object per collection you want to shard or refine; `shardingSettings` is an array.
+
+## Single-Field Shard Key
+
+```json
+{ "collectionName": "orders", "shardKey": [{ "field": "customerId", "hashed": true }] }
+```
+
+## Composite (Compound) Shard Key
+
+```json
+{
+  "collectionName": "orders",
+  "shardKey": [
+    { "field": "customerId", "hashed": true },
+    { "field": "createdAt", "hashed": false }
+  ]
+}
+```
+
+**Rule:** at most **one** field in `shardKey` may have `hashed: true`. All others must be ranged (`hashed: false` or omitted). MongoDB does not support more than one hashed field in a single key.
+
+## What the API Does With Your Settings
+
+| Collection state | Result |
+|---|---|
+| Not sharded, empty | Sharded directly with the given key |
+| Not sharded, has existing data | Sharded, then redistributed across shards (see **8.0 note** below) |
+| Already sharded, same key as requested | No-op — nothing happens |
+| Already sharded, current key is a prefix of requested key | Automatically **refined** to the new key (metadata-only, fast, no data cloning) |
+| Already sharded, requested key is a prefix of current key | Treated as already satisfied — no-op |
+| Already sharded with an unrelated key | Request fails with an error |
+
+## Refining an Existing Sharded Collection
+
+To extend an already-sharded collection's key, send the **original fields first, in the same order**, followed by the new field(s):
+
+```json
+// Currently sharded on:
+[{ "field": "customerId", "hashed": true }]
+
+// To refine, send:
+[
+  { "field": "customerId", "hashed": true },
+  { "field": "createdAt", "hashed": false }
+]
+```
+
+This only works as an extension (existing key must be a strict prefix of the new one). Requesting a key that isn't a prefix match — e.g. swapping `customerId` for a different field entirely — is rejected, not applied.
+
+## MongoDB Version Note — 8.0+ Only
+
+- Sharding new collections and refining existing shard keys: works on **7.0 and 8.0**.
+- **Automatic redistribution** of data across shards immediately after sharding an *existing, populated* collection requires **MongoDB 8.0+**. On 7.0.x, sharding still succeeds, but data stays on its original shard until normal write traffic gradually triggers the balancer — expect a redistribution delay on 7.0 clusters, not a failure.
+
+## Checking Resharding Progress
+
+Redistribution and refinement run asynchronously — the API responds once the operation is accepted, not once it's fully complete. To check status directly, on `mongos`:
+
+```javascript
+db.getSiblingDB("admin").aggregate([
+  { $currentOp: { allUsers: true, localOps: false } },
+  {
+    $match: {
+      type: "op",
+      "originatingCommand.reshardCollection": "dbName.collectionName"
+    }
+  },
+  {
+    $project: {
+      shard: 1,
+      desc: 1,
+      state: { $ifNull: ["$recipientState", "$donorState"] },
+      elapsedSecs: "$totalOperationTimeElapsedSecs",
+      remainingSecsEstimate: "$remainingOperationTimeEstimatedSecs",
+      docsCopied: "$documentsCopied",
+      docsToCopy: "$approxDocumentsToCopy",
+      bytesCopied: "$bytesCopied",
+      bytesToCopy: "$approxBytesToCopy"
+    }
+  }
+])
+```
+
+- **Empty result** → nothing in progress (either finished or never started).
+- **`remainingSecsEstimate`** → estimated time left; documented as a *pessimistic* estimate, not a precise countdown.
+- **Stuck vs. slow** → run the query twice, a few minutes apart. `docsCopied`/`bytesCopied` increasing = healthy. Flat while `elapsedSecs` keeps climbing = stuck.
+
+
+## Quick Notes
+
+- `shardKey` is always an array, even for a single field — there is no separate `strategy` string.
+- Sending the same `shardingSettings` payload again is safe — already-correct collections are skipped, not re-processed.
+- A successful API response confirms the request was **accepted**, not that redistribution has finished — use the progress query above to confirm completion for large collections.
