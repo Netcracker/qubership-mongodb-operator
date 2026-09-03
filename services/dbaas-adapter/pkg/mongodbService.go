@@ -20,9 +20,12 @@ type MongoService interface {
 	RunWithGrants(ctx context.Context, dbName string, ff func(service MongoService) error) error
 	RunWithClusterGrants(ctx context.Context, dbName string, ff func(service MongoService) error) error
 	EnableShardingAndCreateCollection(ctx context.Context, dbName string, settings *mUtils.Settings) error
+	ForceRedistribute(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error
 	EnableSharding(ctx context.Context, dbName string) error
 	EnsureDBOnShard(ctx context.Context, dbName string, primaryShard string) error
 	MovePrimary(ctx context.Context, dbName string, targetShard string) error
+	CreateShardKeyIndex(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error
+	RefineShardKey(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error
 	IsValidShard(ctx context.Context, shardName string) (bool, error)
 	ShardCollection(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error
 	GetConfiguration() MongoConfiguration
@@ -68,7 +71,7 @@ func (r *MongoServiceImpl) RunWithGrants(ctx context.Context, dbName string, ff 
 }
 
 func (r *MongoServiceImpl) RunWithClusterGrants(ctx context.Context, dbName string, ff func(service MongoService) error) (err error) {
-	result, err := r.GrantRole(ctx, "admin", clusterAdmin)
+	result, err := r.GrantRole(ctx, dbName, clusterAdmin)
 	if err != nil {
 		return err
 	} else if result != nil && result.Err() != nil {
@@ -76,7 +79,7 @@ func (r *MongoServiceImpl) RunWithClusterGrants(ctx context.Context, dbName stri
 	}
 
 	defer func() {
-		result, err = r.RevokeRole(ctx, "admin", clusterAdmin)
+		result, err = r.RevokeRole(ctx, dbName, clusterAdmin)
 		if result != nil && result.Err() != nil {
 			err = result.Err()
 		}
@@ -433,7 +436,7 @@ func (r *MongoServiceImpl) MovePrimary(ctx context.Context, dbName string, targe
 
 func (r *MongoServiceImpl) EnsureDBOnShard(ctx context.Context, dbName string, primaryName string) error {
 
-	err := r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+	err := r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		err := service.MovePrimary(ctx, dbName, primaryName)
 		if err != nil && !strings.Contains(err.Error(), "already enabled") {
 			return fmt.Errorf("failed to move db [%s] on shard [%s] error : ", dbName, primaryName, err)
@@ -620,32 +623,35 @@ func (r *MongoConfigurationImpl) IsTLSEnabled() bool {
 }
 
 func (r *MongoServiceImpl) EnableShardingAndCreateCollection(ctx context.Context, dbName string, settings *mUtils.Settings) error {
-	err := r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+	err := r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		err := service.EnableSharding(ctx, dbName)
 		if err != nil && !strings.Contains(err.Error(), "already enabled") {
 			return fmt.Errorf("failed to enable sharding on db %s: %w", dbName, err)
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+
 	for _, record := range settings.ShardingSettings {
-		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
+		err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
 			err := service.CreateCollection(ctx, dbName, record.CollectionName)
 			if err != nil && !strings.Contains(err.Error(), "already exists") {
 				return fmt.Errorf("failed to create collection %s: %w", record.CollectionName, err)
 			}
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 
-		err = r.RunWithClusterGrants(ctx, dbName, func(service MongoService) error {
-			err := service.ShardCollection(ctx, dbName, record)
-			if err != nil && !strings.Contains(err.Error(), "already sharded") {
-				return fmt.Errorf("failed to shard collection %s: %w", record.CollectionName, err)
-			}
-			return nil
-		})
+		if err = r.ShardNonShardedCollection(ctx, dbName, record); err != nil {
+			return err
+		}
 	}
 
-	return err
+	return nil
 }
 
 func (r *MongoServiceImpl) EnableSharding(ctx context.Context, dbName string) error {
@@ -672,21 +678,243 @@ func (r *MongoServiceImpl) ShardCollection(ctx context.Context, dbName string, s
 	if err != nil {
 		return err
 	}
-
-	admin := client.Database("admin")
 	shardCmd := bson.D{
 		{"shardCollection", fmt.Sprintf("%s.%s", dbName, settings.CollectionName)},
-		{"key", bson.D{{settings.ShardKey, func() any {
-			if settings.Strategy == "hashed" {
-				return "hashed"
-			}
-			return 1
-		}()}}},
+		{"key", buildShardKeyDoc(settings.ShardKeys)},
 	}
-
-	if err := admin.RunCommand(ctx, shardCmd).Err(); err != nil && !strings.Contains(err.Error(), "already sharded") {
+	if err := client.Database("admin").RunCommand(ctx, shardCmd).Err(); err != nil {
 		return fmt.Errorf("failed to shard collection %s.%s: %w", dbName, settings.CollectionName, err)
 	}
+	return nil
+}
 
+func (r *MongoServiceImpl) RefineShardKey(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+	ns := fmt.Sprintf("%s.%s", dbName, settings.CollectionName)
+	refineCmd := bson.D{
+		{"refineCollectionShardKey", ns},
+		{"key", buildShardKeyDoc(settings.ShardKeys)},
+	}
+	if err := client.Database("admin").RunCommand(ctx, refineCmd).Err(); err != nil {
+		return fmt.Errorf("failed to refine shard key for %s: %w", ns, err)
+	}
+	return nil
+}
+
+// IsCollectionSharded checks config.collections for the current shard key of a namespace.
+func (r *MongoServiceImpl) IsCollectionSharded(ctx context.Context, dbName, collectionName string) (bool, bson.D, error) {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return false, nil, err
+	}
+
+	ns := fmt.Sprintf("%s.%s", dbName, collectionName)
+	var result struct {
+		Key bson.D `bson:"key"`
+	}
+
+	err = client.Database("config").Collection("collections").
+		FindOne(ctx, bson.D{{"_id", ns}}).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil, nil
+		}
+		return false, nil, fmt.Errorf("failed to check sharding status for %s: %w", ns, err)
+	}
+	return true, result.Key, nil
+}
+
+// shardKeyMatches compares an existing config.collections key to the requested shard settings.
+func shardKeyMatches(currentKey bson.D, settings mUtils.ShardingSettings) (exact bool, needsRefine bool) {
+	requested := settings.ShardKeys
+	switch {
+	case len(currentKey) == len(requested):
+		return isPrefix(requested, currentKey), false
+	case len(currentKey) < len(requested):
+		return false, isPrefix(requested[:len(currentKey)], currentKey)
+	default:
+		return isPrefix(requested, currentKey), false
+	}
+}
+
+// CreateShardKeyIndex creates the index required before sharding on the given key/strategy.
+func (r *MongoServiceImpl) CreateShardKeyIndex(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+	_, err = client.Database(dbName).Collection(settings.CollectionName).Indexes().
+		CreateOne(ctx, mongo.IndexModel{Keys: buildShardKeyDoc(settings.ShardKeys)})
+	if err != nil {
+		return fmt.Errorf("failed to create index on %s.%s for shard key %v: %w", dbName, settings.CollectionName, settings.ShardKeys, err)
+	}
+	return nil
+}
+
+// ShardNonShardedCollection creates the required index and shards the collection, unless it's
+// already sharded with the requested key (no-op) or sharded with a different key (error).
+
+func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	logger := utils.AddLoggerContext(r.logger, ctx)
+
+	if n := hashedFieldCount(settings.ShardKeys); n > 1 {
+		return fmt.Errorf("invalid shard key for %s.%s: only one field may be hashed, got %d", dbName, settings.CollectionName, n)
+	}
+
+	sharded, currentKey, err := r.IsCollectionSharded(ctx, dbName, settings.CollectionName)
+	if err != nil {
+		return err
+	}
+
+	if sharded {
+		exact, needsRefine := shardKeyMatches(currentKey, settings)
+		switch {
+		case exact:
+			logger.Info(fmt.Sprintf("collection %s.%s already sharded with requested key %v, skipping",
+				dbName, settings.CollectionName, settings.ShardKeys))
+			return nil
+
+		case needsRefine:
+			logger.Info(fmt.Sprintf("collection %s.%s sharded with narrower key %v, refining to %v",
+				dbName, settings.CollectionName, currentKey, settings.ShardKeys))
+
+			err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
+				return service.CreateShardKeyIndex(ctx, dbName, settings)
+			})
+			if err != nil {
+				return err
+			}
+
+			return r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
+				if err := service.RefineShardKey(ctx, dbName, settings); err != nil {
+					return fmt.Errorf("failed to refine shard key for %s: %w", settings.CollectionName, err)
+				}
+				return nil
+			})
+
+		default:
+			return fmt.Errorf("collection %s.%s is already sharded with a different key %v",
+				dbName, settings.CollectionName, currentKey)
+		}
+	}
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+	preExistingCount, err := client.Database(dbName).Collection(settings.CollectionName).EstimatedDocumentCount(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to check document count for %s.%s: %w", dbName, settings.CollectionName, err)
+	}
+
+	err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
+		return service.CreateShardKeyIndex(ctx, dbName, settings)
+	})
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(fmt.Sprintf("sharding collection %s.%s on key %v", dbName, settings.CollectionName, settings.ShardKeys))
+
+	err = r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
+		if err := service.ShardCollection(ctx, dbName, settings); err != nil {
+			return fmt.Errorf("failed to shard collection %s: %w", settings.CollectionName, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if preExistingCount > 0 {
+		go func() {
+			bgCtx := context.Background()
+			bgLogger := utils.AddLoggerContext(r.logger, bgCtx)
+			runErr := r.RunWithClusterGrants(bgCtx, "admin", func(service MongoService) error {
+				return service.ForceRedistribute(bgCtx, dbName, settings)
+			})
+			if runErr != nil {
+				bgLogger.Error(fmt.Sprintf("force-redistribute failed for %s.%s, data will balance via normal balancer instead: %v",
+					dbName, settings.CollectionName, runErr))
+			} else {
+				bgLogger.Info(fmt.Sprintf("%s.%s redistributed across shards", dbName, settings.CollectionName))
+			}
+		}()
+		logger.Info(fmt.Sprintf("force-redistribute started in background for %s.%s", dbName, settings.CollectionName))
+	}
+
+	return nil
+
+}
+
+func buildShardKeyDoc(fields []mUtils.ShardKeyField) bson.D {
+	keys := bson.D{}
+	for _, f := range fields {
+		var v interface{} = 1
+		if f.Hashed {
+			v = "hashed"
+		}
+		keys = append(keys, bson.E{Key: f.Field, Value: v})
+	}
+	return keys
+}
+
+func hashedFieldCount(fields []mUtils.ShardKeyField) int {
+	n := 0
+	for _, f := range fields {
+		if f.Hashed {
+			n++
+		}
+	}
+	return n
+}
+
+func keyFieldEqual(a bson.E, b mUtils.ShardKeyField) bool {
+	if a.Key != b.Field {
+		return false
+	}
+	if b.Hashed {
+		v, ok := a.Value.(string)
+		return ok && v == "hashed"
+	}
+	switch v := a.Value.(type) {
+	case int32:
+		return v == 1
+	case int64:
+		return v == 1
+	case float64:
+		return v == 1
+	}
+	return false
+}
+
+func isPrefix(shorter []mUtils.ShardKeyField, longer bson.D) bool {
+	if len(shorter) > len(longer) {
+		return false
+	}
+	for i, f := range shorter {
+		if !keyFieldEqual(longer[i], f) {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *MongoServiceImpl) ForceRedistribute(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+	ns := fmt.Sprintf("%s.%s", dbName, settings.CollectionName)
+	cmd := bson.D{
+		{"reshardCollection", ns},
+		{"key", buildShardKeyDoc(settings.ShardKeys)},
+		{"forceRedistribution", true},
+	}
+	if err := client.Database("admin").RunCommand(ctx, cmd).Err(); err != nil {
+		return fmt.Errorf("failed to force-redistribute %s: %w", ns, err)
+	}
 	return nil
 }

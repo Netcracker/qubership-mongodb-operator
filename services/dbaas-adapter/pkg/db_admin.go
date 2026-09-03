@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/utils"
 	mUtils "github.com/Netcracker/qubership-dbaas-mongo/utils"
 	"github.com/docker/distribution/uuid"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 )
@@ -98,6 +98,40 @@ func (c *MongoDbAdministration) getConnectionProperties(dbName string, username 
 
 }
 
+func (c *MongoDbAdministration) UpdateMongodbSettingsHandler(ctx *fiber.Ctx) error {
+	logger := utils.AddLoggerContext(c.logger, context.Background())
+	dbName := ctx.Params("dbName")
+
+	if !mUtils.ValidateDbIdentifierParam(context.Background(), "dbName", dbName, dbNameRegexp.String()) {
+		return mUtils.SendInvalidParameterResponse(ctx, "dbName", dbName, dbNameRegexp.String())
+	}
+
+	var updateSettingsRequest mUtils.MongodbUpdateSettingsRequest
+	if err := ctx.BodyParser(&updateSettingsRequest); err != nil {
+		logger.Error("Failed to parse request in update settings handler", zap.Error(err))
+		return ctx.Status(500).SendString(err.Error())
+	}
+
+	shardSettings, parseErr := c.parseShardingSettings(updateSettingsRequest.NewSettings)
+	if parseErr != nil {
+		logger.Error("Invalid shardingSettings in update settings request", zap.Error(parseErr))
+		return ctx.Status(400).SendString(parseErr.Error())
+	}
+
+	if len(shardSettings.ShardingSettings) == 0 {
+		logger.Info("No shardingSettings provided in update request, nothing to do")
+		return ctx.SendStatus(fiber.StatusOK)
+	}
+
+	if err := c.mongodService.EnableShardingAndCreateCollection(ctx.Context(), dbName, shardSettings); err != nil {
+		logger.Error("Failed to update sharding settings", zap.Error(err))
+		return ctx.Status(500).SendString(err.Error())
+	}
+
+	logger.Info("Sharding settings updated successfully")
+	return ctx.SendStatus(fiber.StatusOK)
+}
+
 func (c *MongoDbAdministration) validateRequestParamsAndGetLogicalDbName(ctx context.Context, requestOnCreateDb dao.DbCreateRequest) (string, *mUtils.Settings, bool, bool, error) {
 	var dbName string
 	var moveShard, shardCollection bool
@@ -158,49 +192,13 @@ func (c *MongoDbAdministration) validateRequestParamsAndGetLogicalDbName(ctx con
 		moveShard = true
 	}
 
-	if rawShardSettings, ok := requestOnCreateDb.Settings["shardingSettings"]; ok {
-		shardSettingsSlice, ok := rawShardSettings.([]interface{})
-		if !ok {
-			return "", s, moveShard, shardCollection, &utils.ExecutionError{
-				Msg: "shardingSettings must be a list of objects",
-			}
-		}
-
-		for _, item := range shardSettingsSlice {
-			var record mUtils.ShardingSettings
-			collectionSetting, ok := item.(map[string]interface{})
-			if !ok {
-				return "", s, moveShard, shardCollection, &utils.ExecutionError{
-					Msg: "each entry in shardingSettings must be an object",
-				}
-			}
-
-			if v, ok := collectionSetting["collectionName"].(string); ok && v != "" {
-				record.CollectionName = v
-			} else {
-				return "", s, moveShard, shardCollection, &utils.ExecutionError{Msg: "collectionName is required and must be a non-empty string"}
-			}
-
-			if v, ok := collectionSetting["shardKey"].(string); ok && v != "" {
-				record.ShardKey = v
-			} else {
-				return "", s, moveShard, shardCollection, &utils.ExecutionError{Msg: fmt.Sprintf("shardKey is required and must be a non-empty string for collection %s", record.CollectionName)}
-			}
-
-			if v, ok := collectionSetting["strategy"].(string); ok {
-				record.Strategy = strings.ToLower(v)
-				if record.Strategy != "hashed" && record.Strategy != "ranged" {
-					return "", s, moveShard, shardCollection, &utils.ExecutionError{Msg: fmt.Sprintf("strategy must be 'Hashed' or 'Ranged' for collection %s", record.CollectionName)}
-				}
-			} else {
-				return "", s, moveShard, shardCollection, &utils.ExecutionError{Msg: fmt.Sprintf("strategy is required and must be a string for collection %s", record.CollectionName)}
-			}
-			s.ShardingSettings = append(s.ShardingSettings, record)
-		}
-
-		s.Extra = settings
-		shardCollection = true
+	parsedShardSettings, parseErr := c.parseShardingSettings(settings)
+	if parseErr != nil {
+		return "", s, moveShard, shardCollection, parseErr
 	}
+	s.ShardingSettings = parsedShardSettings.ShardingSettings
+	s.Extra = parsedShardSettings.Extra
+	shardCollection = len(s.ShardingSettings) > 0
 
 	return dbName, s, moveShard, shardCollection, nil
 }
@@ -611,4 +609,62 @@ func Contains(slice []string, element string) bool {
 		}
 	}
 	return false
+}
+
+func (c *MongoDbAdministration) parseShardingSettings(settings map[string]interface{}) (*mUtils.Settings, error) {
+	s := &mUtils.Settings{}
+
+	rawShardSettings, ok := settings["shardingSettings"]
+	if !ok {
+		return s, nil
+	}
+
+	shardSettingsSlice, ok := rawShardSettings.([]interface{})
+	if !ok {
+		return nil, &utils.ExecutionError{Msg: "shardingSettings must be a list of objects"}
+	}
+
+	for _, item := range shardSettingsSlice {
+		var record mUtils.ShardingSettings
+		collectionSetting, ok := item.(map[string]interface{})
+		if !ok {
+			return nil, &utils.ExecutionError{Msg: "each entry in shardingSettings must be an object"}
+		}
+
+		if v, ok := collectionSetting["collectionName"].(string); ok && v != "" {
+			record.CollectionName = v
+		} else {
+			return nil, &utils.ExecutionError{Msg: "collectionName is required and must be a non-empty string"}
+		}
+
+		rawKeys, ok := collectionSetting["shardKey"].([]interface{})
+		if !ok || len(rawKeys) == 0 {
+			return nil, &utils.ExecutionError{Msg: fmt.Sprintf("shardKey must be a non-empty array for collection %s", record.CollectionName)}
+		}
+
+		hashedCount := 0
+		for _, keyItem := range rawKeys {
+			fieldMap, ok := keyItem.(map[string]interface{})
+			if !ok {
+				return nil, &utils.ExecutionError{Msg: fmt.Sprintf("each shardKey entry must be an object for collection %s", record.CollectionName)}
+			}
+			fieldName, ok := fieldMap["field"].(string)
+			if !ok || fieldName == "" {
+				return nil, &utils.ExecutionError{Msg: fmt.Sprintf("shardKey.field is required for collection %s", record.CollectionName)}
+			}
+			hashed, _ := fieldMap["hashed"].(bool)
+			if hashed {
+				hashedCount++
+			}
+			record.ShardKeys = append(record.ShardKeys, mUtils.ShardKeyField{Field: fieldName, Hashed: hashed})
+		}
+		if hashedCount > 1 {
+			return nil, &utils.ExecutionError{Msg: fmt.Sprintf("only one field may be hashed in a compound shard key for collection %s", record.CollectionName)}
+		}
+
+		s.ShardingSettings = append(s.ShardingSettings, record)
+	}
+
+	s.Extra = settings
+	return s, nil
 }
