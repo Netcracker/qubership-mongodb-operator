@@ -829,15 +829,20 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 	}
 
 	if preExistingCount > 0 {
-		err = r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
-			return service.ForceRedistribute(ctx, dbName, settings)
-		})
-		if err != nil {
-			logger.Error(fmt.Sprintf("force-redistribute failed for %s.%s, data will balance via normal balancer instead: %v",
-				dbName, settings.CollectionName, err))
-			return nil
-		}
-		logger.Info(fmt.Sprintf("%s.%s redistributed across shards immediately after sharding", dbName, settings.CollectionName))
+		go func() {
+			bgCtx := context.Background()
+			bgLogger := utils.AddLoggerContext(r.logger, bgCtx)
+			runErr := r.RunWithClusterGrants(bgCtx, "admin", func(service MongoService) error {
+				return service.ForceRedistribute(bgCtx, dbName, settings)
+			})
+			if runErr != nil {
+				bgLogger.Error(fmt.Sprintf("force-redistribute failed for %s.%s, data will balance via normal balancer instead: %v",
+					dbName, settings.CollectionName, runErr))
+			} else {
+				bgLogger.Info(fmt.Sprintf("%s.%s redistributed across shards", dbName, settings.CollectionName))
+			}
+		}()
+		logger.Info(fmt.Sprintf("force-redistribute started in background for %s.%s", dbName, settings.CollectionName))
 	}
 
 	return nil
