@@ -20,6 +20,7 @@ type MongoService interface {
 	RunWithGrants(ctx context.Context, dbName string, ff func(service MongoService) error) error
 	RunWithClusterGrants(ctx context.Context, dbName string, ff func(service MongoService) error) error
 	EnableShardingAndCreateCollection(ctx context.Context, dbName string, settings *mUtils.Settings) error
+	ForceRedistribute(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error
 	EnableSharding(ctx context.Context, dbName string) error
 	EnsureDBOnShard(ctx context.Context, dbName string, primaryShard string) error
 	MovePrimary(ctx context.Context, dbName string, targetShard string) error
@@ -799,6 +800,14 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 				dbName, settings.CollectionName, currentKey)
 		}
 	}
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+	preExistingCount, err := client.Database(dbName).Collection(settings.CollectionName).EstimatedDocumentCount(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to check document count for %s.%s: %w", dbName, settings.CollectionName, err)
+	}
 
 	err = r.RunWithGrants(ctx, dbName, func(service MongoService) error {
 		return service.CreateShardKeyIndex(ctx, dbName, settings)
@@ -809,12 +818,30 @@ func (r *MongoServiceImpl) ShardNonShardedCollection(ctx context.Context, dbName
 
 	logger.Debug(fmt.Sprintf("sharding collection %s.%s on key %v", dbName, settings.CollectionName, settings.ShardKeys))
 
-	return r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
+	err = r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
 		if err := service.ShardCollection(ctx, dbName, settings); err != nil {
 			return fmt.Errorf("failed to shard collection %s: %w", settings.CollectionName, err)
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+
+	if preExistingCount > 0 {
+		err = r.RunWithClusterGrants(ctx, "admin", func(service MongoService) error {
+			return service.ForceRedistribute(ctx, dbName, settings)
+		})
+		if err != nil {
+			logger.Error(fmt.Sprintf("force-redistribute failed for %s.%s, data will balance via normal balancer instead: %v",
+				dbName, settings.CollectionName, err))
+			return nil
+		}
+		logger.Info(fmt.Sprintf("%s.%s redistributed across shards immediately after sharding", dbName, settings.CollectionName))
+	}
+
+	return nil
+
 }
 
 func buildShardKeyDoc(fields []mUtils.ShardKeyField) bson.D {
@@ -868,4 +895,21 @@ func isPrefix(shorter []mUtils.ShardKeyField, longer bson.D) bool {
 		}
 	}
 	return true
+}
+
+func (r *MongoServiceImpl) ForceRedistribute(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	client, err := GetMongoClient(r.configuration)
+	if err != nil {
+		return err
+	}
+	ns := fmt.Sprintf("%s.%s", dbName, settings.CollectionName)
+	cmd := bson.D{
+		{"reshardCollection", ns},
+		{"key", buildShardKeyDoc(settings.ShardKeys)},
+		{"forceRedistribution", true},
+	}
+	if err := client.Database("admin").RunCommand(ctx, cmd).Err(); err != nil {
+		return fmt.Errorf("failed to force-redistribute %s: %w", ns, err)
+	}
+	return nil
 }

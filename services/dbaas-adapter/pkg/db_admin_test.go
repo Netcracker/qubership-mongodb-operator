@@ -188,6 +188,10 @@ func (m *MongoServiceTest) EnableShardingAndCreateCollection(
 	return nil // Always success for tests
 }
 
+func (m *MongoServiceTest) ForceRedistribute(ctx context.Context, dbName string, settings mUtils.ShardingSettings) error {
+	return nil
+}
+
 func (m *MongoServiceTest) CreateCollection(ctx context.Context, dbName string, collection string) error {
 	return nil // Always success for tests
 }
