@@ -47,11 +47,11 @@ jobs:
 
   MongoDB-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@c746a14becee7244ed06c4c3f554ba15f02b48ca # atp-integration — TODO: revert after merge
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@6219b21460f77c6dde9bff517eed7196122ba6fe # atp-integration — TODO: revert after merge
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'c746a14becee7244ed06c4c3f554ba15f02b48ca' # atp-integration — must match uses@ above
+      pipeline_branch: '6219b21460f77c6dde9bff517eed7196122ba6fe' # atp-integration — must match uses@ above
       skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
       scope: nightly  # TODO: revert to pr after adapter-S3 verification
       allure: true
