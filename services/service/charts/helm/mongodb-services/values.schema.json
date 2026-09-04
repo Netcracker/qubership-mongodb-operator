@@ -209,10 +209,20 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "runAsNonRoot": { "type": "boolean" },
         "fsGroup": { "type": "integer" },
         "runAsUser": { "type": "integer" },
         "supplementalGroups": { "type": "string" },
-        "seLinuxOptions": { "type": "object", "additionalProperties": true }
+        "seLinuxOptions": { "type": "object", "additionalProperties": true },
+        "seccompProfile": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "policies": {
