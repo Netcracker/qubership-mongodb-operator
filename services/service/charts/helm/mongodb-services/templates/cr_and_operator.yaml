@@ -306,6 +306,19 @@ spec:
       requests:
         cpu: {{ .Values.robotTests.resources.requests.cpu | quote }}
         memory: {{ .Values.robotTests.resources.requests.memory  }}
+    atpReport:
+      enabled: {{ .Values.robotTests.atpReport.enabled }}
+      atpStorage:
+        provider: {{ .Values.robotTests.atpReport.atpStorage.provider | quote }}
+        serverUrl: {{ .Values.robotTests.atpReport.atpStorage.serverUrl | quote }}
+        serverUiUrl: {{ .Values.robotTests.atpReport.atpStorage.serverUiUrl | quote }}
+        bucket: {{ .Values.robotTests.atpReport.atpStorage.bucket | quote }}
+        region: {{ .Values.robotTests.atpReport.atpStorage.region | quote }}
+        username: {{ .Values.robotTests.atpReport.atpStorage.username | quote }}
+        password: {{ .Values.robotTests.atpReport.atpStorage.password | quote }}
+    atpReportViewUiUrl: {{ .Values.robotTests.atpReportViewUiUrl | quote }}
+    environmentName: {{ .Values.robotTests.environmentName | quote }}
+    enableJiraIntegration: {{ .Values.robotTests.enableJiraIntegration }}
   tls:
     {{- if ne (.Values.tls.mode) "disabled"}}
     enabled: true

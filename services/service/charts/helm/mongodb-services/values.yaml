@@ -365,6 +365,19 @@ robotTests:
     limits:
       cpu: 200m
       memory: 256Mi
+  atpReport:
+    enabled: false
+    atpStorage:
+      provider: aws
+      serverUrl: https://s3.amazonaws.com
+      serverUiUrl: ""
+      bucket: qstp-results
+      region: us-east-1
+      username: ""
+      password: ""
+  atpReportViewUiUrl: "https://test.com"
+  environmentName: mongodb
+  enableJiraIntegration: false
 # affinity:
 
 role:
