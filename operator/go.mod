@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.16
-	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.12-0.20260906034839-d5e7822692a6
+	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.12-0.20260906034839-c446a1f79ee5
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gofiber/swagger v1.1.0
 	github.com/swaggo/swag v1.16.3
@@ -112,3 +112,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/Netcracker/qubership-nosqldb-operator-core => /mnt/c/mnt/github.com/qubership-nosqldb-operator-core
