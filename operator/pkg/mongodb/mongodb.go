@@ -173,6 +173,35 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		Storage:           spec.Spec.MongoDB.Storage,
 		ContextVarToStore: utils.PVNodes,
 	})
+	mongo.AddStep(&steps.WaitPVCResizeStep{
+		GetStatefulSetConfigs: func(ctx core.ExecutionContext) []steps.StatefulSetConfig {
+			var configs []steps.StatefulSetConfig
+			if singleSchema {
+				return configs
+			}
+			req := ctx.Get(constants.ContextRequest).(reconcile.Request)
+			if spec.Spec.SchemaSettings.Sharded {
+				for i := 0; i < spec.Spec.SchemaSettings.CnfReplicaSize; i++ {
+					configs = append(configs, steps.StatefulSetConfig{
+						Name:      fmt.Sprintf(utils.CnfNameWithIndexFormat, i),
+						Namespace: req.Namespace,
+						Replicas:  1,
+					})
+				}
+			}
+			for s := 0; s < spec.Spec.SchemaSettings.ShardCount; s++ {
+				for i := 0; i < spec.Spec.SchemaSettings.DataReplicaSize; i++ {
+					configs = append(configs, steps.StatefulSetConfig{
+						Name:      fmt.Sprintf(utils.DataNameWithIndexesFormat, s+1, i),
+						Namespace: req.Namespace,
+						Replicas:  1,
+					})
+				}
+			}
+			return configs
+		},
+		WaitTimeout: spec.Spec.WaitSeconds,
+	})
 
 	cleanupCompound := DeleteStatefulsetsCompound{}
 	cleanupCompound.AddStep(&dr.DeleteDataStatefulsetsStep{})
