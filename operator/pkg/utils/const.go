@@ -268,6 +268,13 @@ const shardTemplate = "" +
 	"adminDB.system.version.updateOne({'_id' : 'shardIdentity', 'shardName' : '%s'}, { \\$set: {configsvrConnectionString: 'cnfrs/%s'}}, {writeConcern: { w:1, j:true }});" +
 	"adminDB.system.version.remove({'_id': 'minOpTimeRecovery'}, {writeConcern: { w:1, j:true }})"
 
+// configsvrConnectionStringUpdateTemplate updates configsvrConnectionString without dropping the local DB.
+// Safe to run on a live shard; used when the domain changes but a full DR transition is not needed (e.g. enabling TLS on an existing DR cluster).
+const configsvrConnectionStringUpdateTemplate = "" +
+	"db.getSiblingDB('admin').system.version.updateOne({'_id':'shardIdentity','shardName':'%s'},{\\$set:{configsvrConnectionString:'cnfrs/%s'}},{writeConcern:{w:1,j:true}})"
+
+const checkConfigsvrConnStrCmd = "db.getSiblingDB('admin').system.version.findOne({_id:'shardIdentity'},{configsvrConnectionString:1}).configsvrConnectionString"
+
 const versionCmd = "db.version()"
 
 // http

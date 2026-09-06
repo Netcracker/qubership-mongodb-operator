@@ -38,6 +38,7 @@ type MongoHelper interface {
 	AddShards(domain string, dataReplicaSize, dataShards int) (err error)
 	UpdateShardsInConfigDB(domain string, dataReplicaSize, dataShards int) (err error)
 	UpdateConfigRSInDATARS(domain, drDomain string, cnfrReplicaSize, datarsSize, shardCount int) error
+	UpdateConfigRSConnectionString(domain, drDomain string, cnfrReplicaSize, shardCount int) error
 	GetClusterStatus(mode string, domain string, cnfReplicaSize int, dataReplicaSize int, shardCount int, sharded bool) (string, error)
 	SetMongoCMD(cmd string)
 	RestartMongos() error
@@ -793,11 +794,33 @@ func (r *MongoUtilsHelperImpl) UpdateConfigRSInDATARS(domain, drDomain string, c
 	configRS := GetDRCNFReplicaSetHostNames(cnfrReplicaSize, domain, drDomain, r.Namespace)
 	for s := 0; s < shardCount; s++ {
 		dKey := fmt.Sprintf(DataNameKey, s+1)
+		// If configsvrConnectionString already references the target domain the local DB drop is not needed.
+		// This prevents repeated re-syncs when the step runs on incremental spec updates (e.g. enabling TLS)
+		// after a DR transition has already completed.
+		currentConnStr, err := r.RunOnPrimary(map[string]string{Microservice: dKey}, checkConfigsvrConnStrCmd)
+		if err == nil && strings.Contains(currentConnStr, domain) {
+			r.Logger.Debug(fmt.Sprintf("configsvrConnectionString for %s already contains domain %s, skipping local drop", dKey, domain))
+			continue
+		}
 		shardJs := fmt.Sprintf(shardTemplate, dKey, strings.Join(configRS, ","))
 		res, updateErr := r.RunOnPrimary(map[string]string{Microservice: dKey}, shardJs)
 		r.Logger.Debug(fmt.Sprintf("Update shard with command %s return with %s", shardJs, res))
 		if updateErr != nil {
 			return updateErr
+		}
+	}
+	return nil
+}
+
+func (r *MongoUtilsHelperImpl) UpdateConfigRSConnectionString(domain, drDomain string, cnfrReplicaSize, shardCount int) error {
+	configRS := GetDRCNFReplicaSetHostNames(cnfrReplicaSize, domain, drDomain, r.Namespace)
+	for s := 0; s < shardCount; s++ {
+		dKey := fmt.Sprintf(DataNameKey, s+1)
+		js := fmt.Sprintf(configsvrConnectionStringUpdateTemplate, dKey, strings.Join(configRS, ","))
+		res, err := r.RunOnPrimary(map[string]string{Microservice: dKey}, js)
+		r.Logger.Debug(fmt.Sprintf("UpdateConfigRSConnectionString for %s returned: %s", dKey, res))
+		if err != nil {
+			return err
 		}
 	}
 	return nil

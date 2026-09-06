@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
+	"github.com/Netcracker/qubership-mongodb-operator/pkg/dr"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/core"
@@ -339,6 +340,9 @@ type DataStepBuilder struct {
 func (r *DataStepBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	step := &core.DefaultCompound{}
 
+	// Must run before CreateDataStep deletes pods so configsvrConnectionString is updated
+	// while datars is still alive — handles TLS enable on an existing DR active cluster.
+	step.AddStep(&dr.UpdateConfigsvrConnectionStringStep{})
 	step.AddStep(&CreateDataStep{})
 	step.AddStep(&InitDataStep{}) //DR
 	step.AddStep(&UpdateDataOplogStep{})
