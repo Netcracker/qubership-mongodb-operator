@@ -88,6 +88,26 @@ func (r *BackupBuilder) Build(ctx core.ExecutionContext) core.Executable {
 			Storage:           storage,
 			ContextVarToStore: utils.BackupPVNodes,
 		})
+		backupDeploymentConfig := func(ctx core.ExecutionContext) []steps.StatefulSetConfig {
+			return []steps.StatefulSetConfig{
+				{
+					Name:      utils.BackupDaemon,
+					Namespace: request.Namespace,
+					Replicas:  1,
+					Kind:      steps.WorkloadKindDeployment,
+				},
+			}
+		}
+		backup.AddStep(&steps.WaitPVCResizeStep{
+			GetStatefulSetConfigs: backupDeploymentConfig,
+			WaitTimeout:           spec.Spec.WaitSeconds,
+		})
+		backup.AddStep(&steps.MigratePVCStep{
+			GetStatefulSetConfigs: backupDeploymentConfig,
+			MigrationImage:        spec.Spec.Backup.DockerImage,
+			WaitTimeout:           spec.Spec.WaitSeconds,
+			PodSecurityContext:    spec.Spec.PodSecurityContext,
+		})
 	}
 
 	backup.AddStep(&BackupService{})
