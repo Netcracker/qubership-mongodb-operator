@@ -244,6 +244,14 @@ roleBinding:
   # Specifies whether a roleBinding should be created
   create: yes
 
+clusterRole:
+  # Specifies whether a ClusterRole should be created (needed for StorageClass read access)
+  create: yes
+
+clusterRoleBinding:
+  # Specifies whether a ClusterRoleBinding should be created for the ClusterRole
+  create: yes
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
