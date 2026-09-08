@@ -236,6 +236,11 @@ tls:
   #   tls_crt: 
   #   ca_crt: 
 
+prometheusExporter:
+  monitoringUser: monitoring
+  monitoringPassword: monitoring
+  monitoringUserRole: '[{"role":"clusterMonitor","db":"admin"},{"role":"read","db":"local"}]'
+
 role:
   # Specifies whether a role should be created
   create: yes

@@ -11,13 +11,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-const (
-	defaultMonitoringUser = "monitoring"
-	defaultMonitoringPass = "monitoring"
-	// Roles required by mongodb-exporter
-	monitoringRoles = `{role: 'clusterMonitor', db: 'admin'}, {role: 'read', db: 'local'}`
-)
-
 type AddMonitoringUserStep struct {
 	core.DefaultExecutable
 }
@@ -31,19 +24,17 @@ func (r *AddMonitoringUserStep) Execute(ctx core.ExecutionContext) error {
 	schema := spec.Spec.SchemaSettings.SchemaType
 	sharded := spec.Spec.SchemaSettings.Sharded
 
-	user := defaultMonitoringUser
-	pass := defaultMonitoringPass
-
 	creds, err := utils.ReadSecret(ctx, utils.MonitoringSecretName, request.Namespace)
-	if err != nil {
-		log.Info(fmt.Sprintf("Secret %s not found, using default monitoring credentials: %v", utils.MonitoringSecretName, err))
-	} else if creds != nil {
-		if u, ok := creds.Data[utils.Username]; ok && len(u) > 0 {
-			user = string(u)
-		}
-		if p, ok := creds.Data[utils.Password]; ok && len(p) > 0 {
-			pass = string(p)
-		}
+	if err != nil || creds == nil {
+		return fmt.Errorf("secret %s not found, monitoring user bootstrap failed: %w", utils.MonitoringSecretName, err)
+	}
+
+	user := string(creds.Data[utils.Username])
+	pass := string(creds.Data[utils.Password])
+	role := string(creds.Data[utils.Role])
+
+	if user == "" || pass == "" {
+		return fmt.Errorf("secret %s missing username or password", utils.MonitoringSecretName)
 	}
 
 	log.Info(fmt.Sprintf("Monitoring user %q bootstrap started", user))
@@ -52,7 +43,7 @@ func (r *AddMonitoringUserStep) Execute(ctx core.ExecutionContext) error {
 		spec.Spec.AuthDb,
 		user,
 		pass,
-		monitoringRoles,
+		role,
 		false,
 		sharded,
 		schema != v1alpha1.Single,
