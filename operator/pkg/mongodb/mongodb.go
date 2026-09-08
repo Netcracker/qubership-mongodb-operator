@@ -243,6 +243,8 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	mongo.AddStep(&UpdateContextAuthMongo{User: username, Password: password})
 	// mongo.AddStep(&UpdateMongoDBCredentials{})
 
+	mongo.AddStep(&AddMonitoringUserStep{})
+
 	mongo.AddStep(&SetdefaultWriteConcernStep{})
 	mongo.AddStep(&SetFeatureCompatibilityVersionStep{})
 
