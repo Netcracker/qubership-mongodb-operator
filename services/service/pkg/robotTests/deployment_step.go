@@ -15,6 +15,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+const (
+	robotTestsAtpStorageSecretName = "mongodb-robot-tests-atp-storage-secret"
+	robotTestsPodSecretsMountPath  = "/etc/secrets/robot-tests-pod-secrets"
+)
+
 type RobotDeployment struct {
 	core.DefaultExecutable
 }
@@ -24,6 +29,7 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbSupplService)
 	robot := spec.Spec.RobotTests
 	helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
+	credsManager := ctx.Get(utils.ContextCredsManager).(utils.CredsManagerI)
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 	mongoHost := ctx.Get(utils.ContextMongoHost).(string)
 
@@ -110,6 +116,10 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 		})
 	}
 
+	if robot.AtpReport.Enabled {
+		volumes, volumeMounts, envs = appendAtpReportPodConfig(robot, volumes, volumeMounts, envs)
+	}
+
 	// Environment variable  End
 
 	var tolerations []v12.Toleration
@@ -133,7 +143,20 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 		volumeMounts,
 		volumes)
 
-	err := helperImpl.DeleteDeploymentAndPods(dc.Name, dc.Namespace, spec.Spec.WaitSeconds)
+	secretNames := []string{spec.Spec.MongoDB.MongoRootSecretName}
+	if robot.AtpReport.Enabled {
+		secretNames = append(secretNames, robotTestsAtpStorageSecretName)
+	}
+	err := credsManager.AddCredHashToPodTemplate(
+		secretNames,
+		&dc.Spec.Template,
+	)
+	if err != nil {
+		log.Error(fmt.Sprintf("can't add secret HASH to annotations for %s", dc.Name), zap.Error(err))
+		return err
+	}
+
+	err = helperImpl.DeleteDeploymentAndPods(dc.Name, dc.Namespace, spec.Spec.WaitSeconds)
 	core.PanicError(err, log.Error, "RobotTests deployment config processing failed")
 
 	err = utils.CreateRuntimeObjectContextWrapper(ctx, dc, dc.ObjectMeta)
@@ -147,6 +170,56 @@ func (r *RobotDeployment) Execute(ctx core.ExecutionContext) error {
 	core.PanicError(err, log.Error, "RobotTests failed")
 
 	return nil
+}
+
+func appendAtpReportPodConfig(
+	robot v1alpha1.RobotTests,
+	volumes []v12.Volume,
+	volumeMounts []v12.VolumeMount,
+	envs []v12.EnvVar,
+) ([]v12.Volume, []v12.VolumeMount, []v12.EnvVar) {
+	atpSecretMode := int32(420)
+	volumes = append(volumes, v12.Volume{
+		Name: "robot-tests-pod-secrets",
+		VolumeSource: v12.VolumeSource{
+			Projected: &v12.ProjectedVolumeSource{
+				DefaultMode: &atpSecretMode,
+				Sources: []v12.VolumeProjection{
+					{
+						Secret: &v12.SecretProjection{
+							LocalObjectReference: v12.LocalObjectReference{
+								Name: robotTestsAtpStorageSecretName,
+							},
+							Items: []v12.KeyToPath{
+								{Key: "atp-storage-username", Path: "ATP_STORAGE_USERNAME"},
+								{Key: "atp-storage-password", Path: "ATP_STORAGE_PASSWORD"},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	volumeMounts = append(volumeMounts, v12.VolumeMount{
+		Name:      "robot-tests-pod-secrets",
+		MountPath: robotTestsPodSecretsMountPath,
+		ReadOnly:  true,
+	})
+
+	envs = append(envs,
+		cUtils.GetPlainTextEnvVar("INTEGRATION_TESTS_SECRETS_DIR", robotTestsPodSecretsMountPath),
+		cUtils.GetPlainTextEnvVar("ATP_REPORT_ENABLED", "true"),
+		cUtils.GetPlainTextEnvVar("ATP_STORAGE_PROVIDER", robot.AtpReport.AtpStorage.Provider),
+		cUtils.GetPlainTextEnvVar("ATP_STORAGE_SERVER_URL", robot.AtpReport.AtpStorage.ServerUrl),
+		cUtils.GetPlainTextEnvVar("ATP_STORAGE_SERVER_UI_URL", robot.AtpReport.AtpStorage.ServerUiUrl),
+		cUtils.GetPlainTextEnvVar("ATP_STORAGE_BUCKET", robot.AtpReport.AtpStorage.Bucket),
+		cUtils.GetPlainTextEnvVar("ATP_STORAGE_REGION", robot.AtpReport.AtpStorage.Region),
+		cUtils.GetPlainTextEnvVar("ATP_REPORT_VIEW_UI_URL", robot.AtpReportViewUiUrl),
+		cUtils.GetPlainTextEnvVar("ENVIRONMENT_NAME", robot.EnvironmentName),
+		cUtils.GetPlainTextEnvVar("ENABLE_JIRA_INTEGRATION", strconv.FormatBool(robot.EnableJiraIntegration)),
+	)
+
+	return volumes, volumeMounts, envs
 }
 
 func sanitizeVolumeName(name string) string {
