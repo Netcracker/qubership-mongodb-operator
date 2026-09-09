@@ -169,6 +169,9 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		pvcStep.Owner = spec
 	}
 	mongo.AddStep(pvcStep)
+	mongo.AddStep(&WaitAndHandlePVCExpansionStep{
+		WaitTimeout: spec.Spec.WaitSeconds,
+	})
 	mongo.AddStep(&steps.StoreNodesStep{
 		Storage:           spec.Spec.MongoDB.Storage,
 		ContextVarToStore: utils.PVNodes,
