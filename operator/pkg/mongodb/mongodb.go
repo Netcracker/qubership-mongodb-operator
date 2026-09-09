@@ -171,9 +171,8 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	mongo.AddStep(pvcStep)
 	mongoWaitSeconds := spec.Spec.WaitSeconds
 	mongo.AddStep(&steps.WaitForPVCExpansionStep{
-		WaitTimeout:  mongoWaitSeconds,
-		PVCNamesVar:  utils.PvcNames,
-		StorageSizes: spec.Spec.MongoDB.Storage.Size,
+		WaitTimeout: mongoWaitSeconds,
+		PVCNamesVar: utils.PvcNames,
 		OnNeedsRestart: func(ctx core.ExecutionContext) error {
 			helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
 			req := ctx.Get(constants.ContextRequest).(reconcile.Request)
