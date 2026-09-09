@@ -3,6 +3,7 @@ package mongodb
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/dr"
@@ -12,6 +13,7 @@ import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/steps"
 	"go.uber.org/zap"
 	v12 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -175,17 +177,109 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		PVCNamesVar: utils.PvcNames,
 		OnNeedsRestart: func(ctx core.ExecutionContext) error {
 			helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
+			mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
 			req := ctx.Get(constants.ContextRequest).(reconcile.Request)
 			log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-			pods, err := helperImpl.ListPods(req.Namespace, map[string]string{utils.Microservice: utils.MongoCluster})
-			if err != nil {
-				return fmt.Errorf("listing MongoDB pods for restart: %w", err)
-			}
-			for i := range pods.Items {
-				pod := &pods.Items[i]
-				log.Info(fmt.Sprintf("Restarting pod %s for filesystem resize completion", pod.Name))
-				if err := helperImpl.RestartPod(pod, req.Namespace, mongoWaitSeconds); err != nil {
-					return fmt.Errorf("failed to restart pod %s: %w", pod.Name, err)
+			pvcNames, _ := ctx.Get(utils.PvcNames).([]string)
+
+			for _, pvcName := range pvcNames {
+				log.Info(fmt.Sprintf("Expanding filesystem for PVC %s", pvcName))
+
+				// Find all pods currently mounting this PVC
+				pods, err := helperImpl.FindPodsUsingPVC(pvcName, req.Namespace)
+				if err != nil {
+					return fmt.Errorf("finding pods for PVC %s: %w", pvcName, err)
+				}
+				if len(pods) == 0 {
+					log.Info(fmt.Sprintf("No pods found for PVC %s, skipping", pvcName))
+					continue
+				}
+
+				// Capture node names before pods are deleted (needed for detach wait)
+				type podNode struct{ pod, node string }
+				var podNodes []podNode
+				for _, p := range pods {
+					podNodes = append(podNodes, podNode{pod: p.Name, node: p.Spec.NodeName})
+				}
+
+				// Get PV name for detach polling
+				pvName, err := helperImpl.GetPVNameFromPVC(pvcName, req.Namespace)
+				if err != nil {
+					return fmt.Errorf("getting PV for PVC %s: %w", pvcName, err)
+				}
+
+				// Collect unique StatefulSets (and their original replica counts) from ownerRefs
+				type ssEntry struct{ replicas int32 }
+				ssMap := map[string]ssEntry{}
+				for _, p := range pods {
+					for _, ref := range p.OwnerReferences {
+						if ref.Kind == "StatefulSet" {
+							if _, seen := ssMap[ref.Name]; !seen {
+								ss, err := helperImpl.GetStatefulSetByName(ref.Name, req.Namespace)
+								if err != nil {
+									return fmt.Errorf("getting StatefulSet %s: %w", ref.Name, err)
+								}
+								replicas := int32(1)
+								if ss.Spec.Replicas != nil {
+									replicas = *ss.Spec.Replicas
+								}
+								ssMap[ref.Name] = ssEntry{replicas: replicas}
+							}
+						}
+					}
+				}
+
+				// Scale down all StatefulSets sharing this PVC
+				for ssName := range ssMap {
+					log.Info(fmt.Sprintf("Scaling down StatefulSet %s", ssName))
+					if err := helperImpl.ScaleStatefulSetByName(ssName, req.Namespace, 0, mongoWaitSeconds); err != nil {
+						return fmt.Errorf("scaling down %s: %w", ssName, err)
+					}
+				}
+
+				// Wait for volume to detach from every node it was on
+				seenNodes := map[string]bool{}
+				for _, pn := range podNodes {
+					if pn.node == "" || seenNodes[pn.node] {
+						continue
+					}
+					seenNodes[pn.node] = true
+					log.Info(fmt.Sprintf("Waiting for PV %s to detach from node %s", pvName, pn.node))
+					if err := helperImpl.WaitForVolumeDetach(pvName, pn.node, mongoWaitSeconds); err != nil {
+						return fmt.Errorf("waiting detach of %s from %s: %w", pvName, pn.node, err)
+					}
+				}
+
+				// Scale StatefulSets back up
+				for ssName, entry := range ssMap {
+					log.Info(fmt.Sprintf("Scaling up StatefulSet %s to %d", ssName, entry.replicas))
+					if err := helperImpl.ScaleStatefulSetByName(ssName, req.Namespace, int(entry.replicas), mongoWaitSeconds); err != nil {
+						return fmt.Errorf("scaling up %s: %w", ssName, err)
+					}
+				}
+
+				// Wait for MongoDB cluster health before processing next PVC
+				log.Info(fmt.Sprintf("Waiting for MongoDB health after PVC %s expansion", pvcName))
+				schema := spec.Spec.SchemaSettings
+				if err := wait.PollImmediate(10*time.Second, time.Duration(mongoWaitSeconds)*time.Second,
+					func() (bool, error) {
+						(&UpdateContextAuthMongo{}).Execute(ctx)
+						status, err := mongoImpl.GetClusterStatus(
+							spec.Spec.DisasterRecovery.Mode,
+							schema.ThisDomainName,
+							schema.CnfReplicaSize,
+							schema.DataReplicaSize,
+							schema.ShardCount,
+							schema.Sharded,
+						)
+						if err != nil {
+							log.Warn(fmt.Sprintf("MongoDB health check error: %v", err))
+							return false, nil
+						}
+						return status == utils.Up, nil
+					},
+				); err != nil {
+					return fmt.Errorf("MongoDB not healthy after PVC %s expansion: %w", pvcName, err)
 				}
 			}
 			return nil
