@@ -1,6 +1,8 @@
 package backup
 
 import (
+	"fmt"
+
 	"github.com/Netcracker/qubership-mongodb-supplementary/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-supplementary/pkg/utils"
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/constants"
@@ -87,6 +89,25 @@ func (r *BackupBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		backup.AddStep(&steps.StoreNodesStep{
 			Storage:           storage,
 			ContextVarToStore: utils.BackupPVNodes,
+		})
+		backupWaitSeconds := spec.Spec.WaitSeconds
+		backup.AddStep(&steps.WaitForPVCExpansionStep{
+			WaitTimeout:  backupWaitSeconds,
+			PVCNamesVar:  utils.BackupPvcNames,
+			StorageSizes: storage.Size,
+			OnNeedsRestart: func(ctx core.ExecutionContext) error {
+				helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
+				req := ctx.Get(constants.ContextRequest).(reconcile.Request)
+				log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+				deployLabel := map[string]string{utils.Name: utils.BackupDaemon}
+				if err := helperImpl.ScaleDeploymentByLabels(deployLabel, req.Namespace, 0, backupWaitSeconds); err != nil {
+					if _, notFound := err.(*core.NotFoundError); !notFound {
+						return fmt.Errorf("failed to scale down %s: %w", utils.BackupDaemon, err)
+					}
+					log.Info(fmt.Sprintf("Deployment %s not found, skipping scale-down", utils.BackupDaemon))
+				}
+				return nil
+			},
 		})
 	}
 

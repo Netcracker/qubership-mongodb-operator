@@ -169,8 +169,28 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		pvcStep.Owner = spec
 	}
 	mongo.AddStep(pvcStep)
-	mongo.AddStep(&WaitAndHandlePVCExpansionStep{
-		WaitTimeout: spec.Spec.WaitSeconds,
+	mongoWaitSeconds := spec.Spec.WaitSeconds
+	mongo.AddStep(&steps.WaitForPVCExpansionStep{
+		WaitTimeout:  mongoWaitSeconds,
+		PVCNamesVar:  utils.PvcNames,
+		StorageSizes: spec.Spec.MongoDB.Storage.Size,
+		OnNeedsRestart: func(ctx core.ExecutionContext) error {
+			helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
+			req := ctx.Get(constants.ContextRequest).(reconcile.Request)
+			log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+			pods, err := helperImpl.ListPods(req.Namespace, map[string]string{utils.Microservice: utils.MongoCluster})
+			if err != nil {
+				return fmt.Errorf("listing MongoDB pods for restart: %w", err)
+			}
+			for i := range pods.Items {
+				pod := &pods.Items[i]
+				log.Info(fmt.Sprintf("Restarting pod %s for filesystem resize completion", pod.Name))
+				if err := helperImpl.RestartPod(pod, req.Namespace, mongoWaitSeconds); err != nil {
+					return fmt.Errorf("failed to restart pod %s: %w", pod.Name, err)
+				}
+			}
+			return nil
+		},
 	})
 	mongo.AddStep(&steps.StoreNodesStep{
 		Storage:           spec.Spec.MongoDB.Storage,
