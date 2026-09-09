@@ -13,10 +13,6 @@ require (
 	sigs.k8s.io/controller-runtime v0.23.3
 )
 
-// replace github.com/Netcracker/qubership-nosqldb-operator-core => ../nosqldb-operator-core
-
-// replace github.com/Netcracker/qubership-mongodb-driver => ../mongodb-driver
-
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -109,7 +105,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-// replace github.com/Netcracker/qubership-nosqldb-operator-core => ../nosqldb-operator-core
-
-// replace github.com/Netcracker/qubership-mongodb-driver => ../mongodb-driver

@@ -2,8 +2,6 @@ module github.com/Netcracker/qubership-mongodb-operator
 
 go 1.26.5
 
-replace github.com/Netcracker/qubership-nosqldb-operator-core => ../../qubership-nosqldb-operator-core
-
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.16
 	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.12-0.20260909030554-017d12446f59
