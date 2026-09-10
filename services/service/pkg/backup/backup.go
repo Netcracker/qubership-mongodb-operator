@@ -132,7 +132,7 @@ func (r *BackupBuilder) Build(ctx core.ExecutionContext) core.Executable {
 					return fmt.Errorf("waiting for %s to scale down: %w", utils.BackupDaemon, err)
 				}
 
-				// scale up with retry (mirrors reference scaleUpDeploymentWithRetry)
+				// scale up with retry
 				const maxAttempts = 5
 				for attempt := 1; attempt <= maxAttempts; attempt++ {
 					delay := time.Duration(10*(1<<uint(attempt-1))) * time.Second
