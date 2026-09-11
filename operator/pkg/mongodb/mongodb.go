@@ -3,6 +3,7 @@ package mongodb
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/Netcracker/qubership-mongodb-operator/api/v1alpha1"
 	"github.com/Netcracker/qubership-mongodb-operator/pkg/dr"
@@ -12,6 +13,7 @@ import (
 	"github.com/Netcracker/qubership-nosqldb-operator-core/pkg/steps"
 	"go.uber.org/zap"
 	v12 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -169,6 +171,114 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		pvcStep.Owner = spec
 	}
 	mongo.AddStep(pvcStep)
+	mongoWaitSeconds := spec.Spec.WaitSeconds
+	mongo.AddStep(&steps.WaitForPVCExpansionStep{
+		WaitTimeout: mongoWaitSeconds,
+		PVCNamesVar: utils.PvcNames,
+		OnNeedsRestart: func(ctx core.ExecutionContext) error {
+			helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
+			mongoImpl := ctx.Get(utils.MongoHelperImpl).(utils.MongoHelper)
+			req := ctx.Get(constants.ContextRequest).(reconcile.Request)
+			log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+			pvcNames, _ := ctx.Get(utils.PvcNames).([]string)
+			schema := spec.Spec.SchemaSettings
+
+			for N, pvcName := range pvcNames {
+				// Derive StatefulSet names for this PVC index from schema.
+				// PVC-N is shared by: cnfrs{N} (config server replica N)
+				// and datars{shard}{N} for each shard (data replica N of each shard).
+				var ssNames []string
+				if !singleSchema {
+					if N < schema.CnfReplicaSize {
+						ssNames = append(ssNames, fmt.Sprintf("cnfrs%d", N))
+					}
+					for shard := 1; shard <= schema.ShardCount; shard++ {
+						if N < schema.DataReplicaSize {
+							ssNames = append(ssNames, fmt.Sprintf("datars%d%d", shard, N))
+						}
+					}
+				} else {
+					// Single schema: all mongo pods share the same PVCs; collect SS names from pods.
+					pods, err := helperImpl.ListPods(req.Namespace, map[string]string{utils.Microservice: utils.MongoCluster})
+					if err != nil {
+						return fmt.Errorf("listing MongoDB pods: %w", err)
+					}
+					seen := map[string]bool{}
+					for _, pod := range pods.Items {
+						for _, ref := range pod.OwnerReferences {
+							if ref.Kind == "StatefulSet" && !seen[ref.Name] {
+								ssNames = append(ssNames, ref.Name)
+								seen[ref.Name] = true
+							}
+						}
+					}
+				}
+
+				if len(ssNames) == 0 {
+					log.Info(fmt.Sprintf("No StatefulSets for PVC %s, skipping", pvcName))
+					continue
+				}
+
+				log.Info(fmt.Sprintf("PVC %s group: %v", pvcName, ssNames))
+
+				// Save original replicas and scale down the whole group.
+				originalReplicas := map[string]int32{}
+				for _, ssName := range ssNames {
+					ss, err := helperImpl.GetStatefulSetByName(ssName, req.Namespace)
+					if err != nil {
+						return fmt.Errorf("getting StatefulSet %s: %w", ssName, err)
+					}
+					replicas := int32(1)
+					if ss.Spec.Replicas != nil {
+						replicas = *ss.Spec.Replicas
+					}
+					originalReplicas[ssName] = replicas
+					log.Info(fmt.Sprintf("Scaling down %s", ssName))
+					if err := helperImpl.ScaleStatefulSetByName(ssName, req.Namespace, 0, mongoWaitSeconds); err != nil {
+						return fmt.Errorf("scaling down %s: %w", ssName, err)
+					}
+				}
+
+				// All pods gone; wait for Cinder to detach the volume and complete resize.
+				// VolumeAttachment is cluster-scoped and may not be accessible, so use a fixed wait.
+				log.Info(fmt.Sprintf("All pods for PVC %s down, waiting 60s for volume detach and resize", pvcName))
+				time.Sleep(60 * time.Second)
+
+				// Scale back up.
+				for _, ssName := range ssNames {
+					replicas := originalReplicas[ssName]
+					log.Info(fmt.Sprintf("Scaling up %s to %d", ssName, replicas))
+					if err := helperImpl.ScaleStatefulSetByName(ssName, req.Namespace, int(replicas), mongoWaitSeconds); err != nil {
+						return fmt.Errorf("scaling up %s: %w", ssName, err)
+					}
+				}
+
+				// Gate on MongoDB cluster health before moving to the next PVC.
+				log.Info(fmt.Sprintf("Waiting for MongoDB health after PVC %s expansion", pvcName))
+				(&UpdateContextAuthMongo{}).Execute(ctx)
+				if err := wait.PollImmediate(10*time.Second, time.Duration(mongoWaitSeconds)*time.Second,
+					func() (bool, error) {
+						status, err := mongoImpl.GetClusterStatus(
+							spec.Spec.DisasterRecovery.Mode,
+							schema.ThisDomainName,
+							schema.CnfReplicaSize,
+							schema.DataReplicaSize,
+							schema.ShardCount,
+							schema.Sharded,
+						)
+						if err != nil {
+							log.Warn(fmt.Sprintf("MongoDB health check error: %v", err))
+							return false, nil
+						}
+						return status == utils.Up, nil
+					},
+				); err != nil {
+					return fmt.Errorf("MongoDB not healthy after PVC %s expansion: %w", pvcName, err)
+				}
+			}
+			return nil
+		},
+	})
 	mongo.AddStep(&steps.StoreNodesStep{
 		Storage:           spec.Spec.MongoDB.Storage,
 		ContextVarToStore: utils.PVNodes,
