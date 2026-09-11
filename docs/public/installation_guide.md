@@ -1080,3 +1080,56 @@ db.getSiblingDB("admin").aggregate([
 - `shardKey` is always an array, even for a single field — there is no separate `strategy` string.
 - Sending the same `shardingSettings` payload again is safe — already-correct collections are skipped, not re-processed.
 - A successful API response confirms the request was **accepted**, not that redistribution has finished — use the progress query above to confirm completion for large collections.
+
+
+# PVC Expansion
+
+## 1. Toplogy
+
+Each PVC is a single volume shared by four independent mongod processes — the config server
+member and one member from each of the three data shards, all at the
+same ordinal:
+
+| PVC              | Config Server | Shard 1  | Shard 2  | Shard 3  |
+|-------------------|---------------|----------|----------|----------|
+| pvc-mongo-data-0  | cnfrs0        | datars10 | datars20 | datars30 |
+| pvc-mongo-data-1  | cnfrs1        | datars11 | datars21 | datars31 |
+| pvc-mongo-data-2  | cnfrs2        | datars12 | datars22 | datars32 |
+
+## 2. Procedure (repeated per PVC, ordinal 0 → 1 → 2)
+
+1. Update mongodb.storage.size or backup.storage.size.
+2. Operator will update PVC's spec.resources.requests.storage to specified size. Will Wait for the PVC condition to show `FileSystemResizePending`;
+3. **Pre-check:** Operator verif cnfrsN / datars1N / datars2N / datars3N's
+   peers are healthy and majority-safe.
+4. Operator Scales down cnfrs-sts, datars1-sts, datars2-sts, datars3-sts at
+   ordinal N — all four together, not staggered.
+5. Operator Confirms full detach: no `VolumeAttachment` references that PV;
+   Cinder shows the volume unattached.
+6. Operator Confirms the backend size is now correct now that it's detached.
+7. Operator Scales all four StatefulSets back up. Kubelet remounts the volume
+   and triggers `NodeExpandVolume`.
+8. **Post-check:** Operator confirms all four restarted members are
+   `SECONDARY`/`PRIMARY` and each RS reports full health.
+9. Only then proceed to ordinal N+1.
+
+
+# Why PVC Resize Requires a Grouped Scale-Down/Up by opeator
+
+Each PVC (`pvc-mongo-data-N`) is shared by **4 pods** at the same
+ordinal: `cnfrsN`, `datars1N`, `datars2N`, `datars3N`.
+
+When you resize a PVC, the cloud storage can only finish growing the
+disk once **nothing has it mounted**. If even one of the four pods
+is still running, the disk never actually finishes resizing — so
+when the others restart expecting the new size, they fail.
+
+**That's why all four scale down and up together:**
+
+1. Scale down all 4 pods on that ordinal.
+2. Disk finishes resizing (now fully unattached).
+3. Scale all 4 back up — they mount fresh and pick up the new size.
+
+Skipping this and restarting just one pod leaves the volume attached
+via the others, and the resize silently never completes.
+
