@@ -431,6 +431,6 @@ spec:
       affinity:
         {{- toYaml .Values.operator.affinity | nindent 8 }}
       {{- end }}
-      {{- if .Values.policies }}
+      {{- if and .Values.policies .Values.policies.tolerations }}
       tolerations: {{ toYaml .Values.policies.tolerations | nindent 8 }}
       {{- end }}
