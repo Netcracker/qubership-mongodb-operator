@@ -548,7 +548,35 @@ spec:
                 type: object
               robotTests:
                 properties:
+                  atpReport:
+                    properties:
+                      atpStorage:
+                        properties:
+                          bucket:
+                            type: string
+                          password:
+                            type: string
+                          provider:
+                            type: string
+                          region:
+                            type: string
+                          serverUiUrl:
+                            type: string
+                          serverUrl:
+                            type: string
+                          username:
+                            type: string
+                        type: object
+                      enabled:
+                        type: boolean
+                    type: object
+                  atpReportViewUiUrl:
+                    type: string
                   dockerImage:
+                    type: string
+                  enableJiraIntegration:
+                    type: boolean
+                  environmentName:
                     type: string
                   externalBackupPath:
                     type: string

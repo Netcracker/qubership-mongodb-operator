@@ -201,15 +201,34 @@ type PrometheusExporter struct {
 }
 
 type RobotTests struct {
-	Install            bool                     `json:"install,omitempty"`
-	DockerImage        string                   `json:"dockerImage,omitempty"`
-	Resources          *v1.ResourceRequirements `json:"resources,omitempty"`
-	Tags               string                   `json:"tags,omitempty"`
-	NodeLabels         map[string]string        `json:"nodeLabels,omitempty"`
-	ExternalBackupPath string                   `json:"externalBackupPath,omitempty"`
-	MainSide           string                   `json:"mainSide,omitempty"`
-	LeftNodesPattern   string                   `json:"leftNodesPattern,omitempty"`
-	RightNodesPattern  string                   `json:"rightNodesPattern,omitempty"`
-	PriorityClassName  string                   `json:"priorityClassName,omitempty"`
-	Affinity           *v1.Affinity             `json:"affinity,omitempty"`
+	Install               bool                     `json:"install,omitempty"`
+	DockerImage           string                   `json:"dockerImage,omitempty"`
+	Resources             *v1.ResourceRequirements `json:"resources,omitempty"`
+	Tags                  string                   `json:"tags,omitempty"`
+	NodeLabels            map[string]string        `json:"nodeLabels,omitempty"`
+	ExternalBackupPath    string                   `json:"externalBackupPath,omitempty"`
+	MainSide              string                   `json:"mainSide,omitempty"`
+	LeftNodesPattern      string                   `json:"leftNodesPattern,omitempty"`
+	RightNodesPattern     string                   `json:"rightNodesPattern,omitempty"`
+	PriorityClassName     string                   `json:"priorityClassName,omitempty"`
+	Affinity              *v1.Affinity             `json:"affinity,omitempty"`
+	AtpReport             AtpReport                `json:"atpReport,omitempty"`
+	EnvironmentName       string                   `json:"environmentName,omitempty"`
+	EnableJiraIntegration bool                     `json:"enableJiraIntegration,omitempty"`
+	AtpReportViewUiUrl    string                   `json:"atpReportViewUiUrl,omitempty"`
+}
+
+type AtpReport struct {
+	Enabled    bool       `json:"enabled,omitempty"`
+	AtpStorage AtpStorage `json:"atpStorage,omitempty"`
+}
+
+type AtpStorage struct {
+	Provider    string `json:"provider,omitempty"`
+	ServerUrl   string `json:"serverUrl,omitempty"`
+	ServerUiUrl string `json:"serverUiUrl,omitempty"`
+	Bucket      string `json:"bucket,omitempty"`
+	Region      string `json:"region,omitempty"`
+	Username    string `json:"username,omitempty"`
+	Password    string `json:"password,omitempty"`
 }
