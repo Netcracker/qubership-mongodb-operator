@@ -239,7 +239,7 @@ tls:
 prometheusExporter:
   monitoringUser: monitoring
   monitoringPassword: monitoring
-  monitoringUserRole: '[{"role":"clusterMonitor","db":"admin"},{"role":"read","db":"local"}]'
+  monitoringUserRole: '{"roles": [{"role":"readWrite", "db":"test"}, {"role":"clusterMonitor", "db":"admin"}]}'
 
 role:
   # Specifies whether a role should be created

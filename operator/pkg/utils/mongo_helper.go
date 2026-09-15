@@ -399,6 +399,7 @@ func (r *MongoUtilsHelperImpl) CheckUserLogin(dockerImage, authDB, user, pass st
 
 // TODO createUserOrRole
 func (r *MongoUtilsHelperImpl) CreateRole(authDB, role, privileges, roles string, inMonogs, inShards bool, shardsCound int) error {
+
 	command := fmt.Sprintf(CreateORUpdateRolePattern, authDB, role, privileges, roles)
 	if inMonogs {
 		_, err := r.RunOnMongos(command)
@@ -418,12 +419,14 @@ func (r *MongoUtilsHelperImpl) CreateRole(authDB, role, privileges, roles string
 
 func (r *MongoUtilsHelperImpl) CreateUser(authDB, user, pass, role string, force, inMonogs, inShards bool, shardsCound int) error {
 	command := fmt.Sprintf(CreateORUpdateUserPattern, authDB, user, pass, role)
+	r.Logger.Sugar().Infof("Command [%v]", command)
 	if force {
 		command = CreateUserForMongoReplicaCommand(authDB, user, pass, role)
 	}
 	if inMonogs {
 		_, err := r.RunOnMongos(command)
 		if err != nil {
+			r.Logger.Sugar().Infof("error on mongos [%v]", err.Error())
 			return err
 		}
 	}
@@ -431,6 +434,7 @@ func (r *MongoUtilsHelperImpl) CreateUser(authDB, user, pass, role string, force
 	if inShards {
 		_, err := r.RunOnShards(command, shardsCound)
 		if err != nil {
+			r.Logger.Sugar().Infof("error on shards [%v]", err.Error())
 			return err
 		}
 	}
