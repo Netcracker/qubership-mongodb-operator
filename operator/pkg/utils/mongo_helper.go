@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -651,6 +652,8 @@ func (r *MongoUtilsHelperImpl) RunOnPrimaryWithJSONResult(label map[string]strin
 }
 
 func (r *MongoUtilsHelperImpl) RunOnMongoPod(masterPod *v1.Pod, arg string) (string, error) {
+	encoded := base64.StdEncoding.EncodeToString([]byte(arg))
+	shellCmd := fmt.Sprintf("%s --eval \"$(echo '%s' | base64 -d)\"", r.Cmd, encoded)
 	resp, err := r.KubernetesHelperImpl.ExecRemote(
 		nil,
 		r.KubeConfig,
@@ -658,7 +661,7 @@ func (r *MongoUtilsHelperImpl) RunOnMongoPod(masterPod *v1.Pod, arg string) (str
 		masterPod.Namespace,
 		masterPod.Spec.Containers[0].Name,
 		BashCommand,
-		[]string{fmt.Sprintf("%s --eval \"%s\"", r.Cmd, arg)})
+		[]string{shellCmd})
 
 	const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
 	var re = regexp.MustCompile(ansi)
