@@ -32,7 +32,8 @@ func (r *AddMonitoringUserStep) Execute(ctx core.ExecutionContext) error {
 
 	creds, err := utils.ReadSecret(ctx, utils.MonitoringSecretName, request.Namespace)
 	if err != nil || creds == nil {
-		return fmt.Errorf("secret %s not found, monitoring user bootstrap failed: %w", utils.MonitoringSecretName, err)
+		log.Info(fmt.Sprintf("secret %s not found, monitoring user bootstrap skipped", utils.MonitoringSecretName))
+		return nil
 	}
 
 	user := string(creds.Data[utils.Username])
