@@ -376,15 +376,16 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 func UpdateCRStatus(ctx core.ExecutionContext, cr *v1alpha1.MongodbDeployment) error {
 	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	log.Info("Inside update CR status")
 	helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
-	if maps.Equal(cr.PVCStatus.Annotations, cr.Spec.MongoDB.Storage.Annotations) {
+	if maps.Equal(cr.Status.PVCStatus.Annotations, cr.Spec.MongoDB.Storage.Annotations) {
 		log.Info("Equal map")
-		log.Sugar().Infof("PVCStatus: %v", cr.PVCStatus.Annotations)
+		log.Sugar().Infof("PVCStatus: %v", cr.Status.PVCStatus.Annotations)
 		log.Sugar().Infof("MongoDB.Storage: %v", cr.Spec.MongoDB.Storage.Annotations)
 		return nil
 	}
 
-	cr.PVCStatus.Annotations = cr.Spec.MongoDB.Storage.Annotations
+	cr.Status.PVCStatus.Annotations = cr.Spec.MongoDB.Storage.Annotations
 
 	return helperImpl.UpdateStatus(context.Background(), cr)
 }

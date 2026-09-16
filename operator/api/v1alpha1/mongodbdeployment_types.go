@@ -49,6 +49,7 @@ type MongodbDeploymentSpec struct {
 type MongodbDeploymentStatus struct {
 	DisasterRecoveryStatus types.DisasterRecoveryStatus   `json:"disasterRecoveryStatus,omitempty"`
 	Conditions             []types.ServiceStatusCondition `json:"conditions,omitempty"`
+	PVCStatus              PVCStatus                      `json:"pvcStatus,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -59,9 +60,8 @@ type MongodbDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec      MongodbDeploymentSpec   `json:"spec,omitempty"`
-	Status    MongodbDeploymentStatus `json:"status,omitempty"`
-	PVCStatus PVCStatus               `json:"pvcStatus,omitempty"`
+	Spec   MongodbDeploymentSpec   `json:"spec,omitempty"`
+	Status MongodbDeploymentStatus `json:"status,omitempty"`
 }
 
 type PVCStatus struct {
