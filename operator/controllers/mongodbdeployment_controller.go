@@ -43,16 +43,16 @@ type MongodbDeploymentReconciler struct {
 }
 
 func (r *MongodbDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	reconc, err := r.Reconciler.Reconcile(ctx, req)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	instance := &v1alpha1.MongodbDeployment{}
 	if err := r.Client.Get(context.TODO(), req.NamespacedName, instance); err != nil {
 		if errors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
-		return reconcile.Result{}, err
-	}
-
-	reconc, err := r.Reconciler.Reconcile(ctx, req)
-	if err != nil {
 		return reconcile.Result{}, err
 	}
 
