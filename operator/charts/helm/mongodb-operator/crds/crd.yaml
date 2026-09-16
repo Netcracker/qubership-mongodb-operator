@@ -36,6 +36,13 @@ spec:
             type: string
           metadata:
             type: object
+          pvcStatus:
+            properties:
+              annotations:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
           spec:
             description: MongodbDeploymentSpec defines the desired state of MongodbDeployment
             properties:

@@ -1,7 +1,9 @@
 package mongodb
 
 import (
+	"context"
 	"fmt"
+	"maps"
 	"reflect"
 	"time"
 
@@ -141,6 +143,7 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	request := ctx.Get(constants.ContextRequest).(reconcile.Request)
 	spec := ctx.Get(constants.ContextSpec).(*v1alpha1.MongodbDeployment)
 	singleSchema := spec.Spec.SchemaSettings.SchemaType == v1alpha1.Single
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 
 	mongo := MongoDB{}
 	pvcSelector := map[string]string{
@@ -153,6 +156,11 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		deplType, err := helperImpl.GetDeploymentTypeByPVC(ctx, mongo.ServiceName, pvcSelector)
 		ctx.Set(utils.MongoDBDeploymentType, deplType)
 		return deplType, err
+	}
+
+	if err := UpdateCRStatus(ctx, spec); err != nil {
+		log.Info("Update failed")
+		core.PanicError(err, log.Error, "Update CR status failed")
 	}
 
 	pvcStep := &steps.CreatePVCStep{
@@ -324,7 +332,6 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	mongo.AddStep(&CreateSSLSecretStep{})
 
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
 	if singleSchema {
 		mongo.AddStep((&SingleMongosStepBuilder{}).Build(ctx))
 	} else {
@@ -365,4 +372,19 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	}
 
 	return &mongo
+}
+
+func UpdateCRStatus(ctx core.ExecutionContext, cr *v1alpha1.MongodbDeployment) error {
+	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
+	helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
+	if maps.Equal(cr.PVCStatus.Annotations, cr.Spec.MongoDB.Storage.Annotations) {
+		log.Info("Equal map")
+		log.Sugar().Infof("PVCStatus: %v", cr.PVCStatus.Annotations)
+		log.Sugar().Infof("MongoDB.Storage: %v", cr.Spec.MongoDB.Storage.Annotations)
+		return nil
+	}
+
+	cr.PVCStatus.Annotations = cr.Spec.MongoDB.Storage.Annotations
+
+	return helperImpl.UpdateStatus(context.Background(), cr)
 }

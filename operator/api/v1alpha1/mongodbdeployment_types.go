@@ -59,8 +59,13 @@ type MongodbDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MongodbDeploymentSpec   `json:"spec,omitempty"`
-	Status MongodbDeploymentStatus `json:"status,omitempty"`
+	Spec      MongodbDeploymentSpec   `json:"spec,omitempty"`
+	Status    MongodbDeploymentStatus `json:"status,omitempty"`
+	PVCStatus PVCStatus               `json:"pvcStatus,omitempty"`
+}
+
+type PVCStatus struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 //+kubebuilder:object:root=true
