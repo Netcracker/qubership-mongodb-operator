@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"maps"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,7 +43,23 @@ type MongodbDeploymentReconciler struct {
 }
 
 func (r *MongodbDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	instance := &v1alpha1.MongodbDeployment{}
+	if err := r.Client.Get(context.TODO(), req.NamespacedName, instance); err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+		return reconcile.Result{}, err
+	}
+
 	reconc, err := r.Reconciler.Reconcile(ctx, req)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if err := r.updateStatus(instance); err != nil {
+		return reconcile.Result{}, err
+	}
+
 	return reconc, err
 }
 
@@ -166,4 +183,14 @@ func (s *MongodbDeploymentInstanceReconciler) GetAdminSecretName() string {
 
 func (s *MongodbDeploymentInstanceReconciler) UpdatePassWithFullReconcile() bool {
 	return false
+}
+
+func (r *MongodbDeploymentReconciler) updateStatus(cr *v1alpha1.MongodbDeployment) error {
+	if maps.Equal(cr.Status.PVCStatus.Annotations, cr.Spec.MongoDB.Storage.Annotations) {
+		return nil
+	}
+
+	cr.Status.PVCStatus.Annotations = cr.Spec.MongoDB.Storage.Annotations
+
+	return r.Client.Status().Update(context.TODO(), cr)
 }

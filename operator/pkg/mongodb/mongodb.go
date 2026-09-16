@@ -1,9 +1,7 @@
 package mongodb
 
 import (
-	"context"
 	"fmt"
-	"maps"
 	"reflect"
 	"time"
 
@@ -156,11 +154,6 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 		deplType, err := helperImpl.GetDeploymentTypeByPVC(ctx, mongo.ServiceName, pvcSelector)
 		ctx.Set(utils.MongoDBDeploymentType, deplType)
 		return deplType, err
-	}
-
-	if err := UpdateCRStatus(ctx, spec); err != nil {
-		log.Info("Update failed")
-		core.PanicError(err, log.Error, "Update CR status failed")
 	}
 
 	pvcStep := &steps.CreatePVCStep{
@@ -372,20 +365,4 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	}
 
 	return &mongo
-}
-
-func UpdateCRStatus(ctx core.ExecutionContext, cr *v1alpha1.MongodbDeployment) error {
-	log := ctx.Get(constants.ContextLogger).(*zap.Logger)
-	log.Info("Inside update CR status")
-	helperImpl := ctx.Get(utils.KubernetesHelperImpl).(core.KubernetesHelper)
-	if maps.Equal(cr.Status.PVCStatus.Annotations, cr.Spec.MongoDB.Storage.Annotations) {
-		log.Info("Equal map")
-		log.Sugar().Infof("PVCStatus: %v", cr.Status.PVCStatus.Annotations)
-		log.Sugar().Infof("MongoDB.Storage: %v", cr.Spec.MongoDB.Storage.Annotations)
-		return nil
-	}
-
-	cr.Status.PVCStatus.Annotations = cr.Spec.MongoDB.Storage.Annotations
-
-	return helperImpl.UpdateStatus(context.Background(), cr)
 }
