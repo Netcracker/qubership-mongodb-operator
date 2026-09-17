@@ -88,6 +88,11 @@ type MongodbSupplServiceSpec struct {
 // MongodbSupplServiceStatus defines the observed state of MongodbSupplService
 type MongodbSupplServiceStatus struct {
 	Conditions []types.ServiceStatusCondition `json:"conditions,omitempty"`
+	PVCStatus  PVCStatus                      `json:"pvcStatus,omitempty"`
+}
+
+type PVCStatus struct {
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 //+kubebuilder:object:root=true

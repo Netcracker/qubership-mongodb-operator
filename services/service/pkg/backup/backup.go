@@ -77,7 +77,8 @@ func (r *BackupBuilder) Build(ctx core.ExecutionContext) core.Executable {
 
 	if !spec.Spec.Backup.Storage.EmptyDir {
 		pvcStep := &steps.CreatePVCStep{
-			Storage:           storage,
+			Storage: storage,
+
 			NameFormat:        utils.BackupPvcNameFormat,
 			LabelSelector:     pvcSelector,
 			ContextVarToStore: utils.BackupPvcNames,

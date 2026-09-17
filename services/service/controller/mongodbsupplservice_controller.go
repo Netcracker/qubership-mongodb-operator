@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8type "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -77,7 +79,32 @@ func (r *MongodbSupplServiceReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 
 	reconc, err := r.Reconciler.Reconcile(ctx, req)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if err := r.updateStatus(req); err != nil {
+		return reconcile.Result{}, err
+	}
+
 	return reconc, err
+}
+
+func (r *MongodbSupplServiceReconciler) updateStatus(req ctrl.Request) error {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		instance := &v1alpha1.MongodbSupplService{}
+		if err := r.Client.Get(context.TODO(), req.NamespacedName, instance); err != nil {
+			return err
+		}
+
+		if maps.Equal(instance.Status.PVCStatus.Annotations, instance.Spec.Backup.Storage.Annotations) {
+			return nil
+		}
+
+		instance.Status.PVCStatus.Annotations = instance.Spec.Backup.Storage.Annotations
+
+		return r.Client.Status().Update(context.TODO(), instance)
+	})
 }
 
 func getEnvAsInt(key string, defaultVal int) int {
