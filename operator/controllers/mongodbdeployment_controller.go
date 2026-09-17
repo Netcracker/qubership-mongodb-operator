@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -48,15 +49,7 @@ func (r *MongodbDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return reconcile.Result{}, err
 	}
 
-	instance := &v1alpha1.MongodbDeployment{}
-	if err := r.Client.Get(context.TODO(), req.NamespacedName, instance); err != nil {
-		if errors.IsNotFound(err) {
-			return reconcile.Result{}, nil
-		}
-		return reconcile.Result{}, err
-	}
-
-	if err := r.updateStatus(instance); err != nil {
+	if err := r.updateStatus(req); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -185,12 +178,19 @@ func (s *MongodbDeploymentInstanceReconciler) UpdatePassWithFullReconcile() bool
 	return false
 }
 
-func (r *MongodbDeploymentReconciler) updateStatus(cr *v1alpha1.MongodbDeployment) error {
-	if maps.Equal(cr.Status.PVCStatus.Annotations, cr.Spec.MongoDB.Storage.Annotations) {
-		return nil
-	}
+func (r *MongodbDeploymentReconciler) updateStatus(req ctrl.Request) error {
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		instance := &v1alpha1.MongodbDeployment{}
+		if err := r.Client.Get(context.TODO(), req.NamespacedName, instance); err != nil {
+			return err
+		}
 
-	cr.Status.PVCStatus.Annotations = cr.Spec.MongoDB.Storage.Annotations
+		if maps.Equal(instance.Status.PVCStatus.Annotations, instance.Spec.MongoDB.Storage.Annotations) {
+			return nil
+		}
 
-	return r.Client.Status().Update(context.TODO(), cr)
+		instance.Status.PVCStatus.Annotations = instance.Spec.MongoDB.Storage.Annotations
+
+		return r.Client.Status().Update(context.TODO(), instance)
+	})
 }
