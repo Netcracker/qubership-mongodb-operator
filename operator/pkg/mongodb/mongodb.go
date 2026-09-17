@@ -157,10 +157,11 @@ func (r *MongoDBBuilder) Build(ctx core.ExecutionContext) core.Executable {
 	}
 
 	pvcStep := &steps.CreatePVCStep{
-		Storage:           spec.Spec.MongoDB.Storage,
-		NameFormat:        fmt.Sprintf(utils.MongoPvcNameFormat, request.Namespace) + "-%v",
-		LabelSelector:     pvcSelector,
-		ContextVarToStore: utils.PvcNames,
+		Storage:              spec.Spec.MongoDB.Storage,
+		PVCStatusAnnotations: spec.Status.PVCStatus.Annotations,
+		NameFormat:           fmt.Sprintf(utils.MongoPvcNameFormat, request.Namespace) + "-%v",
+		LabelSelector:        pvcSelector,
+		ContextVarToStore:    utils.PvcNames,
 		PVCCount: func(ctx core.ExecutionContext) int {
 			return ctx.Get(utils.MaxPVCCountForService).(int)
 		},
