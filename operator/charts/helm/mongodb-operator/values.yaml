@@ -135,7 +135,7 @@ mongodb:
   clusterAuthMode: "keyfile"
   # flavor: small
   # Mandatory MongoDB docker image link
-  dockerImage: ghcr.io/netcracker/qubership-mongodb:main_8.0.15
+  dockerImage: ghcr.io/netcracker/docker-mongo-8:main
   # priorityClassName:
 
   containerTimeoutSeconds: 10
