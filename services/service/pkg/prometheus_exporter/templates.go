@@ -24,6 +24,7 @@ func PrometheusExporterDeploymentTemplate(namespace string, image string, nodeSe
 			Namespace: namespace,
 			Labels: map[string]string{
 				utils.Name:                 utils.MongoPrometheusExporter,
+				utils.Microservice:         utils.MongoPrometheusExporter,
 				utils.AppPartOf:            "mongodb-services",
 				utils.AppName:              utils.MongoPrometheusExporter,
 				utils.AppInstance:          os.Getenv("RELEASE_NAME"),
