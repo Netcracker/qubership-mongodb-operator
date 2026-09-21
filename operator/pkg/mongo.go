@@ -245,8 +245,6 @@ func (r *DRBuilder) Build(ctx core.ExecutionContext) core.Executable {
 				compound.AddStep(&dr.ScaleBackupDaemonStep{Replicas: 0})
 				compound.AddStep(&dr.ScaleDbaasAdapterStep{Replicas: 0})
 			}
-			log.Sugar().Infof("Disaster recovery mode %v", spec.Spec.DisasterRecovery.Mode)
-			log.Sugar().Infof("condition %v", spec.Spec.DisasterRecovery.Mode == utils.ActiveMode)
 			compound.AddStep(&dr.UpdatePrometheusExporterStep{
 				ExportMongos: spec.Spec.DisasterRecovery.Mode == utils.ActiveMode,
 			})
