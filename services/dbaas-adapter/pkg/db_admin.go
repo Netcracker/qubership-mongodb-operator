@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	DbKind                   = "database"
 	dbaasMetadata            = "_dbaas_metadata"
 	enableShardingCmd        = "enableSharding"
 	readWrite                = "readWrite"
@@ -479,6 +480,11 @@ func (c *MongoDbAdministration) CreateUser(ctx context.Context, userName string,
 	if err != nil {
 		return nil, err
 	}
+
+	resources = append(resources, dao.DbResource{
+		Kind: DbKind,
+		Name: logicalDbName,
+	})
 
 	connProp := c.getConnectionProperties(
 		logicalDbName,
