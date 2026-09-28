@@ -1,4 +1,4 @@
-FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.23
+FROM ghcr.io/netcracker/qubership-backup-daemon-go:0.1.25
 
 ENV MONGO_HOME=/opt/mongodb-backup
 
