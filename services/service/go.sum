@@ -7,8 +7,8 @@ github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
-github.com/Netcracker/qubership-credential-manager v0.0.16 h1:P7zFSjjgLxRXzWaGsJUIky9+VtPD4cluDuu+LHVkj4U=
-github.com/Netcracker/qubership-credential-manager v0.0.16/go.mod h1:KZ2v0axmIJ4+w8YAWqTWFgN3t2nu1ed4UXFZMsz5Gv8=
+github.com/Netcracker/qubership-credential-manager v0.0.18 h1:RXRhj42o591avS2E4fZ4wlOEcdgsFf2O2uvm2Hyats0=
+github.com/Netcracker/qubership-credential-manager v0.0.18/go.mod h1:NiBFQidrQgGefI1+6oFCP4hcDiHznsid9abqE/KqtHQ=
 github.com/Netcracker/qubership-mongodb-driver v1.0.0 h1:jenOgYd0juHMaaIlPwUWtBB9U7CC9ELcvSlN6jFS/2A=
 github.com/Netcracker/qubership-mongodb-driver v1.0.0/go.mod h1:C1kh7k4B+7EH48aUG5LalXq6g5827alXxPs8v4mf5dU=
 github.com/Netcracker/qubership-nosqldb-operator-core v1.0.14 h1:xN+mwNoPsVWrlbk11l/SN+mCNjdq3nj2OYZpgM702tY=
@@ -118,8 +118,8 @@ github.com/go-openapi/swag/stringutils v0.25.5 h1:NVkoDOA8YBgtAR/zvCx5rhJKtZF3Iz
 github.com/go-openapi/swag/stringutils v0.25.5/go.mod h1:PKK8EZdu4QJq8iezt17HM8RXnLAzY7gW0O1KKarrZII=
 github.com/go-openapi/swag/typeutils v0.27.1 h1:KSTdFlfnse4r6dP9IrEnwMldjE+zs71UeEB3//PtVXc=
 github.com/go-openapi/swag/typeutils v0.27.1/go.mod h1:Srm0xFNRZ1Y+vCxJclo5qzx8aj+1pAKda/YfFPrG0dQ=
-github.com/go-openapi/swag/yamlutils v0.25.5 h1:kASCIS+oIeoc55j28T4o8KwlV2S4ZLPT6G0iq2SSbVQ=
-github.com/go-openapi/swag/yamlutils v0.25.5/go.mod h1:Gek1/SjjfbYvM+Iq4QGwa/2lEXde9n2j4a3wI3pNuOQ=
+github.com/go-openapi/swag/yamlutils v0.27.1 h1:ftxv6xvXb1E3zohUc+okZ9nSqNb9StQX/FXnKZ98sQA=
+github.com/go-openapi/swag/yamlutils v0.27.1/go.mod h1:bnxFIB1qewGRiZHypXGZ3fNgf13/0HfRgnS/iZBDrOo=
 github.com/go-openapi/testify/enable/yaml/v2 v2.6.0 h1:gGHwAJ0R/5jU8BEGDbfRNR3hL68dAVi84WuOApp29B0=
 github.com/go-openapi/testify/enable/yaml/v2 v2.6.0/go.mod h1:tY+St1SGq4NFl0QIqdTY4aEdbChAHxhyB77XQi9iJCo=
 github.com/go-openapi/testify/v2 v2.6.0 h1:5PKH2HE7YJ/LuRPQGvSxBRlFXNQhSetBLlGAgUEu3ug=

@@ -3,7 +3,7 @@ module github.com/Netcracker/qubership-mongodb-supplementary
 go 1.27.1
 
 require (
-	github.com/Netcracker/qubership-credential-manager v0.0.16
+	github.com/Netcracker/qubership-credential-manager v0.0.18
 	github.com/Netcracker/qubership-mongodb-driver v1.0.0
 	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.14
 	go.uber.org/zap v1.27.1
@@ -40,7 +40,7 @@ require (
 	github.com/go-openapi/swag/pools v0.27.1 // indirect
 	github.com/go-openapi/swag/stringutils v0.25.5 // indirect
 	github.com/go-openapi/swag/typeutils v0.27.1 // indirect
-	github.com/go-openapi/swag/yamlutils v0.25.5 // indirect
+	github.com/go-openapi/swag/yamlutils v0.27.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
