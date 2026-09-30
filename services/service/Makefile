@@ -129,6 +129,12 @@ lint: golangci-lint ## Run golangci-lint linter & yamllint
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 	$(GOLANGCI_LINT) run --fix
 
+.PHONY: gzip-charts
+gzip-charts:
+	@echo "Gzipping grafana resources"
+	gzip -f -c ./charts/helm/mongodb-services/monitoring/mongo7-grafana-dashboard.json > ./charts/helm/mongodb-services/monitoring/mongo7-grafana-dashboard.json.gz
+	gzip -f -c ./charts/helm/mongodb-services/monitoring/mongo8-grafana-dashboard.json > ./charts/helm/mongodb-services/monitoring/mongo8-grafana-dashboard.json.gz
+
 ##@ Build
 
 .PHONY: build
