@@ -6,6 +6,16 @@ The following topics are discussed in the chapter:
 
 Following are the prerequisites that have to be satisfied before installing MongoDB.
 
+
+## Helm Chart Preparation when deploying using Helm:
+
+The service-operator embeds compressed grafana dashboard json:
+
+```bash
+cd services/service
+make gzip-charts   # Compresses Grafana dashboards
+```
+
 ## Common
 
 * The deployer user (SA) must have the following Role bound:
