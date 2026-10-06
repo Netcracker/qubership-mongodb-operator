@@ -51,10 +51,16 @@ jobs:
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'e1905f040398e9ae733b0cefa7e7793b6204ecfe' # v1.16.0
+      pipeline_branch: 'e1905f040398e9ae733b0cefa7e7793b6204ecfe' # v1.16.0 renovate: depName=Netcracker/qubership-test-pipelines
       skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
       scope: nightly  # TODO: revert to pr after adapter-S3 verification
       allure: false
     secrets:
       AWS_S3_ACCESS_KEY_ID: ${{secrets.AWS_S3_ACCESS_KEY_ID}}
       AWS_S3_ACCESS_KEY_SECRET: ${{secrets.AWS_S3_ACCESS_KEY_SECRET}}
+  Renovate-Approve:
+    needs: MongoDB-Pipeline
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/renovate-approve.yaml
