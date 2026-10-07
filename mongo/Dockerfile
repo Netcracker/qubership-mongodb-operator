@@ -1,4 +1,9 @@
-ARG MONGO_VERSION=8.3.11
+# ARG MONGO_VERSION=8.3.11
+
+
+RUN echo "Print mongo version"
+RUN echo "${MONGO_VERSION}"
+RUN echo "mongo:${MONGO_VERSION}"
 FROM mongo:${MONGO_VERSION}
 
 USER root
