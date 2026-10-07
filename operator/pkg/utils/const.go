@@ -297,10 +297,9 @@ const MongoshBanner8 = `Warning: Could not access file: EACCES: permission denie
 
 func GetSetFeatureCompatibilityVersion(version string) string {
 	if strings.HasPrefix(version, "7") || strings.HasPrefix(version, "8") {
-		return "db.adminCommand( { setFeatureCompatibilityVersion: '%s' , confirm: true} )"
-	} else {
-		return "db.adminCommand( { setFeatureCompatibilityVersion: '%s' } )"
+		return "db.adminCommand({ setFeatureCompatibilityVersion: '%s', confirm: true, writeConcern: { w: 'majority' } })"
 	}
+	return "db.adminCommand({ setFeatureCompatibilityVersion: '%s' })"
 }
 
 // TODO drop when 4.4 dropped
