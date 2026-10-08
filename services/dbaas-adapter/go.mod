@@ -7,7 +7,7 @@ require (
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/stretchr/testify v1.9.0
-	go.mongodb.org/mongo-driver v1.17.0
+	go.mongodb.org/mongo-driver v1.17.7
 	go.uber.org/zap v1.27.0
 )
 
