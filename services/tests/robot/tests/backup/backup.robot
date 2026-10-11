@@ -143,10 +143,10 @@ Test Backup Granular Data
     ${document}=  Set Variable  {"dbs":["${MONGO_DB}"], "allow_eviction":"true"}
     ${granularbackupjob}=  Backup ${document} Data And Check With 100 Attempts On ${Empty}
     Set Suite Variable  ${granularbackupjob}
+    Wait Until Keyword Succeeds  12x  5s  Check Granular Vault Has Bson Gz  ${granularbackupjob}  ${MONGO_DB}
 
 Test Delete Granular Data
     [Tags]  mongo  backup
-    Wait Until Keyword Succeeds  12x  5s  Check Granular Vault Has Bson Gz  ${granularbackupjob}  ${MONGO_DB}
     Drop Mongodb Database  ${MONGO_DB}
     Check ${documentOne} Should Not Exist In ${collection} Of ${MONGO_DB}
     Check ${documentTwo} Should Not Exist In ${collection} Of ${MONGO_DB}
