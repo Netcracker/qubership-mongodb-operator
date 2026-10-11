@@ -105,6 +105,12 @@ Find Name of Backup Pod
     ${backup_pod}=  Get Pod For Service  namespace=${NAMESPACE}    service=mongodb-backup-daemon    label_name=name
     Set Suite Variable  ${backup_pod}
 
+Check Granular Vault Has Bson Gz
+    [Arguments]  ${BACKUP_ID}  ${DB_NAME}
+    Find Name of Backup Pod
+    ${files}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls /backup-storage/granular/${BACKUP_ID}/${DB_NAME}/
+    Should Contain  ${files}  .bson.gz  msg=Vault dump ${BACKUP_ID} has no .bson.gz for ${DB_NAME}: ${files}
+
 Check Location Of Backup
     [Arguments]  ${PATH_TO_BACKUP}  ${BACKUP_ID}
     Find Name of Backup Pod
@@ -140,6 +146,7 @@ Test Backup Granular Data
 
 Test Delete Granular Data
     [Tags]  mongo  backup
+    Wait Until Keyword Succeeds  12x  5s  Check Granular Vault Has Bson Gz  ${granularbackupjob}  ${MONGO_DB}
     Drop Mongodb Database  ${MONGO_DB}
     Check ${documentOne} Should Not Exist In ${collection} Of ${MONGO_DB}
     Check ${documentTwo} Should Not Exist In ${collection} Of ${MONGO_DB}
@@ -151,8 +158,8 @@ Test Restore Granular Data
 
 Test Check Restored Granular Data
     [Tags]  mongo  backup
-    Check ${documentOne} Should Exist In ${collection} Of ${MONGO_DB}
-    Check ${documentTwo} Should Exist In ${collection} Of ${MONGO_DB}
+    Wait Until Keyword Succeeds  12x  5s  Check ${documentOne} Should Exist In ${collection} Of ${MONGO_DB}
+    Wait Until Keyword Succeeds  12x  5s  Check ${documentTwo} Should Exist In ${collection} Of ${MONGO_DB}
 
 Test Create Data
     [Tags]  mongo  backup
