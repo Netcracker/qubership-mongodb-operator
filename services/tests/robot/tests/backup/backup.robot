@@ -108,8 +108,8 @@ Find Name of Backup Pod
 Check Granular Vault Has Bson Gz
     [Arguments]  ${BACKUP_ID}  ${DB_NAME}
     Find Name of Backup Pod
-    ${files}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls /backup-storage/granular/${BACKUP_ID}/${DB_NAME}/
-    Should Contain  ${files}  .bson.gz  msg=Vault dump ${BACKUP_ID} has no .bson.gz for ${DB_NAME}: ${files}
+    ${count}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls /backup-storage/granular/${BACKUP_ID}/${DB_NAME}/ 2>/dev/null | grep -c '\.bson\.gz$'
+    Should Be True  int($count.strip() or 0) > 0  msg=Vault dump ${BACKUP_ID} has no .bson.gz for ${DB_NAME}
 
 Check Location Of Backup
     [Arguments]  ${PATH_TO_BACKUP}  ${BACKUP_ID}
