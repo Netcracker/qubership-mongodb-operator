@@ -1,5 +1,5 @@
 # Use the latest official Alpine image
-FROM alpine:latest
+FROM alpine:latest@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
 
 # Define the TARGETARCH argument (which will be automatically set by Docker during the build)
 ARG TARGETARCH
