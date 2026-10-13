@@ -161,13 +161,7 @@
       "properties": {
         "profile": { "type": "string", "enum": ["", "small", "medium", "large"] },
         "cloudIntegrationEnabled": { "type": "boolean" },
-        "disasterRecovery": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "image": { "type": "string" }
-          }
-        }
+        "disasterRecovery": { "$ref": "#/$defs/disasterRecovery" }
       }
     },
     "schemaSettings": {
@@ -192,9 +186,41 @@
       "additionalProperties": false,
       "properties": {
         "image": { "type": "string" },
+        "httpAuth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "smSecureAuth": { "type": "boolean" },
+            "smNamespace": { "type": "string" },
+            "smServiceAccountName": { "type": "string" },
+            "restrictedEnvironment": { "type": "boolean" },
+            "customAudience": { "type": "string" }
+          }
+        },
         "mode": { "type": "string", "enum": ["active", "standby", "disabled"] },
         "status": { "type": "string" },
-        "noWait": { "type": "boolean" }
+        "noWait": { "type": "boolean" },
+        "siteManagerEnabled": { "type": "boolean" },
+        "afterServices": { "type": "array", "items": { "type": "string" } },
+        "resources": { "$ref": "#/$defs/resourceRequirements" },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "drCASecretName": { "type": "string" },
+            "duration": { "type": "integer" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" },
+            "certificates": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tls_key": { "type": "string" },
+                "tls_crt": { "type": "string" }
+              }
+            }
+          }
+        }
       }
     },
     "recycler": {
