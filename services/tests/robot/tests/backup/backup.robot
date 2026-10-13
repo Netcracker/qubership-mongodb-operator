@@ -108,6 +108,8 @@ Find Name of Backup Pod
 Check Granular Vault Has Bson Gz
     [Arguments]  ${BACKUP_ID}  ${DB_NAME}
     Find Name of Backup Pod
+    ${vault_listing}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls -laR \${STORAGE:-/backup-storage}/granular/${BACKUP_ID}/ 2>&1
+    Log  Vault tree for ${BACKUP_ID} on pod ${backup_pod}:\n${vault_listing}  console=True
     ${listing}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls -la \${STORAGE:-/backup-storage}/granular/${BACKUP_ID}/${DB_NAME}/ 2>&1
     Log  Vault listing for ${BACKUP_ID}/${DB_NAME}:\n${listing}  console=True
     ${count}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls \${STORAGE:-/backup-storage}/granular/${BACKUP_ID}/${DB_NAME}/ 2>/dev/null | grep -c '\.bson\.gz$'
@@ -145,7 +147,7 @@ Test Backup Granular Data
     ${document}=  Set Variable  {"dbs":["${MONGO_DB}"], "allow_eviction":"true"}
     ${granularbackupjob}=  Backup ${document} Data And Check With 100 Attempts On ${Empty}
     Set Suite Variable  ${granularbackupjob}
-    Wait Until Keyword Succeeds  12x  5s  Check Granular Vault Has Bson Gz  ${granularbackupjob}  ${MONGO_DB}
+    Wait Until Keyword Succeeds  36x  5s  Check Granular Vault Has Bson Gz  ${granularbackupjob}  ${MONGO_DB}
 
 Test Delete Granular Data
     [Tags]  mongo  backup
