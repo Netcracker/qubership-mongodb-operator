@@ -11,10 +11,10 @@ on:
 
 jobs:
   Nightly-MongoDB-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@df5060a6cd932b5560c285d00307d7792f056c0d # v1.17.1
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@96118c398ac5bb4f8e8dff69b05a71789e873684 # v1.17.2
     with:
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'df5060a6cd932b5560c285d00307d7792f056c0d' # v1.17.1 renovate: depName=Netcracker/qubership-test-pipelines
+      pipeline_branch: '96118c398ac5bb4f8e8dff69b05a71789e873684' # v1.17.2 renovate: depName=Netcracker/qubership-test-pipelines
       runner_type: 'ubuntu-latest'
       scope: 'nightly'
       allure: true
