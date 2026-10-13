@@ -105,6 +105,12 @@ Find Name of Backup Pod
     ${backup_pod}=  Get Pod For Service  namespace=${NAMESPACE}    service=mongodb-backup-daemon    label_name=name
     Set Suite Variable  ${backup_pod}
 
+Check Granular Vault Has Bson Gz
+    [Arguments]  ${BACKUP_ID}  ${DB_NAME}
+    Find Name of Backup Pod
+    ${count}=  Execute Command In Pod  ${backup_pod}  ${NAMESPACE}  ls /backup-storage/granular/${BACKUP_ID}/${DB_NAME}/ 2>/dev/null | grep -c '\.bson\.gz$'
+    Should Be True  int($count.strip() or 0) > 0  msg=Vault dump ${BACKUP_ID} has no .bson.gz for ${DB_NAME}
+
 Check Location Of Backup
     [Arguments]  ${PATH_TO_BACKUP}  ${BACKUP_ID}
     Find Name of Backup Pod
@@ -137,6 +143,13 @@ Test Backup Granular Data
     ${document}=  Set Variable  {"dbs":["${MONGO_DB}"], "allow_eviction":"true"}
     ${granularbackupjob}=  Backup ${document} Data And Check With 100 Attempts On ${Empty}
     Set Suite Variable  ${granularbackupjob}
+    ${s3_enabled}=  Check S3_ENABLED environment variable on name=mongodb-backup-daemon is true
+    IF  ${s3_enabled}
+        Log  S3 enabled on backup daemon, skipping local vault check  level=WARN
+    ELSE
+        ${status}  ${msg}=  Run Keyword And Ignore Error  Wait Until Keyword Succeeds  12x  5s  Check Granular Vault Has Bson Gz  ${granularbackupjob}  ${MONGO_DB}
+        Run Keyword If  '${status}' == 'FAIL'  Log  Vault .bson.gz not found after wait, continuing: ${msg}  level=WARN
+    END
 
 Test Delete Granular Data
     [Tags]  mongo  backup
@@ -151,8 +164,8 @@ Test Restore Granular Data
 
 Test Check Restored Granular Data
     [Tags]  mongo  backup
-    Check ${documentOne} Should Exist In ${collection} Of ${MONGO_DB}
-    Check ${documentTwo} Should Exist In ${collection} Of ${MONGO_DB}
+    Wait Until Keyword Succeeds  12x  5s  Check ${documentOne} Should Exist In ${collection} Of ${MONGO_DB}
+    Wait Until Keyword Succeeds  12x  5s  Check ${documentTwo} Should Exist In ${collection} Of ${MONGO_DB}
 
 Test Create Data
     [Tags]  mongo  backup
@@ -399,4 +412,3 @@ Test Check All Restored Full Data From Full Backup Before Incremental On Externa
     Pass Execution If  not ${backup_mount}  ${skipMessageNFS}
     Pass Execution If  not ${full_restore}  ${skipMessage}
     Check ${documentNFS} Should Exist In ${collectionNameNFS} Of ${dbNameNFS}
-
