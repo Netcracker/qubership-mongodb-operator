@@ -160,13 +160,7 @@
       "additionalProperties": true,
       "properties": {
         "profile": { "type": "string", "enum": ["", "small", "medium", "large"] },
-        "disasterRecovery": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "image": { "type": "string" }
-          }
-        }
+        "disasterRecovery": { "$ref": "#/$defs/disasterRecovery" }
       }
     },
     "schemaSettings": {
@@ -351,22 +345,51 @@
       "additionalProperties": false,
       "properties": {
         "install": { "type": "boolean" },
+        "pdb": { "type": "boolean" },
         "storageDirectory": { "type": "string" },
         "s3": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "enabled": { "type": "boolean" },
+            "secretName": { "type": "string" },
+            "sslVerify": { "type": "boolean" },
+            "sslSecretName": { "type": "string" },
+            "sslCert": { "type": "string" },
             "bucketName": { "type": "string" },
-            "secretName":  { "type": "string" },
-            "endpointUrl": { "type": "string" },
             "accessKeyId": { "type": "string" },
-            "accessKeySecret": { "type": "string" }
+            "accessKeySecret": { "type": "string" },
+            "endpointUrl": { "type": "string" }
+          }
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "backupDaemonCASecretName": { "type": "string" },
+            "duration": { "type": "integer" },
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" },
+            "certificates": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tls_key": { "type": "string" },
+                "tls_crt": { "type": "string" }
+              }
+            }
           }
         },
         "dockerImage": { "type": "string" },
+        "priorityClassName": { "type": "string" },
         "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
         "backupSchedule": { "type": "string" },
+        "granularBackupScheduledDbs": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "granularBackupSchedule": { "type": "string" },
         "incBackupSchedule": { "type": "string" },
         "evictionPolicy": { "type": "string" },
         "incEvicitionPolicy": { "type": "string" },
@@ -379,6 +402,9 @@
         "restoreUserRole": { "type": "string" },
         "apiUser": { "type": "string" },
         "apiPassword": { "type": "string" },
+        "backupApiSecretName": { "type": "string" },
+        "restoreUserSecretName": { "type": "string" },
+        "backupSecretName": { "type": "string" },
         "storage": { "$ref": "#/$defs/storageRequirements" },
         "backupResources": { "$ref": "#/$defs/resourceRequirements" },
         "numParallelConnections": { "type": "integer" },
@@ -386,16 +412,9 @@
         "mongoBackupDB": { "type": "string" },
         "mongoSourceDB": { "type": "string" },
         "enableFullRestore": { "type": "boolean" },
+        "dataValidationEnabled": { "type": "boolean" },
         "configCollections": { "type": "array", "items": { "type": "string" } },
-        "tls": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "backupDaemonCASecretName": { "type": "string" },
-            "duration": { "type": "integer" },
-            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
-          }
-        }
+        "affinity": { "$ref": "#/$defs/affinity" }
       }
     },
     "dbaas": {
@@ -403,13 +422,18 @@
       "additionalProperties": false,
       "properties": {
         "install": { "type": "boolean" },
+        "pdb": { "type": "boolean" },
         "dockerImage": { "type": "string" },
+        "priorityClassName": { "type": "string" },
         "apiVersion": { "type": "string" },
         "multiUsers": { "type": "boolean" },
         "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
         "dbaasUser": { "type": "string" },
         "dbaasPassword": { "type": "string" },
         "dbaasUserRole": { "type": "string" },
+        "dbaasStreamingRoleName": { "type": "string" },
+        "dbaasStreamingRoles": { "type": "string" },
+        "dbaasStreamingPrivileges": { "type": "string" },
         "dbaasAggregatorUser": { "type": "string" },
         "dbaasAggregatorPassword": { "type": "string" },
         "dbaasAggregatorRegistrationAddress": { "type": "string" },
@@ -420,9 +444,10 @@
         "dbaasAggregatorRegistrationRetryTimeMS": { "type": "integer" },
         "dbaasAggregatorPhysicalDatabaseIdentifier": { "type": "string" },
         "dbaasPhysicalDatabasesCustomLabels": { "type": "object", "additionalProperties": { "type": "string" } },
-        "dbaasStreamingRoleName": { "type": "string" },
-        "dbaasStreamingRoles": { "type": "string" },
-        "dbaasStreamingPrivileges": { "type": "string" },
+        "dbaasAdminSecretName": { "type": "string" },
+        "dbaasAggregatorSecretName": { "type": "string" },
+        "dbaasRegistrationSecretName": { "type": "string" },
+        "dbaasAdminRoleSecretName": { "type": "string" },
         "dbaasResources": { "$ref": "#/$defs/resourceRequirements" },
         "tls": {
           "type": "object",
@@ -430,7 +455,15 @@
           "properties": {
             "dbaasAdapterCASecretName": { "type": "string" },
             "duration": { "type": "integer" },
-            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" },
+            "certificates": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tls_key": { "type": "string" },
+                "tls_crt": { "type": "string" }
+              }
+            }
           }
         },
         "gatewayAPI": {
@@ -440,7 +473,8 @@
             "gatewayName": { "type": "string" },
             "gatewayNamespace": { "type": "string" }
           }
-        }
+        },
+        "affinity": { "$ref": "#/$defs/affinity" }
       }
     },
     "monitoring": {
