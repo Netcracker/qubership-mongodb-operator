@@ -422,13 +422,18 @@
       "additionalProperties": false,
       "properties": {
         "install": { "type": "boolean" },
+        "pdb": { "type": "boolean" },
         "dockerImage": { "type": "string" },
+        "priorityClassName": { "type": "string" },
         "apiVersion": { "type": "string" },
         "multiUsers": { "type": "boolean" },
         "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
         "dbaasUser": { "type": "string" },
         "dbaasPassword": { "type": "string" },
         "dbaasUserRole": { "type": "string" },
+        "dbaasStreamingRoleName": { "type": "string" },
+        "dbaasStreamingRoles": { "type": "string" },
+        "dbaasStreamingPrivileges": { "type": "string" },
         "dbaasAggregatorUser": { "type": "string" },
         "dbaasAggregatorPassword": { "type": "string" },
         "dbaasAggregatorRegistrationAddress": { "type": "string" },
@@ -439,9 +444,10 @@
         "dbaasAggregatorRegistrationRetryTimeMS": { "type": "integer" },
         "dbaasAggregatorPhysicalDatabaseIdentifier": { "type": "string" },
         "dbaasPhysicalDatabasesCustomLabels": { "type": "object", "additionalProperties": { "type": "string" } },
-        "dbaasStreamingRoleName": { "type": "string" },
-        "dbaasStreamingRoles": { "type": "string" },
-        "dbaasStreamingPrivileges": { "type": "string" },
+        "dbaasAdminSecretName": { "type": "string" },
+        "dbaasAggregatorSecretName": { "type": "string" },
+        "dbaasRegistrationSecretName": { "type": "string" },
+        "dbaasAdminRoleSecretName": { "type": "string" },
         "dbaasResources": { "$ref": "#/$defs/resourceRequirements" },
         "tls": {
           "type": "object",
@@ -449,7 +455,15 @@
           "properties": {
             "dbaasAdapterCASecretName": { "type": "string" },
             "duration": { "type": "integer" },
-            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" }
+            "subjectAlternativeName": { "$ref": "#/$defs/subjectAlternativeName" },
+            "certificates": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tls_key": { "type": "string" },
+                "tls_crt": { "type": "string" }
+              }
+            }
           }
         },
         "gatewayAPI": {
@@ -459,7 +473,8 @@
             "gatewayName": { "type": "string" },
             "gatewayNamespace": { "type": "string" }
           }
-        }
+        },
+        "affinity": { "$ref": "#/$defs/affinity" }
       }
     },
     "monitoring": {
