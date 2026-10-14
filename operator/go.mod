@@ -7,7 +7,7 @@ require (
 	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.14
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/gofiber/swagger v1.1.0
-	github.com/swaggo/swag v1.16.3
+	github.com/swaggo/swag v1.16.6
 	go.uber.org/zap v1.27.1
 	gopkg.in/h2non/gock.v1 v1.1.2
 	k8s.io/api v0.35.3
@@ -90,6 +90,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
+	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
