@@ -8,7 +8,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/gofiber/swagger v1.1.1
 	github.com/swaggo/swag v1.16.6
-	go.uber.org/zap v1.27.1
+	go.uber.org/zap v1.28.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	k8s.io/api v0.37.1
 	k8s.io/apimachinery v0.37.1

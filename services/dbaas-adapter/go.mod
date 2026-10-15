@@ -8,7 +8,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/stretchr/testify v1.12.1
 	go.mongodb.org/mongo-driver v1.17.10
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.28.0
 )
 
 require (
