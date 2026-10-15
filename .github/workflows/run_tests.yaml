@@ -47,11 +47,11 @@ jobs:
 
   MongoDB-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@e1905f040398e9ae733b0cefa7e7793b6204ecfe # v1.16.0
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@96118c398ac5bb4f8e8dff69b05a71789e873684 # v1.17.2
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: 'e1905f040398e9ae733b0cefa7e7793b6204ecfe' # v1.16.0 renovate: depName=Netcracker/qubership-test-pipelines
+      pipeline_branch: '96118c398ac5bb4f8e8dff69b05a71789e873684' # v1.17.2 renovate: depName=Netcracker/qubership-test-pipelines
       skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
       scope: nightly  # TODO: revert to pr after adapter-S3 verification
       allure: false
