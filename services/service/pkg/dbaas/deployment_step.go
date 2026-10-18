@@ -57,6 +57,7 @@ func (r *DbaasDeployment) Execute(ctx core.ExecutionContext) error {
 		"DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER": core.OptionalString(dbaas.DbaasAggregatorPhysicalDatabaseIdentifier, request.Namespace),
 		"DBAAS_ADAPTER_ADDRESS":                         fmt.Sprintf("%s://%s.%s:%d", cUtils.GetHTTPProtocol(tlsEnabled), utils.DbaasName, request.Namespace, dbaasPort),
 		"DBAAS_AGGREGATOR_REGISTRATION_ADDRESS":         dbaas.DbaasAggregatorRegistrationAddress,
+		"DBAAS_DECLARATIVE_REGISTRATION_ENABLED":        strconv.FormatBool(dbaas.DeclarativeRegistration.OperatorNamespace != ""),
 		"DBAAS_AGGREGATOR_REGISTRATION_FIXED_DELAY_MS":  fmt.Sprintf("%v", dbaas.DbaasAggregatorRegistrationFixedDelayMS),
 		"DBAAS_AGGREGATOR_REGISTRATION_RETRY_DELAY_MS":  fmt.Sprintf("%v", dbaas.DbaasAggregatorRegistrationRetryDelayMS),
 		"DBAAS_AGGREGATOR_REGISTRATION_RETRY_TIME_MS":   fmt.Sprintf("%v", dbaas.DbaasAggregatorRegistrationRetryTimeMS),

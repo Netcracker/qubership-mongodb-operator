@@ -427,6 +427,13 @@
         "priorityClassName": { "type": "string" },
         "apiVersion": { "type": "string" },
         "multiUsers": { "type": "boolean" },
+        "declarativeRegistration": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operatorNamespace": { "type": "string" }
+          }
+        },
         "additionalNodeLabels": { "type": "object", "additionalProperties": { "type": "string" } },
         "dbaasUser": { "type": "string" },
         "dbaasPassword": { "type": "string" },

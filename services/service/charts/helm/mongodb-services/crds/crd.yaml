@@ -2212,6 +2212,13 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
+                  declarativeRegistration:
+                    description: DeclarativeRegistration enables registration by the DBaaS Operator from the PhysicalDatabase CR; the adapter then does not self-register. It is enabled when `operatorNamespace` is set.
+                    properties:
+                      operatorNamespace:
+                        description: Namespace of the DBaaS Operator.
+                        type: string
+                    type: object
                   dockerImage:
                     type: string
                   install:

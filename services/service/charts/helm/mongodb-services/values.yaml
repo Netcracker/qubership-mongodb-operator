@@ -236,6 +236,11 @@ dbaas:
 # priorityClassName:
   # apiVersion: v1
   multiUsers: true
+  # Used only when the PhysicalDatabase CRD (dbaas.netcracker.com/v1) is available at render time:
+  # the DBaaS Operator then registers the Adapter and the Adapter does not self-register.
+  declarativeRegistration:
+    # Namespace (CLOUD_NAMESPACE) of the DBaaS Operator. Required in declarative mode.
+    operatorNamespace: dbaas
   gatewayAPI:
     gatewayName: ""
     gatewayNamespace: ""
