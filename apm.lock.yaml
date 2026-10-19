@@ -1,12 +1,110 @@
 lockfile_version: '1'
-generated_at: '2026-08-18T06:29:36.066253+00:00'
-apm_version: 0.27.0
+apm_version: 0.33.0
 dependencies:
 - repo_url: _local/troubleshoot-mongodb
   name: troubleshoot-mongodb
   version: 1.0.0
   package_type: apm_package
+  deployed_files:
+  - .agents/skills/troubleshoot-mongodb
+  - .agents/skills/troubleshoot-mongodb/SKILL.md
+  - .agents/skills/troubleshoot-mongodb/references/troubleshooting.md
+  - .claude/rules/troubleshoot-mongodb.md
+  - .claude/skills/troubleshoot-mongodb
+  - .claude/skills/troubleshoot-mongodb/SKILL.md
+  - .claude/skills/troubleshoot-mongodb/references/troubleshooting.md
+  - .cursor/rules/troubleshoot-mongodb.mdc
+  - .github/instructions/troubleshoot-mongodb.instructions.md
+  deployed_file_hashes:
+    .agents/skills/troubleshoot-mongodb/SKILL.md: sha256:5e5e4dc92a659a5e6dde560120d3b8079006c41371db3fe5cf7aad048a206aff
+    .agents/skills/troubleshoot-mongodb/references/troubleshooting.md: sha256:e1eb48e7e32bc0a7136f7d812921c43b12328e216de6e8689746d6251d61d175
+    .claude/rules/troubleshoot-mongodb.md: sha256:0280a660b8e2a05e130f98603e3fba8bf8eb0626ac879f64fdbcf612d12d7750
+    .claude/skills/troubleshoot-mongodb/SKILL.md: sha256:5e5e4dc92a659a5e6dde560120d3b8079006c41371db3fe5cf7aad048a206aff
+    .claude/skills/troubleshoot-mongodb/references/troubleshooting.md: sha256:e1eb48e7e32bc0a7136f7d812921c43b12328e216de6e8689746d6251d61d175
+    .cursor/rules/troubleshoot-mongodb.mdc: sha256:39fd13f89736fb591ca4162bc04df23d65a547064381d39c18fc68b5026cfbd6
+    .github/instructions/troubleshoot-mongodb.instructions.md: sha256:a581ad3c100270229eb48c0da762d0e6599a2b587bbf2ea72bde57cf3ab718a7
   source: local
   local_path: ./agent-packages/troubleshoot-mongodb/
   is_dev: true
-deployments: []
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/rules/troubleshoot-mongodb.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:0280a660b8e2a05e130f98603e3fba8bf8eb0626ac879f64fdbcf612d12d7750
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-mongodb
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-mongodb/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:5e5e4dc92a659a5e6dde560120d3b8079006c41371db3fe5cf7aad048a206aff
+- kind: project-relative
+  target: claude
+  value: .claude/skills/troubleshoot-mongodb/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:e1eb48e7e32bc0a7136f7d812921c43b12328e216de6e8689746d6251d61d175
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-mongodb
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: null
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-mongodb/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:5e5e4dc92a659a5e6dde560120d3b8079006c41371db3fe5cf7aad048a206aff
+- kind: project-relative
+  target: copilot
+  value: .agents/skills/troubleshoot-mongodb/references/troubleshooting.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:e1eb48e7e32bc0a7136f7d812921c43b12328e216de6e8689746d6251d61d175
+- kind: project-relative
+  target: copilot
+  value: .github/instructions/troubleshoot-mongodb.instructions.md
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:a581ad3c100270229eb48c0da762d0e6599a2b587bbf2ea72bde57cf3ab718a7
+- kind: project-relative
+  target: cursor
+  value: .cursor/rules/troubleshoot-mongodb.mdc
+  runtime: null
+  scope: project
+  owners:
+  - ./agent-packages/troubleshoot-mongodb/
+  active_owner: ./agent-packages/troubleshoot-mongodb/
+  content_hash: sha256:39fd13f89736fb591ca4162bc04df23d65a547064381d39c18fc68b5026cfbd6
