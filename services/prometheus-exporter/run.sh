@@ -65,8 +65,7 @@ mongosCollectors="\
   --collector.collstats=false \
   --collector.profile \
   --collector.fcv \
-  --collector.shards \
-  --collector.pbm"
+  --collector.shards"
       
 
 if [[ ${TLS_ENABLED} = true ]]; then
