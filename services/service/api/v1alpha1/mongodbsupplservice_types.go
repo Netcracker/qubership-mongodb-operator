@@ -167,6 +167,11 @@ type S3backup struct {
 	SslCert         string `json:"sslCert,omitempty"`
 }
 
+type DbaasDeclarativeRegistration struct {
+	// Namespace of the DBaaS Operator.
+	OperatorNamespace string `json:"operatorNamespace,omitempty"`
+}
+
 type Dbaas struct {
 	Install                                   bool                     `json:"install,omitempty"`
 	DockerImage                               string                   `json:"dockerImage,omitempty"`
@@ -180,6 +185,8 @@ type Dbaas struct {
 	DbaasAggregatorRegistrationRetryTimeMS    int                      `json:"dbaasAggregatorRegistrationRetryTimeMS,omitempty"`
 	ApiVersion                                string                   `json:"apiVersion,omitempty"`
 	MultiUsers                                bool                     `json:"multiUsers,omitempty"`
+	// DeclarativeRegistration enables registration by the DBaaS Operator from the PhysicalDatabase CR; the adapter then does not self-register. It is enabled when `operatorNamespace` is set.
+	DeclarativeRegistration DbaasDeclarativeRegistration `json:"declarativeRegistration,omitempty"`
 	TLS                                       DbaasAdapterTLS          `json:"tls,omitempty"`
 	PriorityClassName                         string                   `json:"priorityClassName,omitempty"`
 	DbaasAdminSecretName                      string                   `json:"dbaasAdminSecretName,omitempty"`

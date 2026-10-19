@@ -207,6 +207,10 @@ spec:
       {{- toYaml .Values.dbaas.affinity | nindent 6 }}
     {{- end }}
     multiUsers: {{ .Values.dbaas.multiUsers }}
+    {{- if eq (include "dbaas.declarativeRegistration.enabled" .) "true" }}
+    declarativeRegistration:
+      operatorNamespace: {{ required "dbaas.declarativeRegistration.operatorNamespace is required when the PhysicalDatabase CRD is available" .Values.dbaas.declarativeRegistration.operatorNamespace | quote }}
+    {{- end }}
     dbaasAdminSecretName: {{ .Values.dbaas.dbaasAdminSecretName }}
     dbaasAggregatorSecretName: {{ .Values.dbaas.dbaasAggregatorSecretName }}
     dbaasRegistrationSecretName: {{ .Values.dbaas.dbaasRegistrationSecretName }}

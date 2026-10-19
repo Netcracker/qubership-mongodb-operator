@@ -1,0 +1,12 @@
+{{- if eq (include "dbaas.declarativeRegistration.enabled" .) "true" }}
+apiVersion: dbaas.netcracker.com/v1
+kind: PhysicalDatabase
+metadata:
+  name: {{ .Release.Name }}-physical-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  operatorNamespace: {{ required "dbaas.declarativeRegistration.operatorNamespace is required" .Values.dbaas.declarativeRegistration.operatorNamespace | quote }}
+  adapterAddress: {{ include "dbaas.adapterAddress" . | quote }}
+  credentialsSecretRef:
+    name: {{ .Values.dbaas.dbaasAggregatorSecretName | quote }}
+{{- end }}

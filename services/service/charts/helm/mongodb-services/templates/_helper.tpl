@@ -472,3 +472,27 @@ Backup Daemon SSL secret name
     {{- end -}}
   {{- end -}}
 {{- end -}}
+
+{{/*
+Declarative physical database registration is used when the Adapter is installed and the shared
+PhysicalDatabase CRD is available at render time. Renders "true" or "false".
+*/}}
+{{- define "dbaas.declarativeRegistration.enabled" -}}
+  {{- if and (eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true )) "true") (.Capabilities.APIVersions.Has "dbaas.netcracker.com/v1/PhysicalDatabase") -}}
+    true
+  {{- else -}}
+    false
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Address of the DBaaS Adapter Service reachable by the DBaaS Operator; the scheme and port follow the Adapter TLS setting.
+*/}}
+{{- define "dbaas.adapterAddress" -}}
+  {{- $aggregatorAddress := include "fromEnv" (dict "envName" .Values.API_DBAAS_ADDRESS "default" .Values.dbaas.dbaasAggregatorRegistrationAddress) -}}
+  {{- if and (ne .Values.tls.mode "disabled") (contains "https" $aggregatorAddress) -}}
+    https://dbaas-mongo-adapter.{{ .Release.Namespace }}:8443
+  {{- else -}}
+    http://dbaas-mongo-adapter.{{ .Release.Namespace }}:8080
+  {{- end -}}
+{{- end -}}
