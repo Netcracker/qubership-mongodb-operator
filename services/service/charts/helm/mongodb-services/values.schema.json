@@ -451,7 +451,8 @@
           "additionalProperties": false,
           "properties": {
             "gatewayName": { "type": "string" },
-            "gatewayNamespace": { "type": "string" }
+            "gatewayNamespace": { "type": "string" },
+            "gatewayType": { "type": "string" }
           }
         },
         "affinity": { "$ref": "#/$defs/affinity" }

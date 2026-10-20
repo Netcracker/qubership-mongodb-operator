@@ -23,6 +23,12 @@ app.kubernetes.io/part-of: {{ default "mongodb-services" .Values.PART_OF }}
 app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- end -}}
 
+{{/* Ingress/HTTPRoute labels */}}
+{{- define "ingress.labels" -}}
+deployment.netcracker.com/ingress-audience-type: "ops-user"
+deployment.netcracker.com/ingress-type: "private-network"
+{{- end -}}
+
 {{/*
 Configure MongoDB service 'enableDisasterRecovery' property
 */}}
@@ -430,6 +436,17 @@ Usage example:
     {{- end -}}
     {{- printf "deployment  %s  %s %s, " .Values.operator.operatorName .Values.operator.operatorName (include "find_image" (dict "deployName" "dockerMongodbService" "SERVICE_NAME" "dockerMongodbService" "vals" .Values "default" "not_found")) -}}
   {{- end -}}
+{{- end -}}
+
+{{/*
+Return type for gateway
+*/}}
+{{- define "gateway.type" -}}
+{{- if and .Values.GATEWAY_SYSTEM_TYPE .Values.global.cloudIntegrationEnabled }}
+{{- .Values.GATEWAY_SYSTEM_TYPE }}
+{{- else }}
+{{- default "legacy-ingress" .Values.dbass.gatewayAPI.gatewayType }}
+{{- end -}}
 {{- end -}}
 
 {{/*

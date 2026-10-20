@@ -434,6 +434,7 @@ The list of DBaaS Adapter parameters is as follows:
 | `dbaas.tls.subjectAlternativeName.additionalIpAddresses` | false     | list of string | [ ]                                                                                            | The list of additional IP addresses.|
 | `dbaas.gatewayAPI.gatewayName`                        | false     | string | default-external-gateway           | Chart default for Gateway name.                   |
 | `dbaas.gatewayAPI.gatewayNamespace`                   | false     | string | gateway-system                     | Chart default for Gateway namespace.            |
+| `dbaas.gatewayAPI.gatewayType`                        | false     | string | legacy-ingress                     | Chart default for Gateway type.                 |
 
 ### Declarative Physical Database Registration
 
