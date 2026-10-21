@@ -510,7 +510,7 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- $namespace := .Release.Namespace -}}
 
 - localhost
-{{- range $domain := (include "mongodb.certDomains" $ctx | fromYamlArray) }}
+{{- range $domain := (include "mongodb.certDomains" . | fromYamlArray) }}
 - {{ printf "mongos.%s.svc.%s" $namespace $domain }}
 {{- end }}
 
