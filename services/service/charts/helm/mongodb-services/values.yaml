@@ -244,6 +244,7 @@ dbaas:
   gatewayAPI:
     gatewayName: ""
     gatewayNamespace: ""
+    gatewayType: ""
 
   tls:
     dbaasAdapterCASecretName: dbaas-adapter-certificate
