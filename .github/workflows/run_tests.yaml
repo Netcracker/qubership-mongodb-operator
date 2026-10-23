@@ -38,7 +38,7 @@ jobs:
           echo "skip_tests=$SKIP_TESTS" >> $GITHUB_OUTPUT
       - name: Wait for push.yml to complete
         if: steps.check.outputs.skip_tests == 'false'
-        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@0eefd4976131d113c986281eed8bc642b6da303d  # v2.8.1
+        uses: netcracker/qubership-workflow-hub/actions/wait-for-workflow@e6afd0a6bcc4f24d73e3e4d5fb9a31ada009e3f1  # v2.8.2
         id: wait
         with:
           workflow: build.yaml
