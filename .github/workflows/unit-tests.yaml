@@ -13,6 +13,9 @@ permissions:
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/netcracker/linter:common_linter_integration
+      options: --entrypoint=""
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -27,13 +30,12 @@ jobs:
           restore-keys: |
             go-mod-cache-${{ runner.os }}-
 
-      - name: Run unit tests
+      - name: Configure Git authentication for private Go modules
         run: |
-          docker run --rm \
-            -e CI=true \
-            -e DEFAULT_BRANCH=main \
-            -v "$GITHUB_WORKSPACE:/tmp/lint" \
-            -w /tmp/lint \
-            --entrypoint "" \
-            ghcr.io/netcracker/linter:common_linter_integration \
-            make test
+          git config --global url."https://token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Run unit tests
+        run: make test
+        env:
+          CI: "true"
+          DEFAULT_BRANCH: "main"
