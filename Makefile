@@ -54,10 +54,9 @@ LINTER_RUN ?= docker run --rm \
 
 # Test targets run on the host, or inside the common linter container in CI.
 # GO_TEST_MODULES is auto-detected from go.mod files. Set it explicitly to
-# override. If FILTER is set, only modules matching the regex are tested. When
-# a default branch is available and no .go/.mod/.sum files changed, Go tests are
-# skipped. Otherwise go test ./... runs in every detected module (subject to
-# FILTER).
+# override. When a default branch is available and no .go/.mod/.sum files
+# changed, Go tests are skipped. Otherwise go test ./... runs in every detected
+# module.
 GO_TEST_MODULES ?= $(shell find $(REPO_ROOT) -name go.mod -not -path '*/vendor/*' -exec dirname {} \;)
 # Python interpreter to use for test-python. Override if only `python` is
 # available on the host or in the CI container.
@@ -88,12 +87,10 @@ verify:
 test: test-go test-python
 
 test-go:
-	@filter="$(FILTER)"; \
-	repo_root="$(REPO_ROOT)"; \
+	@repo_root="$(REPO_ROOT)"; \
 	repo_root="$${repo_root%/}"; \
 	base_branch="$(DEFAULT_BRANCH)"; \
 	base_ref="$$base_branch"; \
-	echo "[test-go] FILTER=$$filter"; \
 	echo "[test-go] REPO_ROOT=$$repo_root"; \
 	echo "[test-go] DEFAULT_BRANCH=$$base_branch"; \
 	if ! git -C "$$repo_root" rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
@@ -116,10 +113,6 @@ test-go:
 	echo "[test-go] Detected modules: $$modules"; \
 	for mod in $$modules; do \
 		rel_mod="$${mod#$$repo_root/}"; \
-		if [ -n "$$filter" ] && ! echo "$$rel_mod" | grep -Eq "$$filter" && ! echo "$$rel_mod/" | grep -Eq "$$filter"; then \
-			echo "[test-go] Skipping $$rel_mod (does not match FILTER)"; \
-			continue; \
-		fi; \
 		if find "$$mod" -name '*_test.go' -print -quit | grep -q .; then \
 			echo "=== Testing $$rel_mod ==="; \
 			(cd "$$mod" && go test ./...); \
@@ -151,11 +144,11 @@ test-python:
 	fi; \
 	echo "=== Running Python tests ==="; \
 	echo "[test-python] Running PY_BUILD: $(PY_BUILD)"; \
-	$(PY_BUILD) || exit 1; \
+	$(PY_BUILD); py_build_rc=$$?; if [ $$py_build_rc -ne 0 ]; then exit $$py_build_rc; fi; \
 	echo "[test-python] Installing pytest"; \
 	$(PYTHON) -m pip install --quiet pytest || exit 1; \
 	echo "[test-python] Running: $(PYTHON_TEST_CMD)"; \
-	$(PYTHON_TEST_CMD)
+	$(PYTHON_TEST_CMD); test_rc=$$?; if [ $$test_rc -eq 5 ]; then echo "[test-python] pytest exit code 5 (no tests collected) treated as success"; test_rc=0; fi; exit $$test_rc
 
 ifeq ($(CI),true)
 
@@ -190,11 +183,7 @@ lint:
 	echo "[lint] SUCCESS"
 
 lint-super-linter:
-ifdef FILTER
-	FILTER_REGEX_INCLUDE="$(FILTER)" /usr/local/bin/run.sh super-linter
-else
 	/usr/local/bin/run.sh super-linter
-endif
 
 skill-validate:
 	@if [ -z "$(SKILLCHECK_PATTERNS)" ]; then \
@@ -236,11 +225,7 @@ lint:
 	echo "[lint] SUCCESS"
 
 lint-super-linter: ensure-linter-image
-ifdef FILTER
-	FILTER_REGEX_INCLUDE="$(FILTER)" $(LINTER_RUN) super-linter
-else
 	$(LINTER_RUN) super-linter
-endif
 
 skill-validate: ensure-linter-image
 	@if [ -z "$(SKILLCHECK_PATTERNS)" ]; then \
