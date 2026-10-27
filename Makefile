@@ -92,17 +92,21 @@ test-go:
 	repo_root="$(REPO_ROOT)"; \
 	repo_root="$${repo_root%/}"; \
 	base_branch="$(DEFAULT_BRANCH)"; \
+	base_ref="$$base_branch"; \
 	echo "[test-go] FILTER=$$filter"; \
 	echo "[test-go] REPO_ROOT=$$repo_root"; \
 	echo "[test-go] DEFAULT_BRANCH=$$base_branch"; \
-	if git -C "$$repo_root" rev-parse --verify "$$base_branch" >/dev/null 2>&1; then \
-		if ! git -C "$$repo_root" diff --name-only "$$base_branch" -- | grep -Eq '\.(go|mod|sum)$$'; then \
-			echo "[test-go] No Go, go.mod, or go.sum files changed against $$base_branch; skipping"; \
+	if ! git -C "$$repo_root" rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
+		base_ref="origin/$$base_branch"; \
+	fi; \
+	if git -C "$$repo_root" rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
+		if ! git -C "$$repo_root" diff --name-only "$$base_ref" -- | grep -Eq '\.(go|mod|sum)$$'; then \
+			echo "[test-go] No Go, go.mod, or go.sum files changed against $$base_ref; skipping"; \
 			exit 0; \
 		fi; \
-		echo "[test-go] Go, go.mod, or go.sum files changed against $$base_branch"; \
+		echo "[test-go] Go, go.mod, or go.sum files changed against $$base_ref"; \
 	else \
-		echo "[test-go] Default branch $$base_branch not found; running all Go tests"; \
+		echo "[test-go] Default branch $$base_branch (or origin/$$base_branch) not found; running all Go tests"; \
 	fi; \
 	modules="$(GO_TEST_MODULES)"; \
 	if [ -z "$$modules" ]; then \
@@ -128,18 +132,22 @@ test-python:
 	@repo_root="$(REPO_ROOT)"; \
 	repo_root="$${repo_root%/}"; \
 	base_branch="$(DEFAULT_BRANCH)"; \
+	base_ref="$$base_branch"; \
 	if [ -z "$(PY_BUILD)" ]; then \
 		echo "[test-python] PY_BUILD not set; skipping"; \
 		exit 0; \
 	fi; \
-	if git -C "$$repo_root" rev-parse --verify "$$base_branch" >/dev/null 2>&1; then \
-		if ! git -C "$$repo_root" diff --name-only "$$base_branch" -- | grep -Eq '\.py$$'; then \
-			echo "[test-python] No Python files changed against $$base_branch; skipping"; \
+	if ! git -C "$$repo_root" rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
+		base_ref="origin/$$base_branch"; \
+	fi; \
+	if git -C "$$repo_root" rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
+		if ! git -C "$$repo_root" diff --name-only "$$base_ref" -- | grep -Eq '\.py$$'; then \
+			echo "[test-python] No Python files changed against $$base_ref; skipping"; \
 			exit 0; \
 		fi; \
-		echo "[test-python] Python files changed against $$base_branch"; \
+		echo "[test-python] Python files changed against $$base_ref"; \
 	else \
-		echo "[test-python] Default branch $$base_branch not found; running Python tests"; \
+		echo "[test-python] Default branch $$base_branch (or origin/$$base_branch) not found; running Python tests"; \
 	fi; \
 	echo "=== Running Python tests ==="; \
 	echo "[test-python] Running PY_BUILD: $(PY_BUILD)"; \
