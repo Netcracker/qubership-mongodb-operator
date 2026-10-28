@@ -33,7 +33,7 @@ This section provides information about failures when converting an existing sin
 
 ### Description
 
-Older operator versions required the standby cluster to be deployed before the active cluster. Starting with a release that includes the HA-to-DR live migration fix, MongoDB can start as HA (single-site) and transition to DR once the standby cluster is available. If this transition fails, the operator may report a reconciliation error about the MongoDB version.
+Older operator versions required the standby cluster to be deployed before the active cluster. Starting with latest release that includes the HA-to-DR live migration fix, MongoDB can start as HA (single-site) and transition to DR once the standby cluster is available. If this transition fails, the operator may report a reconciliation error about the MongoDB version.
 
 ### Alerts
 
@@ -54,7 +54,7 @@ Also look for attempts to change `schemaSettings.schemaType` from `ha` to `dr` w
    - Do not simply change `schemaSettings.schemaType` from `ha` to `dr` and run a rolling update; the operator treats that as a rolling update and skips the steps needed to add standby-side members.
 
 2. **Verify the operator/services versions**
-   - The live migration path requires a release that includes the fix.
+   - The live migration path requires latest release that includes the fix.
 
 3. **If the DR site is not ready at install time**
    - Deploy MongoDB as HA first (`schemaSettings.schemaType: ha`).
@@ -71,7 +71,7 @@ This section provides information about mongodb-prometheus-exporter failing to c
 
 ### Description
 
-After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in a later release.
+After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in latest release.
 
 ### Alerts
 
@@ -114,7 +114,7 @@ The `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` De
    - Retry the switchover if needed.
 
 4. **Permanent fix**
-   - Upgrade to a release that contains the fix for correctly updating `EXPORT_MONGOS` during switchover.
+   - Upgrade to latest release that contains the fix for correctly updating `EXPORT_MONGOS` during switchover.
 
 ### Recommendations
 
