@@ -1409,3 +1409,78 @@ Too many open files
 ### Recommendations
 
 "Not applicable"
+
+## Common Issues - DBaaS Adapter Does Not Support Backup Operation
+
+This section provides information about the MongoDB issues related to dbaas-mongo-adapter reporting `backupRestore: false` and DBaaS backup requests failing because the adapter was not reconciled with backup API credentials.
+
+### Description
+
+When backup is enabled (or the operator is upgraded) without changing any `spec.dbaas` field, the operator's `DbaasCompound.Condition()` may not re-run the dbaas-mongo-adapter deployment. Because backup-related parameters are not tagged as common parameters, the adapter Deployment is never updated with the `BACKUP_DAEMON_API_CREDENTIALS_USERNAME` and `BACKUP_DAEMON_API_CREDENTIALS_PASSWORD` environment variables. The adapter starts without backup credentials and disables the Backup API.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+DBaaS backup request returns:
+
+```text
+The backup request have not been passed validate procedure and some adapters do not supported backup operation: Some adapters do not supported backup operation. To skip databases which does not support backup send the same request with parameter "ignoreNotBackupableDatabases=true"
+```
+
+Registered physical database shows:
+
+```text
+"backupRestore": false
+```
+
+dbaas-mongo-adapter log shows:
+
+```text
+Backup credentials are not set. Backup API is not working.
+```
+
+Operator log may show:
+
+```text
+Current dbaas-mongo-adapter version is: ...
+dbaas-mongo-adapter didn't change
+```
+
+### How to solve
+
+Choose one of the following options:
+
+1. **Force operator reconciliation by touching a dbaas field (recommended workaround)**
+   - Edit the `MongodbDeployment` / `MongodbSupplService` CR or the Helm values.
+   - Change any field under `spec.dbaas` (for example, `dbaasResources.limits.cpu`) so that `CheckSpecChange` returns true.
+   - Redeploy and wait for the operator to recreate the dbaas-mongo-adapter Deployment with the backup credential env vars.
+
+2. **Patch the running dbaas-mongo-adapter Deployment directly**
+   - Add the missing environment variables to the dbaas-mongo-adapter container:
+
+   ```yaml
+   - name: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
+     valueFrom:
+       secretKeyRef:
+         name: mongodb-backup-api-credentials.v1
+         key: username
+   - name: BACKUP_DAEMON_API_CREDENTIALS_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: mongodb-backup-api-credentials.v1
+         key: password
+   ```
+
+   - Verify the secret `mongodb-backup-api-credentials.v1` exists in the namespace.
+
+3. **Verify the fix**
+   - Check the dbaas-mongo-adapter Deployment contains the backup credential env vars.
+   - Re-register the physical database or restart the dbaas-mongo-adapter pod if needed.
+   - Retry the backup request through DBaaS swagger.
+
+### Recommendations
+
+After upgrading the operator or enabling backup, always verify that `dbaas-mongo-adapter` is reconciled and the backup credentials are mounted. If backup is enabled after the initial deployment, touch a dbaas field or do a rolling restart of the dbaas-mongo-adapter Deployment to force reconciliation.
