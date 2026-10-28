@@ -1,6 +1,6 @@
 ---
 name: troubleshoot-mongodb
-description: Diagnose and resolve MongoDB operator issues: sharded/replica-set failures, backup/restore, DBaaS adapter, deployment, DR switchover/HA-to-DR, WiredTiger, SCRAM/keyfile auth, connection limits, resource exhaustion. Covers MongodbDeployment/MongodbSupplService CRDs, mongod/mongos, backup daemon, monitoring/prometheus exporter, DBaaS adapter.
+description: "Diagnose and resolve MongoDB operator issues: sharded/replica-set failures, backup/restore, DBaaS adapter, deployment, DR switchover/HA-to-DR, WiredTiger, SCRAM/keyfile auth, connection limits, resource exhaustion. Covers MongodbDeployment/MongodbSupplService CRDs, mongod/mongos, backup daemon, monitoring/prometheus exporter, DBaaS adapter."
 ---
 
 # MongoDB Operator Troubleshooting Skill
