@@ -72,8 +72,8 @@ For each failure mode below, detailed step-by-step remediation is in the corresp
 
 - **Switchover / Failover Failed:** Operation does not complete. Delete `summary-spec` in `last-applied-configuration-info`, restart operator, retry.
 - **Clean Install Fails on One Side of a DR Pair:** Standby was not deployed first or domain names not swapped. Deploy standby first, then active, with swapped `thisDomainName`/`otherDomainName`.
-- **Transitioning from HA to DR Fails:** Operator logs `Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version` or `schemaType` changed `ha`→`dr` without standby members added. Use operator **2.16.6+** and follow the [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure.
-- **Prometheus Exporter Authentication Errors After Switchover:** Exporter logs `AuthenticationFailed` / `sasl conversation error` / `ReplicaSetNoPrimary` after switchover. Set `EXPORT_MONGOS=false` on the new standby side; upgrade to operator **2.16.10+** / mongodb-services **master-supplementary-20260921.033143-345+**.
+- **Transitioning from HA to DR Fails:** Operator logs `Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version` or `schemaType` changed `ha`→`dr` without standby members added. Use a release that includes the HA-to-DR live migration fix and follow the [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure.
+- **Prometheus Exporter Authentication Errors After Switchover:** Exporter logs `AuthenticationFailed` / `sasl conversation error` / `ReplicaSetNoPrimary` after switchover. Set `EXPORT_MONGOS=false` on the new standby side; upgrade to a release that contains the fix for correctly updating `EXPORT_MONGOS` during switchover.
 
 ### 7. Authentication & Connectivity
 
@@ -212,7 +212,7 @@ kubectl logs <mongodb-backup-daemon-pod> | grep -iE "backup|restore|snapshot|s3|
 
 1. Set `mongodb.customDataRSParameters` as a JSON-encoded `"key=value"` list; redeploy replaces the whole list, so include existing entries.
 2. Use typed `mongodb.*WiredTigerCacheGb` and raise cache + memory limits together (cache < pod memory limit).
-3. Deploy DR standby first with swapped `thisDomainName`/`otherDomainName`; if standby isn't ready, deploy HA first and use HA-to-DR migration (operator 2.16.6+).
+3. Deploy DR standby first with swapped `thisDomainName`/`otherDomainName`; if standby isn't ready, deploy HA first and use HA-to-DR migration (requires a release that includes the live migration fix).
 4. Use `recycler.install: true` or wipe PVs for clean reinstalls.
 5. Monitor disk usage/oplog window and expand PVCs before they fill.
 6. Test backup/restore and DR failover/switchover regularly in non-production.
