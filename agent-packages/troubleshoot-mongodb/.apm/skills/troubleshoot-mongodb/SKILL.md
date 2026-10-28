@@ -638,14 +638,14 @@ kubectl logs <mongodb-backup-daemon-pod> | grep -iE "s3|credentials|permission d
 
 ## Related Documentation
 
-- [Installation Guide](docs/public/installation_guide.md) — Prerequisites, Helm parameters, platform-specific setup
-- [Configuration Guide](docs/public/configuration.md) — CRD fields and value reference
-- [Architecture](docs/public/architecture.md) — Cluster topology and component architecture
-- [Operations Guide](docs/public/operations_guide.md) — Day-2 operations
-- [Troubleshooting Guide](docs/public/troubleshooting.md) — Detailed issue-by-issue remediation
-- [DR Operations](docs/public/dr_operations.md) — Active-standby DR procedures
-- [Backup Daemon](docs/public/backup-daemon.md) — Backup/restore configuration
-- [Grafana Dashboard](docs/public/grafana_dashboard.md) — Monitoring dashboards
+- [Installation Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md) — Prerequisites, Helm parameters, platform-specific setup
+- [Configuration Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/configuration.md) — CRD fields and value reference
+- [Architecture](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/architecture.md) — Cluster topology and component architecture
+- [Operations Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/operations_guide.md) — Day-2 operations
+- [Troubleshooting Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/troubleshooting.md) — Detailed issue-by-issue remediation
+- [DR Operations](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/dr_operations.md) — Active-standby DR procedures
+- [Backup Daemon](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/backup-daemon.md) — Backup/restore configuration
+- [Grafana Dashboard](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/grafana_dashboard.md) — Monitoring dashboards
 
 ## When to Escalate
 
