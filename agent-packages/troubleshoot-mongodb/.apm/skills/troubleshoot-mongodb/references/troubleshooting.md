@@ -44,14 +44,17 @@ Active alert on `mongodb-prometheus-exporter` or MongoDB metrics missing in Graf
 mongodb-prometheus-exporter log shows repeated authentication errors:
 
 ```text
-time=... level=ERROR source=exporter.go:328 msg="Cannot connect to MongoDB" error="cannot connect to MongoDB: connection() error occurred during connection handshake: auth error: sasl conversation error: unable to authenticate using mechanism \"SCRAM-SHA-1\": (AuthenticationFailed) Authentication failed."
+source=exporter.go:328 msg="Cannot connect to MongoDB"
+sasl conversation error: unable to authenticate using mechanism "SCRAM-SHA-1": (AuthenticationFailed) Authentication failed
 ```
 
 Exporter also reports `ReplicaSetNoPrimary` while trying to reach mongos endpoints:
 
 ```text
-server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary, Servers: [ ... ] }
+server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary
 ```
+
+The `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment is still `true` on the standby side, but no mongos pods exist there.
 
 ### How to solve
 

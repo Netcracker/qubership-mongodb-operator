@@ -388,6 +388,7 @@ See the detailed section *Common Issues - DBaaS Adapter Does Not Support Backup 
    - Mongos logs: `kubectl logs -n <namespace> <mongos-pod>`
    - Backup daemon logs: `kubectl logs -n <namespace> <mongodb-backup-daemon-pod>`
    - Monitoring agent logs: `kubectl logs -n <namespace> <mongodb-monitoring-agent-pod>`
+   - Prometheus exporter logs: `kubectl logs -n <namespace> <mongodb-prometheus-exporter-pod>`
 
 2. **Check resource state:**
    - CRD status: `kubectl get mongodbdeployment,mongodbsupplservice -n <namespace> -o yaml`
@@ -605,6 +606,17 @@ kubectl logs <mongos-pod> | grep -iE "can't choose primary|read preference|confi
 
 # Connection limits
 kubectl logs <mongos-pod> | grep -iE "too many open files|connection refused"
+```
+
+### Prometheus Exporter Logs
+
+**Key patterns:**
+```bash
+# Post-switchover auth / mongos scrape errors
+kubectl logs <mongodb-prometheus-exporter-pod> | grep -iE "cannot connect to mongodb|sasl conversation error|replicasetnoprimary|export_mongos"
+
+# General exporter errors
+kubectl logs <mongodb-prometheus-exporter-pod> | grep -iE "error|cannot connect"
 ```
 
 ### Backup Daemon Logs

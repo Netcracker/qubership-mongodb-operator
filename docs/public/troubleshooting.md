@@ -33,7 +33,7 @@ This section provides information about mongodb-prometheus-exporter failing to c
 
 ### Description
 
-After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in operator release 2.16.10 and mongodb-services master-supplementary-20260921.033143-345.
+After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in operator release 2.16.10 and mongodb-services master-supplementary 20260921.033143-345.
 
 ### Alerts
 
@@ -44,14 +44,17 @@ Active alert on `mongodb-prometheus-exporter` or MongoDB metrics missing in Graf
 mongodb-prometheus-exporter log shows repeated authentication errors:
 
 ```text
-time=... level=ERROR source=exporter.go:328 msg="Cannot connect to MongoDB" error="cannot connect to MongoDB: connection() error occurred during connection handshake: auth error: sasl conversation error: unable to authenticate using mechanism \"SCRAM-SHA-1\": (AuthenticationFailed) Authentication failed."
+source=exporter.go:328 msg="Cannot connect to MongoDB"
+sasl conversation error: unable to authenticate using mechanism "SCRAM-SHA-1": (AuthenticationFailed) Authentication failed
 ```
 
 Exporter also reports `ReplicaSetNoPrimary` while trying to reach mongos endpoints:
 
 ```text
-server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary, Servers: [ ... ] }
+server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary
 ```
+
+The `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment is still `true` on the standby side, but no mongos pods exist there.
 
 ### How to solve
 
