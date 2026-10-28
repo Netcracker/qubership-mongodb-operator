@@ -1477,6 +1477,44 @@ __system
 
 "Not applicable"
 
+## Common Issues - Mongos Did Not Restart After Keyfile Change During Rolling Update
+
+This section provides information about mongos pods not being restarted during a rolling update, causing them to keep the old keyfile while datars/cnfrs pods have the new one.
+
+### Description
+
+After a MongoDB rolling update that rotates the `mongo-secret` keyfile, mongos pods may not be recreated automatically and continue to use the old keyfile. Because datars/cnfrs pods that have restarted already mount the new keyfile, mongos cannot authenticate to them, resulting in repeated SCRAM failures for the `__system` user and continuous restarts of data/config replica-set members.
+
+### Alerts
+
+Continuous restarts of `datars*` / `cnfrs*` pods, `MongoDB replication Status 3 (RECOVERING)`, or inter-member `AuthenticationFailed` during/after an upgrade.
+
+### Stack trace(s)
+
+```text
+Failed to authenticate
+isClusterMember: true
+mechanism: SCRAM-SHA-256
+user: __system
+db: local
+error: AuthenticationFailed: SCRAM authentication failed, storedKey mismatch
+```
+
+The keyfile inside mongos pods still matches the old `mongo-secret` value while `datars`/`cnfrs` pods already have the rotated value.
+
+### How to solve
+
+1. **Compare keyfiles** in mongos pods versus datars/cnfrs pods that have already restarted. If mongos still has the pre-rotation keyfile, proceed to step 2.
+2. **Restart mongos** so it loads the rotated keyfile:
+   ```bash
+   kubectl rollout restart deployment/mongos -n <namespace>
+   ```
+3. **Verify** that the SCRAM `storedKey mismatch` errors stop and replica-set members recover to `PRIMARY`/`SECONDARY`.
+
+### Recommendations
+
+After any keyfile-rotating rolling update, confirm that mongos pods were recreated. If not, roll them out manually before declaring the upgrade complete.
+
 ## Common Issues - Connections Refused With "Too Many Open Files" Error
 
 This section provides information about the MongoDB issues related to connections being refused due to the container's open file descriptor limit being exceeded, resulting in ```Error accepting new connection on local endpoint``` and ```Too many open files```.
