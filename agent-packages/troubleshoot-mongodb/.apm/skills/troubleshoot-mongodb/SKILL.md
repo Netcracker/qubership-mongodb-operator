@@ -401,6 +401,7 @@ Use the symptom-to-section mapping below to jump to the relevant high-level fail
 | `UserNotFound: Could not find user root@admin` / `can't choose primary for datars<N>` | [7. Authentication & Connectivity - Cannot Log In](#7-authentication--connectivity) |
 | SCRAM-SHA-256 / `SASL step` failures for `__system` during rolling update | [7. Authentication & Connectivity - Intra-Cluster Authentication Fails](#7-authentication--connectivity) |
 | `Error accepting new connection on local endpoint` / `Too many open files` | [4. Performance / Resource Issues - Too Many Open Files](#4-performance--resource-issues) |
+| `WiredTiger error (24)` or fatal assertion 50882/50853 immediately after `Too many open files` | [4. Performance / Resource Issues - Too Many Open Files](#4-performance--resource-issues) |
 | `WT_CACHE_FULL` / `MongoWiredTigerCachePressure` alert | [4. Performance / Resource Issues - WiredTiger Cache Pressure](#4-performance--resource-issues) |
 | `MongoDB last backup failed` alert | [5. Backup Issues - Backup Job Failed](#5-backup-issues) |
 | No backup metrics; `AttributeError: 'NoneType' object has no attribute 'get'` | [5. Backup Issues - No Backup Information in Monitoring](#5-backup-issues) |
@@ -567,6 +568,9 @@ kubectl logs <datarsN-pod> -c mongod | grep -iE "replication|recover|rollback|st
 
 # WiredTiger / storage
 kubectl logs <datarsN-pod> -c mongod | grep -iE "wiredtiger|wt_cache_full|assertion|corrupt"
+
+# File-descriptor / ulimit exhaustion (EMFILE)
+kubectl logs <datarsN-pod> -c mongod | grep -iE "too many open files|emfile|error \\(24\\)|fatal assertion 50882|fatal assertion 50853"
 
 # Authentication
 kubectl logs <datarsN-pod> -c mongod | grep -iE "scr|sasl|authentication|userNotFound"

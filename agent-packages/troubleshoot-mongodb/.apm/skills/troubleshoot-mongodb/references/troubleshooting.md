@@ -1385,7 +1385,7 @@ This section provides information about the MongoDB issues related to connection
 
 ### Description
 
-MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused.
+MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused. If the limit is hit while WiredTiger is recovering or allocating files, the process may abort with fatal assertions such as 50882 or 50853, but the root cause is still the exhausted file-descriptor limit.
 
 ### Alerts
 
@@ -1396,6 +1396,14 @@ MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `Limi
 ```text
 Error accepting new connection on local endpoint
 Too many open files
+WiredTiger error (24)
+```
+
+WiredTiger fatal assertions that immediately follow an EMFILE / "Too many open files" error are also covered by this section, for example:
+
+```text
+Fatal Assertion 50882 at src/mongo/db/storage/wiredtiger/wiredtiger_session_cache.cpp
+Fatal Assertion 50853 at src/mongo/db/storage/wiredtiger/wiredtiger_util.cpp
 ```
 
 ### How to solve
