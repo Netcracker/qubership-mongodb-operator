@@ -14,7 +14,7 @@ Use this skill when investigating issues related to:
 - **WiredTiger** issues (corruption assertions, `WT_CACHE_FULL`, disk space)
 - **Backup/restore** failures (backup daemon PVC, S3 credentials, `.console` logs)
 - **Deployment errors** (Helm/CRD validation, PVC binding, leftover resources)
-- **Disaster Recovery** (active-standby switchover/failover, clean-install ordering, domain name swap)
+- **Disaster Recovery** (active-standby switchover/failover, clean-install ordering, domain name swap, prometheus-exporter EXPORT_MONGOS misconfiguration after switchover)
 - **Authentication** (root/monitoring users, SCRAM-SHA failures, keyfile rotation)
 - **Connection problems** (`Too many open files`, mongos routing errors)
 - **DBaaS adapter** integration (backup registration, bulk operations, missing metrics)
@@ -289,6 +289,20 @@ See the detailed section *DR Issues - Swithover/Failover failed* in `references/
 
 See the detailed section *DR Issues - Clean Install Fails on Only One Side of a DR Pair* in `references/troubleshooting.md`.
 
+#### Prometheus Exporter Authentication Errors After Switchover
+
+**Symptom:** After a DR switchover, `mongodb-prometheus-exporter` logs show `AuthenticationFailed` / `sasl conversation error` or `ReplicaSetNoPrimary` while trying to reach mongos endpoints; metrics are missing on the new standby side.
+
+**Cause:** The `EXPORT_MONGOS` environment variable in the exporter Deployment was not updated to `false` on the new standby side. Standby clusters do not run mongos, so the exporter fails when it tries to scrape them.
+
+**Resolution:**
+1. Verify `EXPORT_MONGOS` in the standby-side `mongodb-prometheus-exporter` Deployment is `false`.
+2. Patch it manually if needed: `kubectl set env deployment/mongodb-prometheus-exporter EXPORT_MONGOS=false -n <namespace>`.
+3. If the operator did not reconcile the Deployment, clear `summary-spec` in the `last-applied-configuration-info` ConfigMap and restart the operator on that side.
+4. Upgrade to operator **2.16.10+** and mongodb-services **master-supplementary-20260921.033143-345+** for the permanent fix.
+
+See the detailed section *DR Issues - Prometheus Exporter Authentication Errors After Switchover* in `references/troubleshooting.md`.
+
 ### 7. Authentication & Connectivity
 
 #### Cannot Log In to MongoDB
@@ -422,6 +436,9 @@ Use the symptom-to-section mapping below to jump to the relevant high-level fail
 | Primary flips repeatedly | [4. Performance / Resource Issues - High CPU / Memory Usage](#4-performance--resource-issues) |
 | DR switchover/failover fails | [6. DR Issues - Switchover / Failover Failed](#6-dr-issues) |
 | DR clean install fails on one side only | [6. DR Issues - Clean Install Fails on Only One Side](#6-dr-issues) |
+| Exporter `AuthenticationFailed` / `sasl conversation error` after DR switchover | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
+| Exporter `ReplicaSetNoPrimary` for mongos endpoints after switchover | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
+| `EXPORT_MONGOS` not `false` on standby-side prometheus-exporter | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
 | `context deadline exceeded` in Events | [8. Pod Startup Issues - Pods Do Not Start](#8-pod-startup-issues) |
 | Pod phase `Pending` (older installations) | [8. Pod Startup Issues - Pods Stuck in Pending](#8-pod-startup-issues) |
 | `Index build: waiting for next action before completing final phase` | [8. Pod Startup Issues - Index Build Stuck](#8-pod-startup-issues) |

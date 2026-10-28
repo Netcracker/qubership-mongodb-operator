@@ -27,6 +27,58 @@ Swithover/Failover failed.
 
 "Not applicable"
 
+## DR Issues - Prometheus Exporter Authentication Errors After Switchover
+
+This section provides information about mongodb-prometheus-exporter failing to connect after a DR switchover because the `EXPORT_MONGOS` flag was not updated.
+
+### Description
+
+After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in operator release 2.16.10 and mongodb-services master-supplementary 20260921.033143-345.
+
+### Alerts
+
+Active alert on `mongodb-prometheus-exporter` or MongoDB metrics missing in Grafana/VictoriaMetrics after switchover.
+
+### Stack trace(s)
+
+mongodb-prometheus-exporter log shows repeated authentication errors:
+
+```text
+time=... level=ERROR source=exporter.go:328 msg="Cannot connect to MongoDB" error="cannot connect to MongoDB: connection() error occurred during connection handshake: auth error: sasl conversation error: unable to authenticate using mechanism \"SCRAM-SHA-1\": (AuthenticationFailed) Authentication failed."
+```
+
+Exporter also reports `ReplicaSetNoPrimary` while trying to reach mongos endpoints:
+
+```text
+server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary, Servers: [ ... ] }
+```
+
+### How to solve
+
+1. **Verify the exporter Deployment on the standby side**
+   - Check the `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment.
+   - On the standby cluster it must be `false`; on the active cluster it must be `true`.
+
+2. **Workaround: patch the Deployment manually**
+   - On the affected (standby) side, set `EXPORT_MONGOS=false` in the `mongodb-prometheus-exporter` Deployment:
+   
+   ```bash
+   kubectl set env deployment/mongodb-prometheus-exporter EXPORT_MONGOS=false -n <namespace>
+   ```
+   
+   - Restart the exporter pod to pick up the new value.
+
+3. **Force operator reconciliation**
+   - If the operator did not update the exporter Deployment after switchover, edit the `last-applied-configuration-info` ConfigMap and delete the `summary-spec` value, then restart the operator pod on the affected side.
+   - Retry the switchover if needed.
+
+4. **Permanent fix**
+   - Upgrade to operator version **2.16.10** or later and mongodb-services **master-supplementary-20260921.033143-345** or later, which contain the fix for correctly updating `EXPORT_MONGOS` during switchover.
+
+### Recommendations
+
+After every switchover, verify that the `mongodb-prometheus-exporter` targets are UP in VictoriaMetrics/Prometheus and that the standby side is not trying to scrape mongos metrics. Keep operator/services versions in sync on both DR sides.
+
 ## Common Issues - No Free Space Left on MongoDB PV
 
 This section provides information about the MongoDB issues related to lack of free space on the MongoDB PV.
