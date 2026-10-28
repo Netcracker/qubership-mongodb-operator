@@ -27,6 +27,48 @@ Swithover/Failover failed.
 
 "Not applicable"
 
+## DR Issues - Transitioning from HA to DR Fails
+
+This section provides information about failures when converting an existing single-site HA MongoDB deployment into an active-standby DR deployment.
+
+### Description
+
+Older operator versions required the standby cluster to be deployed before the active cluster. Starting with operator release 2.16.6 (mongodb:mongo8-master-20260804.021136-292 / mongodb-services:master-supplementary-20260804.021142-267), a live migration path is supported that lets MongoDB start as HA (single-site) and transition to DR once the standby cluster is available. If this transition fails, the operator may report a reconciliation error about the MongoDB version.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+```text
+Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version
+```
+
+Also look for attempts to change `schemaSettings.schemaType` from `ha` to `dr` without following the HA-to-DR transition procedure.
+
+### How to solve
+
+1. **Use the documented HA-to-DR transition procedure**
+   - Follow the steps in the [Installation Guide - HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition).
+   - Do not simply change `schemaSettings.schemaType` from `ha` to `dr` and run a rolling update; the operator treats that as a rolling update and skips the steps needed to add standby-side members.
+
+2. **Verify the operator/services versions**
+   - The live migration path requires operator **2.16.6** or later.
+   - Corresponding fix manifest versions:
+     - `mongodb:mongo8-master-20260804.021136-292`
+     - `mongodb:mongo7-master-20260804.021036-292`
+     - `mongodb-services:master-supplementary-20260804.021142-267`
+
+3. **If the DR site is not ready at install time**
+   - Deploy MongoDB as HA first (`schemaSettings.schemaType: ha`).
+   - When the standby cluster is ready, use the live migration procedure to transition to DR.
+   - If on an older operator version that does not support live migration, the only supported path is to back up the data, clean the PVCs, redeploy in standby-first order, and restore.
+
+### Recommendations
+
+Plan the deployment strategy before go-live. If DR infrastructure may arrive later, deploy MongoDB as HA initially and use the supported HA-to-DR migration path once the standby site is available, rather than attempting a direct `schemaType` change.
+
 ## DR Issues - Prometheus Exporter Authentication Errors After Switchover
 
 This section provides information about mongodb-prometheus-exporter failing to connect after a DR switchover because the `EXPORT_MONGOS` flag was not updated.
@@ -1334,6 +1376,7 @@ A DR (active/standby) install fails on only one side. This is most often an inst
 2. **Check the domain name swap.**
    - `schemaSettings.thisDomainName` and `schemaSettings.otherDomainName` (`mongodb-operator` Helm chart values; `MongodbDeployment` CR `spec.schemaSettings`) must swap between the two sides — each side's `thisDomainName` is the other side's `otherDomainName`. A common mistake is copying the same pair of values to both sides instead of swapping them.
 3. **If both of the above check out and the failure persists**, look in the operator logs of the failing side for the line starting `Reconciliation exception:` and match its text against the other sections of this guide.
+4. **If the standby site is not available at install time** and the operator is **2.16.6 or later**, you can deploy as HA first and then follow the [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure once the standby cluster is ready. See also *DR Issues - Transitioning from HA to DR Fails* in this guide.
 
 ### Recommendations
 

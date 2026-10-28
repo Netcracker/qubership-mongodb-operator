@@ -1,6 +1,6 @@
 ---
 name: troubleshoot-mongodb
-description: Diagnose and resolve MongoDB operator issues including sharded cluster failures, replica-set replication problems, backup/restore failures, DBaaS adapter backup-registration failures, deployment errors, DR switchover issues, WiredTiger corruption and cache pressure, SCRAM/keyfile authentication errors, connection limits, and resource exhaustion. Covers MongodbDeployment and MongodbSupplService CRDs, mongod/mongos pods, backup daemon, monitoring exporter, and DBaaS adapter integration. Use for qubership-mongodb-operator, MongoDB-as-a-Service on Kubernetes/OpenShift.
+description: Diagnose and resolve MongoDB operator issues including sharded cluster failures, replica-set replication problems, backup/restore failures, DBaaS adapter backup-registration failures, deployment errors, DR switchover and HA-to-DR transition issues, WiredTiger corruption and cache pressure, SCRAM/keyfile authentication errors, connection limits, and resource exhaustion. Covers MongodbDeployment and MongodbSupplService CRDs, mongod/mongos pods, backup daemon, monitoring exporter, and DBaaS adapter integration. Use for qubership-mongodb-operator, MongoDB-as-a-Service on Kubernetes/OpenShift.
 ---
 
 # MongoDB Operator Troubleshooting Skill
@@ -14,7 +14,7 @@ Use this skill when investigating issues related to:
 - **WiredTiger** issues (corruption assertions, `WT_CACHE_FULL`, disk space)
 - **Backup/restore** failures (backup daemon PVC, S3 credentials, `.console` logs)
 - **Deployment errors** (Helm/CRD validation, PVC binding, leftover resources)
-- **Disaster Recovery** (active-standby switchover/failover, clean-install ordering, domain name swap, prometheus-exporter EXPORT_MONGOS misconfiguration after switchover)
+- **Disaster Recovery** (active-standby switchover/failover, clean-install ordering, HA-to-DR live migration, domain name swap, prometheus-exporter EXPORT_MONGOS misconfiguration after switchover)
 - **Authentication** (root/monitoring users, SCRAM-SHA failures, keyfile rotation)
 - **Connection problems** (`Too many open files`, mongos routing errors)
 - **DBaaS adapter** integration (backup registration, bulk operations, missing metrics)
@@ -289,6 +289,22 @@ See the detailed section *DR Issues - Swithover/Failover failed* in `references/
 
 See the detailed section *DR Issues - Clean Install Fails on Only One Side of a DR Pair* in `references/troubleshooting.md`.
 
+#### Transitioning from HA to DR Fails
+
+**Symptom:** An existing single-site HA deployment fails to become an active-standby DR pair, or the operator logs contain `Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version` while attempting to change `schemaSettings.schemaType` from `ha` to `dr`.
+
+**Cause:** Older operator versions required standby-first deployment. A live migration path from HA to DR was introduced in operator **2.16.6**; without that version (or without using the documented procedure), changing only `schemaType` causes the operator to treat the change as a rolling update and skip adding standby-side replica-set members.
+
+**Resolution:**
+1. Verify operator/services are at **2.16.6+** or the corresponding fix manifest:
+   - `mongodb:mongo8-master-20260804.021136-292`
+   - `mongodb:mongo7-master-20260804.021036-292`
+   - `mongodb-services:master-supplementary-20260804.021142-267`
+2. Follow the documented [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure; do not simply update `schemaType` and run a rolling update.
+3. If on an older operator version that does not support live migration, the only supported path is backup → clean PVCs → standby-first redeploy → restore.
+
+See the detailed section *DR Issues - Transitioning from HA to DR Fails* in `references/troubleshooting.md`.
+
 #### Prometheus Exporter Authentication Errors After Switchover
 
 **Symptom:** After a DR switchover, `mongodb-prometheus-exporter` logs show `AuthenticationFailed` / `sasl conversation error` or `ReplicaSetNoPrimary` while trying to reach mongos endpoints; metrics are missing on the new standby side.
@@ -437,6 +453,9 @@ Use the symptom-to-section mapping below to jump to the relevant high-level fail
 | Primary flips repeatedly | [4. Performance / Resource Issues - High CPU / Memory Usage](#4-performance--resource-issues) |
 | DR switchover/failover fails | [6. DR Issues - Switchover / Failover Failed](#6-dr-issues) |
 | DR clean install fails on one side only | [6. DR Issues - Clean Install Fails on Only One Side](#6-dr-issues) |
+| `cannot get major and minor version from mongo version` while converting HA to DR | [6. DR Issues - HA to DR Transition](#6-dr-issues) |
+| `schemaSettings.schemaType` changed from `ha` to `dr` but standby members are never added | [6. DR Issues - HA to DR Transition](#6-dr-issues) |
+| Transitioning existing HA deployment to active-standby DR fails | [6. DR Issues - HA to DR Transition](#6-dr-issues) |
 | Exporter `AuthenticationFailed` / `sasl conversation error` after DR switchover | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
 | Exporter `ReplicaSetNoPrimary` for mongos endpoints after switchover | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
 | `EXPORT_MONGOS` not `false` on standby-side prometheus-exporter | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
@@ -573,8 +592,8 @@ kubectl logs deployment/mongodb-operator | grep -iE "error|failed|unable|excepti
 # CRD updates
 kubectl logs deployment/mongodb-operator | grep -iE "MongodbDeployment|MongodbSupplService"
 
-# DR / switchover
-kubectl logs deployment/mongodb-operator | grep -iE "switchover|failover|disasterRecovery"
+# DR / switchover / HA-to-DR migration
+kubectl logs deployment/mongodb-operator | grep -iE "switchover|failover|disasterRecovery|schemaType|ha-to-dr|major and minor version"
 ```
 
 ### Mongod Logs
@@ -659,7 +678,7 @@ kubectl logs <mongodb-backup-daemon-pod> | grep -iE "s3|credentials|permission d
 1. **Always set `mongodb.customDataRSParameters` correctly** (JSON-encoded `"key=value"` list); redeploy replaces the whole list, so include existing entries when adding new ones.
 2. **Use the typed `mongodb.*WiredTigerCacheGb` values** instead of injecting cache settings via `customDataRSParameters`.
 3. **Raise cache and memory limits together** — cache must stay below the pod memory limit to avoid OOM kills.
-4. **Always deploy the DR standby side first**, then the active side, with swapped `thisDomainName`/`otherDomainName` values.
+4. **Always deploy the DR standby side first**, then the active side, with swapped `thisDomainName`/`otherDomainName` values. If the standby site is not ready at install time, deploy as HA first and use the supported HA-to-DR live migration path once the standby site is available (requires operator 2.16.6+).
 5. **Use `recycler.install: true` for clean reinstalls** on reused PVs, or wipe PVs manually.
 6. **Monitor disk usage and oplog window** to avoid "data too stale" resyncs.
 7. **Set appropriate PVC storage class and size**; expand before the cluster runs out of space.
