@@ -27,6 +27,103 @@ Swithover/Failover failed.
 
 "Not applicable"
 
+## DR Issues - Transitioning from HA to DR Fails
+
+This section provides information about failures when converting an existing single-site HA MongoDB deployment into an active-standby DR deployment.
+
+### Description
+
+Older operator versions required the standby cluster to be deployed before the active cluster. Starting with operator release 2.16.6 (mongodb:mongo8-master-20260804.021136-292 / mongodb-services:master-supplementary-20260804.021142-267), a live migration path is supported that lets MongoDB start as HA (single-site) and transition to DR once the standby cluster is available. If this transition fails, the operator may report a reconciliation error about the MongoDB version.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+```text
+Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version
+```
+
+Also look for attempts to change `schemaSettings.schemaType` from `ha` to `dr` without following the HA-to-DR transition procedure.
+
+### How to solve
+
+1. **Use the documented HA-to-DR transition procedure**
+   - Follow the steps in the [Installation Guide - HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition).
+   - Do not simply change `schemaSettings.schemaType` from `ha` to `dr` and run a rolling update; the operator treats that as a rolling update and skips the steps needed to add standby-side members.
+
+2. **Verify the operator/services versions**
+   - The live migration path requires operator **2.16.6** or later.
+   - Corresponding fix manifest versions:
+     - `mongodb:mongo8-master-20260804.021136-292`
+     - `mongodb:mongo7-master-20260804.021036-292`
+     - `mongodb-services:master-supplementary-20260804.021142-267`
+
+3. **If the DR site is not ready at install time**
+   - Deploy MongoDB as HA first (`schemaSettings.schemaType: ha`).
+   - When the standby cluster is ready, use the live migration procedure to transition to DR.
+   - If on an older operator version that does not support live migration, the only supported path is to back up the data, clean the PVCs, redeploy in standby-first order, and restore.
+
+### Recommendations
+
+Plan the deployment strategy before go-live. If DR infrastructure may arrive later, deploy MongoDB as HA initially and use the supported HA-to-DR migration path once the standby site is available, rather than attempting a direct `schemaType` change.
+
+## DR Issues - Prometheus Exporter Authentication Errors After Switchover
+
+This section provides information about mongodb-prometheus-exporter failing to connect after a DR switchover because the `EXPORT_MONGOS` flag was not updated.
+
+### Description
+
+After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in operator release 2.16.10 and mongodb-services master-supplementary 20260921.033143-345.
+
+### Alerts
+
+Active alert on `mongodb-prometheus-exporter` or MongoDB metrics missing in Grafana/VictoriaMetrics after switchover.
+
+### Stack trace(s)
+
+mongodb-prometheus-exporter log shows repeated authentication errors:
+
+```text
+source=exporter.go:328 msg="Cannot connect to MongoDB"
+sasl conversation error: unable to authenticate using mechanism "SCRAM-SHA-1": (AuthenticationFailed) Authentication failed
+```
+
+Exporter also reports `ReplicaSetNoPrimary` while trying to reach mongos endpoints:
+
+```text
+server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary
+```
+
+The `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment is still `true` on the standby side, but no mongos pods exist there.
+
+### How to solve
+
+1. **Verify the exporter Deployment on the standby side**
+   - Check the `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment.
+   - On the standby cluster it must be `false`; on the active cluster it must be `true`.
+
+2. **Workaround: patch the Deployment manually**
+   - On the affected (standby) side, set `EXPORT_MONGOS=false` in the `mongodb-prometheus-exporter` Deployment:
+   
+   ```bash
+   kubectl set env deployment/mongodb-prometheus-exporter EXPORT_MONGOS=false -n <namespace>
+   ```
+   
+   - Restart the exporter pod to pick up the new value.
+
+3. **Force operator reconciliation**
+   - If the operator did not update the exporter Deployment after switchover, edit the `last-applied-configuration-info` ConfigMap and delete the `summary-spec` value, then restart the operator pod on the affected side.
+   - Retry the switchover if needed.
+
+4. **Permanent fix**
+   - Upgrade to operator version **2.16.10** or later and mongodb-services **master-supplementary-20260921.033143-345** or later, which contain the fix for correctly updating `EXPORT_MONGOS` during switchover.
+
+### Recommendations
+
+After every switchover, verify that the `mongodb-prometheus-exporter` targets are UP in VictoriaMetrics/Prometheus and that the standby side is not trying to scrape mongos metrics. Keep operator/services versions in sync on both DR sides.
+
 ## Common Issues - No Free Space Left on MongoDB PV
 
 This section provides information about the MongoDB issues related to lack of free space on the MongoDB PV.
@@ -1279,6 +1376,7 @@ A DR (active/standby) install fails on only one side. This is most often an inst
 2. **Check the domain name swap.**
    - `schemaSettings.thisDomainName` and `schemaSettings.otherDomainName` (`mongodb-operator` Helm chart values; `MongodbDeployment` CR `spec.schemaSettings`) must swap between the two sides — each side's `thisDomainName` is the other side's `otherDomainName`. A common mistake is copying the same pair of values to both sides instead of swapping them.
 3. **If both of the above check out and the failure persists**, look in the operator logs of the failing side for the line starting `Reconciliation exception:` and match its text against the other sections of this guide.
+4. **If the standby site is not available at install time** and the operator is **2.16.6 or later**, you can deploy as HA first and then follow the [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure once the standby cluster is ready. See also *DR Issues - Transitioning from HA to DR Fails* in this guide.
 
 ### Recommendations
 
@@ -1379,13 +1477,51 @@ __system
 
 "Not applicable"
 
+## Common Issues - Mongos Did Not Restart After Keyfile Change During Rolling Update
+
+This section provides information about mongos pods not being restarted during a rolling update, causing them to keep the old keyfile while datars/cnfrs pods have the new one.
+
+### Description
+
+After a MongoDB rolling update that rotates the `mongo-secret` keyfile, mongos pods may not be recreated automatically and continue to use the old keyfile. Because datars/cnfrs pods that have restarted already mount the new keyfile, mongos cannot authenticate to them, resulting in repeated SCRAM failures for the `__system` user and continuous restarts of data/config replica-set members.
+
+### Alerts
+
+Continuous restarts of `datars*` / `cnfrs*` pods, `MongoDB replication Status 3 (RECOVERING)`, or inter-member `AuthenticationFailed` during/after an upgrade.
+
+### Stack trace(s)
+
+```text
+Failed to authenticate
+isClusterMember: true
+mechanism: SCRAM-SHA-256
+user: __system
+db: local
+error: AuthenticationFailed: SCRAM authentication failed, storedKey mismatch
+```
+
+The keyfile inside mongos pods still matches the old `mongo-secret` value while `datars`/`cnfrs` pods already have the rotated value.
+
+### How to solve
+
+1. **Compare keyfiles** in mongos pods versus datars/cnfrs pods that have already restarted. If mongos still has the pre-rotation keyfile, proceed to step 2.
+2. **Restart mongos** so it loads the rotated keyfile:
+   ```bash
+   kubectl rollout restart deployment/mongos -n <namespace>
+   ```
+3. **Verify** that the SCRAM `storedKey mismatch` errors stop and replica-set members recover to `PRIMARY`/`SECONDARY`.
+
+### Recommendations
+
+After any keyfile-rotating rolling update, confirm that mongos pods were recreated. If not, roll them out manually before declaring the upgrade complete.
+
 ## Common Issues - Connections Refused With "Too Many Open Files" Error
 
 This section provides information about the MongoDB issues related to connections being refused due to the container's open file descriptor limit being exceeded, resulting in ```Error accepting new connection on local endpoint``` and ```Too many open files```.
 
 ### Description
 
-MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused.
+MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused. If the limit is hit while WiredTiger is recovering or allocating files, the process may abort with fatal assertions such as 50882 or 50853, but the root cause is still the exhausted file-descriptor limit.
 
 ### Alerts
 
@@ -1396,6 +1532,14 @@ MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `Limi
 ```text
 Error accepting new connection on local endpoint
 Too many open files
+WiredTiger error (24)
+```
+
+WiredTiger fatal assertions that immediately follow an EMFILE / "Too many open files" error are also covered by this section, for example:
+
+```text
+Fatal Assertion 50882 at src/mongo/db/storage/wiredtiger/wiredtiger_session_cache.cpp
+Fatal Assertion 50853 at src/mongo/db/storage/wiredtiger/wiredtiger_util.cpp
 ```
 
 ### How to solve
@@ -1409,3 +1553,78 @@ Too many open files
 ### Recommendations
 
 "Not applicable"
+
+## Common Issues - DBaaS Adapter Does Not Support Backup Operation
+
+This section provides information about the MongoDB issues related to dbaas-mongo-adapter reporting `backupRestore: false` and DBaaS backup requests failing because the adapter was not reconciled with backup API credentials.
+
+### Description
+
+When backup is enabled (or the operator is upgraded) without changing any `spec.dbaas` field, the operator's `DbaasCompound.Condition()` may not re-run the dbaas-mongo-adapter deployment. Because backup-related parameters are not tagged as common parameters, the adapter Deployment is never updated with the `BACKUP_DAEMON_API_CREDENTIALS_USERNAME` and `BACKUP_DAEMON_API_CREDENTIALS_PASSWORD` environment variables. The adapter starts without backup credentials and disables the Backup API.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+DBaaS backup request returns:
+
+```text
+The backup request have not been passed validate procedure and some adapters do not supported backup operation: Some adapters do not supported backup operation. To skip databases which does not support backup send the same request with parameter "ignoreNotBackupableDatabases=true"
+```
+
+Registered physical database shows:
+
+```text
+"backupRestore": false
+```
+
+dbaas-mongo-adapter log shows:
+
+```text
+Backup credentials are not set. Backup API is not working.
+```
+
+Operator log may show:
+
+```text
+Current dbaas-mongo-adapter version is: ...
+dbaas-mongo-adapter didn't change
+```
+
+### How to solve
+
+Choose one of the following options:
+
+1. **Force operator reconciliation by touching a dbaas field (recommended workaround)**
+   - Edit the `MongodbDeployment` / `MongodbSupplService` CR or the Helm values.
+   - Change any field under `spec.dbaas` (for example, `dbaasResources.limits.cpu`) so that `CheckSpecChange` returns true.
+   - Redeploy and wait for the operator to recreate the dbaas-mongo-adapter Deployment with the backup credential env vars.
+
+2. **Patch the running dbaas-mongo-adapter Deployment directly**
+   - Add the missing environment variables to the dbaas-mongo-adapter container:
+
+   ```yaml
+   - name: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
+     valueFrom:
+       secretKeyRef:
+         name: mongodb-backup-api-credentials.v1
+         key: username
+   - name: BACKUP_DAEMON_API_CREDENTIALS_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: mongodb-backup-api-credentials.v1
+         key: password
+   ```
+
+   - Verify the secret `mongodb-backup-api-credentials.v1` exists in the namespace.
+
+3. **Verify the fix**
+   - Check the dbaas-mongo-adapter Deployment contains the backup credential env vars.
+   - Re-register the physical database or restart the dbaas-mongo-adapter pod if needed.
+   - Retry the backup request through DBaaS swagger.
+
+### Recommendations
+
+After upgrading the operator or enabling backup, always verify that `dbaas-mongo-adapter` is reconciled and the backup credentials are mounted. If backup is enabled after the initial deployment, touch a dbaas field or do a rolling restart of the dbaas-mongo-adapter Deployment to force reconciliation.

@@ -1,137 +1,237 @@
 ---
 name: troubleshoot-mongodb
-description: Diagnose failures in operator-managed MongoDB clusters (sharded topology, HA/DR pairs, backups) by matching an exact alert name, log/error string, or replica-set state (RECOVERING, UNKNOWN, DOWN, ROLLBACK, REMOVED) to a section of references/troubleshooting.md. Covers the alerts defined in prometheus-alerts.yaml of the mongodb-services chart, WiredTiger assertion and WT_CACHE_FULL errors, PVC/disk problems, SCRAM/keyfile auth errors, "Too many open files", mongos routing errors, failed deploys, failed backups, DR switchover and DR clean-install failures.
+description: "Diagnose and resolve MongoDB operator issues: sharded/replica-set failures, backup/restore, DBaaS adapter, deployment, DR switchover/HA-to-DR, WiredTiger, SCRAM/keyfile auth, connection limits, resource exhaustion. Covers MongodbDeployment/MongodbSupplService CRDs, mongod/mongos, backup daemon, monitoring/prometheus exporter, DBaaS adapter."
 ---
 
-## Finding the section
+# MongoDB Operator Troubleshooting Skill
 
-Run from the skill directory:
+Use this skill when investigating issues related to:
 
-1. `grep -n "^## " references/troubleshooting.md` — lists all 32 issue headers with line numbers. Every issue title is a
-   `##` line; the only `###` lines are Description / Alerts / Stack trace(s) / How to solve / Recommendations.
-2. Look the alert name, error string, or state up in the tables below. Tables give the exact header text; use it to
-   pick the line number from step 1.
-3. To search by literal string instead, run `grep -n -F "<exact string>" references/troubleshooting.md` (for
-   example `grep -n -F "Data too stale" references/troubleshooting.md`). Hits inside `### Alerts` or
-   `### Stack trace(s)` blocks identify the section; read from that section's `##` line to the next `##` line.
-4. Read only that line range with offset/limit. Do not load the whole file.
+- **qubership-mongodb-operator** (MongoDB operator managing sharded/HA MongoDB clusters)
+- **MongodbDeployment** CRD failures (cluster provisioning, replica-set configuration, storage, rolling updates)
+- **MongodbSupplService** CRD issues (backup daemon, monitoring, DBaaS adapter)
+- **MongoDB replication** failures (RECOVERING, UNKNOWN, DOWN, ROLLBACK, REMOVED states, replication lag)
+- **WiredTiger** issues (corruption assertions, `WT_CACHE_FULL`, disk space)
+- **Backup/restore** failures (backup daemon PVC, S3 credentials, `.console` logs)
+- **Deployment errors** (Helm/CRD validation, PVC binding, leftover resources)
+- **Disaster Recovery** (active-standby switchover/failover, clean-install ordering, HA-to-DR live migration, domain name swap, prometheus-exporter EXPORT_MONGOS misconfiguration after switchover)
+- **Authentication** (root/monitoring users, SCRAM-SHA failures, keyfile rotation)
+- **Connection problems** (`Too many open files`, mongos routing errors)
+- **DBaaS adapter** integration (backup registration, bulk operations, missing metrics)
 
-If the wording is not an exact match, search again with one distinctive term from it (for example `stale`, `Bound`,
-`replSetInitiate`, `SASL`, `endpoint`) using `grep -n -i -F "<term>" references/troubleshooting.md`. Use a hit only
-if the term appears in a section's `### Stack trace(s)`, `### Alerts`, or `## ` header line. Then:
+## Component Overview
 
-- Present the section as an **inferred match**. Quote the string from that section's Stack trace(s) block and say the
-  fix applies only if the reported logs contain that string.
-- Do not infer from a generic term (`error`, `failed`, `pod`, `timeout`, `restart`, `down`) or from a term that only
-  appears in a Description or How to solve block.
+**qubership-mongodb-operator** manages MongoDB-as-a-Service via two CRDs:
+- **`MongodbDeployment`** (`mongodb-operator` chart) — topology, resources, storage, DR, TLS, WiredTiger cache.
+- **`MongodbSupplService`** (`mongodb-services` chart) — backup daemon, monitoring exporter, DBaaS adapter.
 
-If no distinctive term hits, the issue is undocumented: say so, and do not apply the nearest-looking section.
+**Key pods/containers:** `datarsN*` / `cnfrsN*` mongods, `mongos`, `mongodb-backup-daemon`, `mongodb-monitoring-agent`, `mongodb-prometheus-exporter`, `dbaas-mongo-adapter`, optional recycler init job.
 
-## Alert name → section
+**Key fields:** `schemaSettings.schemaType`/`thisDomainName`/`otherDomainName`; `disasterRecovery.mode`; `mongodb.customDataRSParameters`; `mongodb.*WiredTigerCacheGb`; `mongodb.*Resources.limits`; `mongodb.storage.waitPvcBound`; `backup.storage.waitPvcBound`; `recycler.install`; `tls.mode`; `prometheusExporter.alerts.common.*`.
 
-Alert names are the `alert:` values in `services/service/charts/helm/mongodb-services/templates/prometheus-alerts.yaml`
-(`PrometheusRule` `prometheus-mongodb-rules.v1`). Match the name exactly.
+### Forbidden Actions
 
-| Alert name | Header in references/troubleshooting.md |
+Never recommend without explicit confirmation:
+- `rs.reconfig(...)` on an operator-managed replica set.
+- `db.adminCommand({setParameter: ...})` for persistent settings (use `mongodb.customDataRSParameters`).
+- `rm -rf /data/...` unless another replica-set member is `PRIMARY`/`SECONDARY`.
+- `kubectl delete pvc` for MongoDB data volumes.
+- Manual edits to `last-applied-configuration-info` outside documented switchover retry steps.
+
+## Common Failure Modes
+
+For each failure mode below, detailed step-by-step remediation is in the corresponding section of `references/troubleshooting.md`.
+
+### 1. Deployment Failures
+
+- **CRD Validation Failures:** `spec.mongodb.customDataRSParameters: Invalid value: "null"` or `spec.schemaSettings.otherDomainName: Invalid value: "null"`. Set valid defaults in the `mongodb-operator` chart values.
+- **PVC Binding Timeout:** `Reconciliation exception: PVC ... 'Bound' status waiting failed`. Set `mongodb.storage.waitPvcBound: false` and/or `backup.storage.waitPvcBound: false`.
+
+### 2. Replica Set / Replication Issues
+
+- **Replica Stuck in Recovering/Unhealthy:** Alerts `RECOVERING`, `MongoDBRecoveringTooLong`, `UNKNOWN`, `DOWN`, `ROLLBACK`, `REMOVED`; log `replication: Data too stale, halting replication`; WiredTiger assertion `28595`; or split-brain. Verify another member is `PRIMARY`/`SECONDARY` before clearing data.
+- **Replication Lag:** Alert `MongoDB replication lag`. Check disk IOPS, network latency, large writes, resource usage.
+
+### 3. Storage / Disk Issues
+
+- **No Free Space Left on PV:** Pods rebooting at 100% disk. Scale down a member, free data, run `compact`, scale back up.
+- **Disk Space Not Reclaimed After Delete:** Run `db.runCommand({compact: "<collection>"})` on each member, stepping down the primary first.
+
+### 4. Performance / Resource Issues
+
+- **WiredTiger Cache Pressure (`WT_CACHE_FULL`):** Read latency spikes / `MongoWiredTigerCachePressure`. Raise `mongodb.*WiredTigerCacheGb` and matching memory limits.
+- **High CPU / Memory Usage:** Alerts `MongoDB CPU Usage` / `MongoDB Memory Usage`. Check `db.currentOp` / `system.profile`; optimize queries/indexes or raise limits.
+- **Too Many Open Files:** `Error accepting new connection...` / `Too many open files`; may show `WiredTiger error (24)` or fatal assertion 50882/50853. Raise containerd `LimitNOFILE` >= 64000.
+
+### 5. Backup Issues
+
+- **Backup Job Failed:** Alert `MongoDB last backup failed`. Check backup daemon `.console` log for `Backup failed`; PVC/inodes, S3 credentials, or I/O saturation.
+- **No Backup Information in Monitoring:** Grafana empty; `mongodb-monitoring-agent` logs `AttributeError: 'NoneType' object has no attribute 'get'`. Grant `view` role to the `monitoring-agent` service account.
+
+### 6. DR Issues
+
+- **Switchover / Failover Failed:** Operation does not complete. Delete `summary-spec` in `last-applied-configuration-info`, restart operator, retry.
+- **Clean Install Fails on One Side of a DR Pair:** Standby was not deployed first or domain names not swapped. Deploy standby first, then active, with swapped `thisDomainName`/`otherDomainName`.
+- **Transitioning from HA to DR Fails:** Operator logs `Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version` or `schemaType` changed `ha`→`dr` without standby members added. Use operator **2.16.6+** and follow the [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure.
+- **Prometheus Exporter Authentication Errors After Switchover:** Exporter logs `AuthenticationFailed` / `sasl conversation error` / `ReplicaSetNoPrimary` after switchover. Set `EXPORT_MONGOS=false` on the new standby side; upgrade to operator **2.16.10+** / mongodb-services **master-supplementary-20260921.033143-345+**.
+
+### 7. Authentication & Connectivity
+
+- **Cannot Log In to MongoDB:** `UserNotFound: Could not find user root@admin` or mongos `can't choose primary for datars<N>`. Initiate replica set, create root/monitoring users, restart mongos.
+- **Intra-Cluster Authentication Fails During Rolling Update:** SCRAM-SHA-256 / `SASL step` failures for `__system`. Keyfile rotation mismatch; verify keyfile consistency and restart affected mongod/mongos pods.
+- **Mongos Did Not Restart After Keyfile Change:** After rolling update, mongos keeps old keyfile while datars/cnfrs have new one; `AuthenticationFailed: SCRAM authentication failed, storedKey mismatch` for `__system`. Restart mongos (`kubectl rollout restart deployment/mongos`).
+
+### 8. Pod Startup Issues
+
+- **Pods Do Not Start With `context deadline exceeded`:** Container runtime issue. Restart Docker/containerd on the node.
+- **Pods Stuck in Pending State:** Exited init-container cleaned by node cronjob. Delete pods one-by-one and update operator.
+- **Index Build Stuck:** Log `Index build: waiting for next action before completing final phase`. Fix unhealthy replica (resync), retry index build.
+
+### 9. DBaaS Adapter / Backup Registration Issues
+
+- **Adapter Reports backupRestore: false:** `some adapters do not supported backup operation`, `"backupRestore": false`, `Backup credentials are not set. Backup API is not working.`, missing `BACKUP_DAEMON_API_CREDENTIALS_USERNAME` / `PASSWORD` env vars. Touch any `spec.dbaas` field and redeploy, or patch the Deployment directly.
+
+## Diagnostic Workflow
+
+### Initial Triage
+
+1. **Logs:** operator, `datarsN`/cnfrs mongod, mongos, backup daemon, monitoring agent, prometheus exporter.
+2. **State:** `kubectl get mongodbdeployment,mongodbsupplservice -o yaml`; pod, PVC, and event listings; `rs.status()` from a mongod pod.
+3. **Use the symptom-to-section table below** to find the failure mode, then read only the matching section in `references/troubleshooting.md`.
+
+| Symptom / Alert | Failure Mode / Detailed Section |
 |---|---|
-| `MongoDB replication lag` | Prometheus Alerts Troubleshooting - MongoDB Replication Lag |
-| `MongoDB replication Status 3 (RECOVERING)` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 3 |
-| `MongoDBRecoveringTooLong` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 3 |
-| `MongoDB replication Status 6 (UNKNOWN)` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 6 |
-| `MongoDB replication Status 8 (DOWN)` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 8 |
-| `MongoDB replication Status 9 (ROLLBACK)` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 9 |
-| `MongoDB replication Status 10 (REMOVED)` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 10 |
-| `MongoDB cursors timeouts` | Prometheus Alerts Troubleshooting - MongoDB Cursors Timeouts |
-| `MongoDB CPU Usage` | Prometheus Alerts Troubleshooting - MongoDB CPU Usage |
-| `MongoDB Memory Usage` | Prometheus Alerts Troubleshooting - MongoDB Memory Usage |
-| `MongoWiredTigerCachePressure` | Common Issues - MongoDB Read Latency Spikes / WT_CACHE_FULL (Not Corruption) |
-| `MongoDB last backup failed` | Common Issues - Backup Failed for Some Reason |
+| `spec.mongodb.customDataRSParameters: Invalid value: "null"` | [1. Deployment Failures - CRD Validation Failures](#1-deployment-failures) |
+| `Reconciliation exception: PVC ... 'Bound' status waiting failed` | [1. Deployment Failures - PVC Binding Timeout](#1-deployment-failures) |
+| `Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Every pod of a replica set down after WiredTiger assertion | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| `replication: Data too stale, halting replication` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| `Could not find host matching read preference { mode: "primary" } for set datarsX` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| `UserNotFound: Could not find user root@admin` / `can't choose primary for datars<N>` | [7. Authentication & Connectivity - Cannot Log In](#7-authentication--connectivity) |
+| SCRAM-SHA-256 / `SASL step` failures for `__system` during rolling update | [7. Authentication & Connectivity - Intra-Cluster Authentication Fails](#7-authentication--connectivity) |
+| Mongos did not restart after keyfile rotation; `AuthenticationFailed: SCRAM authentication failed, storedKey mismatch` for `__system` | [7. Authentication & Connectivity - Mongos Did Not Restart After Keyfile Change](#7-authentication--connectivity) |
+| `Error accepting new connection on local endpoint` / `Too many open files` | [4. Performance / Resource Issues - Too Many Open Files](#4-performance--resource-issues) |
+| `WiredTiger error (24)` or fatal assertion 50882/50853 immediately after `Too many open files` | [4. Performance / Resource Issues - Too Many Open Files](#4-performance--resource-issues) |
+| `WT_CACHE_FULL` / `MongoWiredTigerCachePressure` alert | [4. Performance / Resource Issues - WiredTiger Cache Pressure](#4-performance--resource-issues) |
+| `MongoDB last backup failed` alert | [5. Backup Issues - Backup Job Failed](#5-backup-issues) |
+| No backup metrics; `AttributeError: 'NoneType' object has no attribute 'get'` | [5. Backup Issues - No Backup Information in Monitoring](#5-backup-issues) |
+| DBaaS backup request: "some adapters do not supported backup operation" | [9. DBaaS Adapter / Backup Registration Issues - Adapter Reports backupRestore: false](#9-dbaas-adapter--backup-registration-issues) |
+| Physical DB `"backupRestore": false` | [9. DBaaS Adapter / Backup Registration Issues - Adapter Reports backupRestore: false](#9-dbaas-adapter--backup-registration-issues) |
+| Adapter log: `Backup credentials are not set. Backup API is not working.` | [9. DBaaS Adapter / Backup Registration Issues - Adapter Reports backupRestore: false](#9-dbaas-adapter--backup-registration-issues) |
+| `MongoDB replication lag` alert | [2. Replica Set / Replication Issues - Replication Lag](#2-replica-set--replication-issues) |
+| `MongoDB CPU Usage` alert | [4. Performance / Resource Issues - High CPU / Memory Usage](#4-performance--resource-issues) |
+| `MongoDB Memory Usage` alert | [4. Performance / Resource Issues - High CPU / Memory Usage](#4-performance--resource-issues) |
+| `MongoDB cursors timeouts` alert | *Prometheus Alerts Troubleshooting - MongoDB Cursors Timeouts* in `references/troubleshooting.md` |
+| Replica `stateStr` = `RECOVERING` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Replica `stateStr` = `UNKNOWN` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Replica `stateStr` = `DOWN` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Replica `stateStr` = `ROLLBACK` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Replica `stateStr` = `REMOVED` | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Two primaries in one replica set | [2. Replica Set / Replication Issues](#2-replica-set--replication-issues) |
+| Pods restart during backup window | [5. Backup Issues - Backup Job Failed](#5-backup-issues) |
+| Primary flips repeatedly | [4. Performance / Resource Issues - High CPU / Memory Usage](#4-performance--resource-issues) |
+| DR switchover/failover fails | [6. DR Issues - Switchover / Failover Failed](#6-dr-issues) |
+| DR clean install fails on one side only | [6. DR Issues - Clean Install Fails on Only One Side](#6-dr-issues) |
+| `cannot get major and minor version from mongo version` while converting HA to DR | [6. DR Issues - HA to DR Transition](#6-dr-issues) |
+| `schemaSettings.schemaType` changed from `ha` to `dr` but standby members are never added | [6. DR Issues - HA to DR Transition](#6-dr-issues) |
+| Transitioning existing HA deployment to active-standby DR fails | [6. DR Issues - HA to DR Transition](#6-dr-issues) |
+| Exporter `AuthenticationFailed` / `sasl conversation error` after DR switchover | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
+| Exporter `ReplicaSetNoPrimary` for mongos endpoints after switchover | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
+| `EXPORT_MONGOS` not `false` on standby-side prometheus-exporter | [6. DR Issues - Prometheus Exporter Authentication Errors After Switchover](#6-dr-issues) |
+| `context deadline exceeded` in Events | [8. Pod Startup Issues - Pods Do Not Start](#8-pod-startup-issues) |
+| Pod phase `Pending` (older installations) | [8. Pod Startup Issues - Pods Stuck in Pending](#8-pod-startup-issues) |
+| `Index build: waiting for next action before completing final phase` | [8. Pod Startup Issues - Index Build Stuck](#8-pod-startup-issues) |
 
-These alerts have **no section** in the guide — state that no documented fix exists; do not map them to a nearby
-section: `MongoDB DBaaS Adapter is down`, `MongoDB Backup Daemon is down`,
-`MongoDB Backup Daemon uses more than <N> % of disk space`, `MongoDB Backup Daemon uses more than <N> % of available inodes`,
-`MongoBalancerDisabled`, `MongoChunkMigrationFailures`, `MongoUnevenChunkDistribution`, `MongoTooManyConnections`.
+## Using the Full Troubleshooting Guide
 
-An alert named `Pod is Down` does not exist in this repo's alert rules. If a report uses that name, treat it as a
-pod crash/restart symptom and match by the pod's log or event string using the table below, not by the alert name.
+For step-by-step remediation, read only the matching section from `references/troubleshooting.md` (or `docs/public/troubleshooting.md`) — **do NOT read the full file**.
 
-## Error string / state → section
+1. Find the section line: `grep -n "^## " references/troubleshooting.md`
+2. Match the symptom/alert to a section header using the table above.
+3. Read only that section with `offset = section start line` and `limit = lines until the next "## " header`.
 
-| Exact string or state | Header in references/troubleshooting.md |
-|---|---|
-| `Assertion: 28595:2: No such file or directory` with `wiredtiger_kv_engine.cpp 267` | Common Issues - Mongodb Statefulset is Not Starting With Error |
-| Same assertion, and every pod of that replica set (`datarsN*` or `cnfrsN*`) is down | Common Issues - Mongodb Statefulset is Not Starting With Error and You Do Not Have Enough Alive Pods to Sync From |
-| `replication: Data too stale, halting replication` | Common Issues - Mongo Pod Was Down for Some Time and Now Cannot Start |
-| `Could not find host matching read preference { mode: "primary" } for set datarsX` | Common Issues - Could not find host matching read preference for set datarsX |
-| `Index build: waiting for next action before completing final phase` | Common Issues - Index build stuck |
-| `Reconciliation exception: PVC <name> 'Bound' status waiting failed` | Common Issues - Deploy Failed With Error in Operator Logs |
-| `spec.mongodb.customDataRSParameters: Invalid value: "null"` or `spec.schemaSettings.otherDomainName: Invalid value: "null"` | Common Issues - Deploy Fails |
-| `command replSetInitiate requires authentication` in operator logs | Common Issues - Clean deploy failed with error message in operator logs |
-| `context deadline exceeded` in pod Events | Common Issues - Pods Do Not Start With Error in Events |
-| Pod phase `Pending` | Common Issues - Pods Stuck in Pending State |
-| `UserNotFound: Could not find user root@admin` or mongos log `can't choose primary for datars<N>` | Common Issues - Cannot Login to MongoDB |
-| `SCRAM-SHA-256` / `SASL step` failures for user `__system` between members during a rolling update | Common Issues - Intra-Cluster Authentication Fails During Rolling Update (Keyfile Rotation) |
-| `Error accepting new connection on local endpoint` or `Too many open files` | Common Issues - Connections Refused With "Too Many Open Files" Error |
-| `WT_CACHE_FULL` in mongod log, no crash | Common Issues - MongoDB Read Latency Spikes / WT_CACHE_FULL (Not Corruption) |
-| mongodb-monitoring-agent log `AttributeError: 'NoneType' object has no attribute 'get'` | Common Issues - No Backup Information in Monitoring |
-| Backup log line starting `Backup failed` in `/backups/<folder>/.console` | Common Issues - Backup Failed for Some Reason |
-| Replica `stateStr` = `RECOVERING` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 3 |
-| Replica `stateStr` = `UNKNOWN` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 6 |
-| Replica `stateStr` = `DOWN` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 8 |
-| Replica `stateStr` = `ROLLBACK` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 9 |
-| Replica `stateStr` = `REMOVED` | Prometheus Alerts Troubleshooting - MongoDB Replication Status 10 |
-| Two members of one replica set both report `stateStr` = `PRIMARY` | Common Issues - Same Queries Return Different Results |
+## Key Helm Chart Parameters
 
-## Symptom (no exact string) → section
+```yaml
+schemaSettings:
+  sharded: true
+  schemaType: "ha"          # ha | dr
+  thisDomainName: "cluster.local"
+  otherDomainName: "peer.cluster.local"  # swap with peer side in DR
 
-| Symptom | Header in references/troubleshooting.md |
-|---|---|
-| DR switchover/failover fails or times out | DR Issues - Swithover/Failover failed |
-| Clean install succeeds on one DR side and fails on the other | DR Issues - Clean Install Fails on Only One Side of a DR Pair |
-| All MongoDB pods restart repeatedly and the PV is full | Common Issues - No Free Space Left on MongoDB PV |
-| Collection data deleted, PV usage did not drop | Common Issues - MongoDB Disk Space Usage Not Changed After Data Deleted |
-| Same query returns different results between runs | Common Issues - Same Queries Return Different Results |
-| Pods restart during the backup window | Common Issues - Random Pods Restart During MongoDB Backup Process |
-| Primary changes repeatedly within a short period | Common Issues - Replica Set Primary Flips Repeatedly (Stepdown Loops) |
-| Backup metrics missing in monitoring | Common Issues - No Backup Information in Monitoring |
+disasterRecovery:
+  mode: "active"
 
-Section header spelling is exact, including `Swithover`.
+mongodb:
+  customDataRSParameters: '["logLevel=0"]'
+  dataWiredTigerCacheGb: "1.0"
+  cnfWiredTigerCacheGb: "0.5"
+  singleWiredTigerCacheGb: "0.25"
+  dataResources: { limits: { memory: 1Gi, cpu: 500m } }
+  storage:
+    waitPvcBound: false
+    size: ["5Gi"]
 
-## Guardrails
+backup:
+  storage:
+    waitPvcBound: false
 
-The operator rewrites replica-set configuration and mongod parameters on every reconcile loop. Never recommend:
+recycler:
+  install: false
 
-- `db.adminCommand({setParameter: ...})` for a persistent setting — lost on pod restart. Change
-  `mongodb.customDataRSParameters` or the dedicated typed value (see "Config value conventions") instead.
-- `rs.reconfig(...)` on an operator-managed replica set — the operator overwrites it on the next reconcile.
-- Any data-clearing step (`rm -rf /data/...`, `rm -f /data/*`) unless at least one member of the same replica set is
-  `PRIMARY` or `SECONDARY` at that moment. If every member of a replica set is down, the data is recoverable only
-  from backup; say so and do not recommend a resync.
+tls:
+  mode: disabled
+```
 
-## Config value conventions
+## Log Analysis Tips
 
-Where each parameter lives:
+```bash
+# Operator: reconciliation, CRD, DR / switchover / HA-to-DR
+kubectl logs deployment/mongodb-operator | grep -iE "error|failed|unable|exception|MongodbDeployment|MongodbSupplService|switchover|failover|disasterRecovery|schemaType|major and minor version"
 
-| Parameter | Resource it lives on |
-|---|---|
-| `mongodb.customDataRSParameters` | `mongodb-operator` Helm chart values → `MongodbDeployment` CR `spec.mongodb.customDataRSParameters` |
-| `mongodb.dataWiredTigerCacheGb`, `mongodb.cnfWiredTigerCacheGb`, `mongodb.singleWiredTigerCacheGb` | same chart/CR (`spec.mongodb.*`); data shards / config servers / standalone respectively |
-| `mongodb.dataResources.limits.memory` / `.cpu`, `mongodb.cnfResources.limits.*`, `mongodb.mongosResources.limits.*` | same chart/CR; limits of `datarsN`, `cnfrsN`, and mongos pods respectively |
-| `mongodb.storage.waitPvcBound` | `mongodb-operator` chart / `MongodbDeployment` CR — MongoDB PVCs |
-| `backup.storage.waitPvcBound` | `mongodb-services` chart / `MongodbSupplService` CR — backup daemon PVC |
-| `recycler.install` | `mongodb-operator` chart / `MongodbDeployment` CR |
-| `disasterRecovery.mode` (`active` / `standby` / `disable`) | `mongodb-operator` chart / `MongodbDeployment` CR `spec.disasterRecovery.mode` |
-| `schemaSettings.thisDomainName`, `schemaSettings.otherDomainName` | `mongodb-operator` chart / `MongodbDeployment` CR `spec.schemaSettings.*` |
-| `prometheusExporter.alerts.common.*` (`replicationLagSeconds`, `cursorTimeoutThreshold`, `cpuUsageThreshold`, `memoryUsageThreshold`, `cachePressureThreshold`) | `mongodb-services` chart values (alert thresholds) |
+# Mongod: replication, WiredTiger, EMFILE, auth, crashes
+kubectl logs <datarsN-pod> -c mongod | grep -iE "replication|recover|rollback|stale|election|wiredtiger|wt_cache_full|assertion|corrupt|too many open files|emfile|error \(24\)|fatal assertion 50882|fatal assertion 50853|sasl|authentication|userNotFound|starting|shutdown|crash|fatal"
 
-Rules:
+# Mongos: routing, connection limits
+kubectl logs <mongos-pod> | grep -iE "can't choose primary|read preference|config server|too many open files|connection refused"
 
-- `mongodb.customDataRSParameters` is a list of `"key=value"` strings (`=`, not `:`), written in values as a
-  JSON-encoded string, for example `'["logLevel=0", "diagnosticDataCollectionEnabled=false"]'`. Redeploy replaces the
-  list, it does not merge: the recommended value must contain every existing entry plus the new one.
-- For WiredTiger cache size, use the typed `mongodb.*WiredTigerCacheGb` value, not `customDataRSParameters`.
-- DR domain names must be swapped between sides: side A `thisDomainName` = side B `otherDomainName`, and
-  side A `otherDomainName` = side B `thisDomainName`.
-- Present every config change as "set `<value-path>: <value>` in the deploy parameters of `<chart>` and redeploy".
-- Replica counts are `schemaSettings.cnfReplicaSize`, `schemaSettings.dataReplicaSize` and `schemaSettings.arbiterIndex`
-  on the `MongodbDeployment` CR. Never change membership with `rs.reconfig`.
+# Prometheus exporter: post-switchover auth / mongos scrape errors
+kubectl logs <mongodb-prometheus-exporter-pod> | grep -iE "cannot connect to mongodb|sasl conversation error|replicasetnoprimary|export_mongos|error|cannot connect"
+
+# Backup daemon: backup/credentials/storage
+kubectl logs <mongodb-backup-daemon-pod> | grep -iE "backup|restore|snapshot|s3|credentials|permission denied|disk full"
+```
+
+## Integration Points
+
+- **Monitoring exporter:** Prometheus `ServiceMonitor`; health-check via `kubectl port-forward <mongodb-monitoring-agent-pod> 9216:9216` and `curl localhost:9216/metrics`; thresholds in `prometheusExporter.alerts.common.*`.
+- **DBaaS adapter:** `dbaas-mongo-adapter` container; common symptom is bulk-drop timeouts / stuck DDL.
+- **Backup storage:** `/backups/<timestamp>` in PVC or S3; verify `mongodb-backup-credentials` Secret and PVC space/inodes when backups fail.
+
+## Prevention Best Practices
+
+1. Set `mongodb.customDataRSParameters` as a JSON-encoded `"key=value"` list; redeploy replaces the whole list, so include existing entries.
+2. Use typed `mongodb.*WiredTigerCacheGb` and raise cache + memory limits together (cache < pod memory limit).
+3. Deploy DR standby first with swapped `thisDomainName`/`otherDomainName`; if standby isn't ready, deploy HA first and use HA-to-DR migration (operator 2.16.6+).
+4. Use `recycler.install: true` or wipe PVs for clean reinstalls.
+5. Monitor disk usage/oplog window and expand PVCs before they fill.
+6. Test backup/restore and DR failover/switchover regularly in non-production.
+7. Enable TLS in production (`preferTLS`/`requireTLS`).
+8. Keep containerd `LimitNOFILE` >= 64000 on MongoDB worker nodes.
+
+## Related Documentation
+
+- [Installation Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md) — Prerequisites, Helm parameters, platform-specific setup
+- [Configuration Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/configuration.md) — CRD fields and value reference
+- [Architecture](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/architecture.md) — Cluster topology and component architecture
+- [Operations Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/operations_guide.md) — Day-2 operations
+- [Troubleshooting Guide](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/troubleshooting.md) — Detailed issue-by-issue remediation
+- [DR Operations](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/dr_operations.md) — Active-standby DR procedures
+- [Backup Daemon](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/backup-daemon.md) — Backup/restore configuration
+- [Grafana Dashboard](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/grafana_dashboard.md) — Monitoring dashboards
+
+## When to Escalate
+
+Escalate to maintainers for: operator Go panic; suspected data corruption (`Assertion: 28595`, checksum errors, unrecoverable WiredTiger files); split-brain with divergent primaries; all replica-set members down without backup; repeated backup-restore failures; unrecoverable DR switchover/failover; inconsistent state after upgrade/rolling update; unexplained performance degradation.
+
+**Include:** operator logs, mongod logs from affected replica sets, CRD YAML (`kubectl get mongodbdeployment,mongodbsupplservice -o yaml`), `rs.status()` from each set, `kubectl get events`, and backup daemon `.console` log for failing backups.
