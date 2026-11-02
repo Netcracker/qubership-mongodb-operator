@@ -446,7 +446,7 @@ In declarative mode:
 * The chart creates a Role and RoleBinding, `<release>-dbaas-credentials-reader`. They allow the DBaaS Operator ServiceAccount to `get` only that Secret.
 * The `MongodbSupplService` custom resource gets `dbaas.declarativeRegistration.operatorNamespace`. The adapter then gets `DBAAS_DECLARATIVE_REGISTRATION_ENABLED=true` and does not self-register.
 * The DBaaS Operator reads the descriptor from `GET /api/v2/adapter/physical_database` (Basic Auth with the adapter credentials) and registers the physical database in the aggregator.
-* `dbaas.declarativeRegistration.operatorNamespace` is required. The Helm render fails if it is empty.
+* `dbaas.declarativeRegistration.operatorNamespace` is optional. When empty, the namespace is extracted from `API_DBAAS_ADDRESS` (format `http://<aggregator>.<namespace>:<port>`). In that case `API_DBAAS_ADDRESS` must be set to an address that contains a namespace, otherwise the Helm render fails. Set `operatorNamespace` explicitly only when you need to override the derived value.
 
 **Note:** The CRD being available does not mean the DBaaS Operator is running. Make sure the DBaaS Operator is ready before you install or upgrade. If the CRD is installed after the adapter, run `helm upgrade` to switch to declarative mode. Deleting the `PhysicalDatabase` resource does not delete any databases.
 

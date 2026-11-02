@@ -239,8 +239,10 @@ dbaas:
   # Used only when the PhysicalDatabase CRD (dbaas.netcracker.com/v1) is available at render time:
   # the DBaaS Operator then registers the Adapter and the Adapter does not self-register.
   declarativeRegistration:
-    # Namespace (CLOUD_NAMESPACE) of the DBaaS Operator. Required in declarative mode.
-    operatorNamespace: dbaas
+    # Namespace (CLOUD_NAMESPACE) of the DBaaS Operator.
+    # Optional; when empty, derived from API_DBAAS_ADDRESS (http://<aggregator>.<namespace>:<port>).
+    # If empty, API_DBAAS_ADDRESS must be set in declarative mode, otherwise the Helm render fails.
+    operatorNamespace: ""
   gatewayAPI:
     gatewayName: ""
     gatewayNamespace: ""
