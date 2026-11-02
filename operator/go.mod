@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	github.com/Netcracker/qubership-credential-manager v0.0.18
-	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.15
+	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.14
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/gofiber/swagger v1.1.1
 	github.com/swaggo/swag v1.16.6
