@@ -16,7 +16,7 @@ import (
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/utils"
 	"github.com/Netcracker/qubership-dbaas-mongo/pkg"
 	mUtils "github.com/Netcracker/qubership-dbaas-mongo/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func main() {
