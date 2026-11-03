@@ -12,7 +12,7 @@ import (
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/utils"
 	mUtils "github.com/Netcracker/qubership-dbaas-mongo/utils"
 	"github.com/docker/distribution/uuid"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 )
