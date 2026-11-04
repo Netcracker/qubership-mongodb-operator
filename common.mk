@@ -5,8 +5,9 @@
 # This Makefile works in two modes:
 #   - Local: it pulls the linter image and runs lint via Docker; tests run on
 #            the host.
-#   - CI:    it runs /usr/local/bin/run.sh directly because the job already
-#            executes inside the linter container; tests run there too.
+#   - CI:    lint runs /usr/local/bin/run.sh directly because the lint job
+#            executes inside the linter container. Tests run in separate jobs
+#            inside a language-specific image (TEST_IMAGE), not the linter.
 
 LINTER_IMAGE ?= ghcr.io/netcracker/linter
 LINTER_TAG ?= latest
@@ -31,16 +32,6 @@ GOMODCACHE ?=
 SKILLCHECK_PATTERNS ?= agent-packages/*/.apm/skills
 export SKILLCHECK_PATTERNS
 
-# Optional: synchronize this Makefile from the upstream template.
-# Set PLATFORM_CI_TOOLKIT_RAW_URL to the raw URL of linter/templates/Makefile.
-sync-precheck-makefile:
-ifdef PLATFORM_CI_TOOLKIT_RAW_URL
-	curl -fsSL -o $(REPO_ROOT)/Makefile.precheck $(PLATFORM_CI_TOOLKIT_RAW_URL)
-else
-	@echo "Set PLATFORM_CI_TOOLKIT_RAW_URL to the raw URL of linter/templates/Makefile"
-	@exit 1
-endif
-
 # Forward environment variables used by the common linter. They are only passed
 # through if set in the caller's environment.
 LINTER_ENV ?= \
@@ -50,6 +41,7 @@ LINTER_ENV ?= \
 	-e FILTER_REGEX_INCLUDE \
 	-e FILTER_REGEX_EXCLUDE \
 	-e GOPROXY \
+	-e GOTOOLCHAIN \
 	$(if $(GOMODCACHE),-e GOMODCACHE=$(GOMODCACHE)) \
 	-e SKILLCHECK_PATTERNS="$(SKILLCHECK_PATTERNS)"
 
@@ -68,8 +60,9 @@ LINTER_RUN ?= docker run --rm \
 # GO_TEST_MODULES is auto-detected from go.mod files. Set it explicitly to
 # override. When a default branch is available and no .go/.mod/.sum files
 # changed, Go tests are skipped. Otherwise go test ./... runs in every detected
-# module.
-GO_TEST_MODULES ?= $(shell find $(REPO_ROOT) -name go.mod -not -path '*/vendor/*' -exec dirname {} \;)
+# module. Exclude vendor/ and the in-repo Go module cache (.go/), which CI sets
+# as GOMODCACHE (for example $CI_PROJECT_DIR/.go/pkg/mod).
+GO_TEST_MODULES ?= $(shell find $(REPO_ROOT) -name go.mod -not -path '*/vendor/*' -not -path '*/.go/*' -exec dirname {} \;)
 # Python interpreter to use for test-python. Override if only `python` is
 # available on the host or in the CI container.
 PYTHON ?= python3
@@ -185,10 +178,11 @@ test-java:
 
 ifeq ($(CI),true)
 
-# CI mode: we are already running inside the linter container.
+# CI mode: lint targets run inside the linter container.
 # The repository is mounted at REPO_ROOT (e.g. /builds/...), not /tmp/lint.
-# Link /tmp/lint to the checkout so the Dockerfile's GOMODCACHE setting
-# (/tmp/lint/.go/pkg/mod) resolves inside the repository and CI can save it.
+# Link /tmp/lint to the checkout so Super-Linter and skillcheck find the code.
+# Test targets do not use this: they run in a language image with GOMODCACHE
+# and PIP_CACHE_DIR already pointing into the checkout (see .test-base).
 .PHONY: prepare-ci-workspace lint lint-super-linter skill-validate lint-fix
 
 prepare-ci-workspace:
@@ -217,11 +211,6 @@ skill-validate:
 
 lint-fix:
 	FIX_GO=true FIX_MARKDOWN=true FIX_YAML_PRETTIER=true /usr/local/bin/run.sh super-linter
-
-# In CI, tests also need /tmp/lint linked before go test uses GOMODCACHE.
-test-go: prepare-ci-workspace
-test-python: prepare-ci-workspace
-test-java: prepare-ci-workspace
 
 else
 
