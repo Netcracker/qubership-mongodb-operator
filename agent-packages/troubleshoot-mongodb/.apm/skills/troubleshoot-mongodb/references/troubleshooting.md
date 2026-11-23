@@ -27,6 +27,99 @@ Swithover/Failover failed.
 
 "Not applicable"
 
+## DR Issues - Transitioning from HA to DR Fails
+
+This section provides information about failures when converting an existing single-site HA MongoDB deployment into an active-standby DR deployment.
+
+### Description
+
+Older operator versions required the standby cluster to be deployed before the active cluster. Starting with latest release that includes the HA-to-DR live migration fix, MongoDB can start as HA (single-site) and transition to DR once the standby cluster is available. If this transition fails, the operator may report a reconciliation error about the MongoDB version.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+```text
+Reconciliation exception: Microservice execution exception: cannot get major and minor version from mongo version
+```
+
+Also look for attempts to change `schemaSettings.schemaType` from `ha` to `dr` without following the HA-to-DR transition procedure.
+
+### How to solve
+
+1. **Use the documented HA-to-DR transition procedure**
+   - Follow the steps in the [Installation Guide - HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition).
+   - Do not simply change `schemaSettings.schemaType` from `ha` to `dr` and run a rolling update; the operator treats that as a rolling update and skips the steps needed to add standby-side members.
+
+2. **Verify the operator/services versions**
+   - The live migration path requires latest release that includes the fix.
+
+3. **If the DR site is not ready at install time**
+   - Deploy MongoDB as HA first (`schemaSettings.schemaType: ha`).
+   - When the standby cluster is ready, use the live migration procedure to transition to DR.
+   - If on an older operator version that does not support live migration, the only supported path is to back up the data, clean the PVCs, redeploy in standby-first order, and restore.
+
+### Recommendations
+
+Plan the deployment strategy before go-live. If DR infrastructure may arrive later, deploy MongoDB as HA initially and use the supported HA-to-DR migration path once the standby site is available, rather than attempting a direct `schemaType` change.
+
+## DR Issues - Prometheus Exporter Authentication Errors After Switchover
+
+This section provides information about mongodb-prometheus-exporter failing to connect after a DR switchover because the `EXPORT_MONGOS` flag was not updated.
+
+### Description
+
+After a switchover, the prometheus-exporter Deployment on the new standby side may still have `EXPORT_MONGOS=true`. Standby clusters do not run mongos, so the exporter tries to scrape non-existent mongos endpoints and fails with authentication / server-selection errors. This is a deployment-reconciliation bug in older operator versions; it was fixed in latest release.
+
+### Alerts
+
+Active alert on `mongodb-prometheus-exporter` or MongoDB metrics missing in Grafana/VictoriaMetrics after switchover.
+
+### Stack trace(s)
+
+mongodb-prometheus-exporter log shows repeated authentication errors:
+
+```text
+source=exporter.go:328 msg="Cannot connect to MongoDB"
+sasl conversation error: unable to authenticate using mechanism "SCRAM-SHA-1": (AuthenticationFailed) Authentication failed
+```
+
+Exporter also reports `ReplicaSetNoPrimary` while trying to reach mongos endpoints:
+
+```text
+server selection error: server selection timeout, current topology: { Type: ReplicaSetNoPrimary
+```
+
+The `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment is still `true` on the standby side, but no mongos pods exist there.
+
+### How to solve
+
+1. **Verify the exporter Deployment on the standby side**
+   - Check the `EXPORT_MONGOS` environment variable in the `mongodb-prometheus-exporter` Deployment.
+   - On the standby cluster it must be `false`; on the active cluster it must be `true`.
+
+2. **Workaround: patch the Deployment manually**
+   - On the affected (standby) side, set `EXPORT_MONGOS=false` in the `mongodb-prometheus-exporter` Deployment:
+   
+   ```bash
+   kubectl set env deployment/mongodb-prometheus-exporter EXPORT_MONGOS=false -n <namespace>
+   ```
+   
+   - Restart the exporter pod to pick up the new value.
+
+3. **Force operator reconciliation**
+   - If the operator did not update the exporter Deployment after switchover, edit the `last-applied-configuration-info` ConfigMap and delete the `summary-spec` value, then restart the operator pod on the affected side.
+   - Retry the switchover if needed.
+
+4. **Permanent fix**
+   - Upgrade to latest release that contains the fix for correctly updating `EXPORT_MONGOS` during switchover.
+
+### Recommendations
+
+After every switchover, verify that the `mongodb-prometheus-exporter` targets are UP in VictoriaMetrics/Prometheus and that the standby side is not trying to scrape mongos metrics. Keep operator/services versions in sync on both DR sides.
+
 ## Common Issues - No Free Space Left on MongoDB PV
 
 This section provides information about the MongoDB issues related to lack of free space on the MongoDB PV.
@@ -50,7 +143,7 @@ All MongoDB pods can start rebooting if no free space is left on PV.
     - Connect to Nodes/NFS to access the MongoDB PVs content.
     - Remove content of folders on the 3 MongoDB PVs `/data/datars10`, `/data/datars21`, and `/data/datars32` accordingly. Now all other datars pods should be able to start.
     - Remove unnecessary data from MongoDB collections.
-    - Perform a `compact` operation on collections according to the instructions in [MongoDB Disk Space Usage not changed after data deleted](#mongodb-disk-space-usage-not-changed-after-data-deleted).
+    - Perform a `compact` operation on collections according to the instructions in the section "Common Issues - MongoDB Disk Space Usage Not Changed After Data Deleted".
     - Scale Up pods `datars10-0`, `datars21-0`, and `datars32-0`.
 
 ### Recommendations
@@ -131,7 +224,9 @@ One or more replicas in the replicaset are not in expected state (PRIMARY, SECON
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+Index build: waiting for next action before completing final phase
+```
 
 ### How to solve
 
@@ -182,7 +277,9 @@ One or more replicas in replicaset datarX have incorrect status.
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+Could not find host matching read preference { mode: "primary" } for set datarsX
+```
 
 ### How to solve
 
@@ -241,13 +338,16 @@ The Storage Provisioner is configured to create and bind PV when first consumer 
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+Reconciliation exception: PVC pvc-mongodb-main-data-0 'Bound' status waiting failed
+```
 
 ### How to solve
 
 1. **Disable waiting for PVC binding.**
     - Navigate to the deployment parameter configuration (CMDB).
-    - Add the `waitPvcBound: false` parameter to the `mongodb.storage` and `backup.storage` sections.
+    - Set `mongodb.storage.waitPvcBound: false` in the `mongodb-operator` Helm chart values (`MongodbDeployment` CR) when the PVC in the error is a MongoDB data PVC (`pvc-mongodb-...`).
+    - Set `backup.storage.waitPvcBound: false` in the `mongodb-services` Helm chart values (`MongodbSupplService` CR) when the PVC in the error is the backup daemon PVC.
     - Retry the deployment job.
 
 ### Recommendations
@@ -268,7 +368,9 @@ The backend filesystem has failed, and the data for this particular instance is 
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267
+```
 
 ### How to solve
 
@@ -333,7 +435,7 @@ The backend filesystem has failed, and the data for this particular instance is 
         collection-28--7259052634765019933.wt  index-17--7259052634765019933.wt       index-38--72590`52634765019933.wt  storage.bson      
       ```
    
-   - Delete all the data using the command, ```rm -f /data/*```.
+   - Delete all the data using the command, ```rm -rf /data/*``` (`-r` is required: `/data` contains the directories `journal` and `diagnostic.data`).
    - After the data is deleted, delete Statefulset using the following command:
    
       ```text
@@ -349,7 +451,7 @@ The backend filesystem has failed, and the data for this particular instance is 
    - Scale Statefulset using the following command:
    
       ```text
-        oc scale <statefulsetname> --replicas=1
+        oc scale statefulset <statefulsetname> --replicas=1
       ```
    
    - Wait for the resynchronization. The pod should become **Running: 1/1** in OpenShift.
@@ -372,11 +474,14 @@ Known issue in the release.
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+spec.mongodb.customDataRSParameters: Invalid value: "null": spec.mongodb.customDataRSParameters in body must be of type array: "null"
+spec.schemaSettings.otherDomainName: Invalid value: "null": spec.schemaSettings.otherDomainName in body must be of type string: "null"
+```
 
 ### How to solve
 
-1. **Set the following parameters:**
+1. **Set the following parameters in the `mongodb-operator` Helm chart values (`MongodbDeployment` CR):**
 
     ```text
         schemaSettings.otherDomainName: "cluster.local"
@@ -401,12 +506,15 @@ You cannot recover all data in any easy way, except restoring from backups.
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267
+```
+Every pod of the affected replica set is down.
 
 ### How to solve
 
 1. **If you are OK with an empty, but a working database, do the following:**
-   - Clean all the data in all datars and cnfrs pods. For more information, see [Mongodb-statefulset-is-not-starting-with-error-```I - [initandlisten] Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267```](#Mongodb Statefulset is not starting with error ```I - [initandlisten] Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267```)
+   - Clean all the data in all datars and cnfrs pods. For the steps, see the section "Common Issues - Mongodb Statefulset is Not Starting With Error".
    - Clone the repository to the machine with access to cloud.
    - Log in to a proper project through OC.
    - Specify the values for `./scripts/re-init.sh` environment variables in the beginning of the script.
@@ -431,7 +539,9 @@ It is a Docker issue.
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+context deadline exceeded
+```
 
 ### How to solve
 
@@ -493,7 +603,10 @@ MongoDB has not been initiated yet, the root user has not been created. Until yo
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+SCRAM-SHA-1 authentication failed for root on admin from client 127.0.0.1:47050 ; UserNotFound: Could not find user root@admin
+can't choose primary for datars${number}
+```
 
 ### How to solve
 
@@ -633,7 +746,7 @@ This section provides information about the MongoDB issues related to Backup Fai
 
 ### Alerts
 
-"Not applicable"
+`MongoDB last backup failed`
 
 ### Stack trace(s)
 
@@ -673,12 +786,14 @@ You can look in the logs for errors such as:
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+replication: Data too stale, halting replication
+```
 
 ### How to solve
 
 1. **You need to re-synchronize the pod**
-   - For more information, see [Mongodb-statefulset-is-not-starting-with-error-```I - [initandlisten] Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267```](#Mongodb Statefulset is not starting with error ```I - [initandlisten] Assertion: 28595:2: No such file or directory src/mongo/db/storage/wiredtiger/wiredtiger_kv_engine.cpp 267```).
+   - For the steps, see the section "Common Issues - Mongodb Statefulset is Not Starting With Error".
 
 ### Recommendations
 
@@ -771,7 +886,7 @@ Backup process may stress the file system. Such cases happen when the backup pod
 
 1. **Limit the incoming (ingress) traffic** 
    - Limit the incoming (ingress) traffic to the backup pod so the load is decreased, but the backup process in this case could be longer.
-   To set the traffic limit, specify the `BACKUP_INGRESS_BANDWIDTH` parameter with the desired value in the deploy job parameters.
+   To set the traffic limit, specify the `BACKUP_INGRESS_BANDWIDTH` parameter with the desired value in the deploy job parameters. This name is not defined in any Helm chart or CRD in this repository; it is a deploy-job (CMDB) parameter of the delivery pipeline.
 
 ### Recommendations
 
@@ -791,16 +906,18 @@ PV's which were specified in deploy params have some data from previous installa
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+command replSetInitiate requires authentication
+```
 
 ### How to solve
 
 1. **Set the following parameters:**
     
     ```
-    recycler.install: true 
+    recycler.install: true
     ```
-    It will clean up PV's before installation. Or clean up PV's manually
+    Set it in the `mongodb-operator` Helm chart values (`MongodbDeployment` CR `spec.recycler.install`). It will clean up PV's before installation. Or clean up PV's manually
 
 ### Recommendations
 
@@ -824,7 +941,7 @@ Concurrent operations can sometimes cause unintended consequences within your sy
 
 ### Alerts
 
-"Not applicable"
+`MongoDB replication lag` — fires when the PRIMARY-to-SECONDARY optime difference is above `prometheusExporter.alerts.common.replicationLagSeconds` (default 10 seconds, `mongodb-services` Helm chart values).
 
 ### Stack trace(s)
 
@@ -833,10 +950,10 @@ Concurrent operations can sometimes cause unintended consequences within your sy
 ### How to solve
 
 1. **Investigate for possible disk I/O problems**
-   - (see [Random Pods Restart](#random-pods-restart) section), network issues of the environment. 
+   - (see the section "Common Issues - Random Pods Restart During MongoDB Backup Process"), network issues of the environment. 
 
 2. **Lack of resources or unoptimized queries or incorrect DB indexes.** 
-   - For more information, see [MongoDB CPU Usage](#mongodb-cpu-usage) and [MongoDB Memory Usage](#mongodb-memory-usage).
+   - For more information, see the sections "Prometheus Alerts Troubleshooting - MongoDB CPU Usage" and "Prometheus Alerts Troubleshooting - MongoDB Memory Usage".
 
 ### Recommendations
 
@@ -852,11 +969,11 @@ This section describes in detail the alerts, the possible reasons, and the solut
 |---|---|
 |Some cursors exceeded default MongoDB cursor timeout.|Unoptimized queries or large volume of data to gather by one batch.|
 
-By default, the cursor timeout is 10 minutes.
+By default, the cursor timeout is 10 minutes. The alert fires when more than `prometheusExporter.alerts.common.cursorTimeoutThreshold` (default 100) cursors time out within 10 minutes (`mongodb-services` Helm chart values).
 
 ### Alerts
 
-"Not applicable"
+`MongoDB cursors timeouts`
 
 ### Stack trace(s)
 
@@ -867,12 +984,12 @@ By default, the cursor timeout is 10 minutes.
 1. **Read all the data at one time, and then process it.**
    The disadvantages of this scheme are also obvious. If the data volume is very large, you may not be able to put it all in the memory. Even if it can all be put into the memory, the list derivation traverses all the data, and then the for loop traverses again, wasting time.
 
-2. **Reduce the default amount of pieces of data for cursor**
-   Let the cursor return less default amount of pieces of data each time, so that the time to consume this batch of data is less than 10 minutes.
+2. **Reduce the batch size of the cursor**
+   Set a smaller `batchSize` on the cursor in the client application, so that the cursor returns fewer documents per batch, so that the time to consume this batch of data is less than 10 minutes.
    However, this scheme increases the number of database connections, thus increasing the I/O time consumption.
 
 3. **Remove timeout**
-   Let the cursor never time out. Set the parameter “no cursor” timeout = true to make the cursor never timeout.
+   Let the cursor never time out. Use the cursor option `noCursorTimeout` in the client application.
    However, this operation is very dangerous because if your program stops unexpectedly for some reason, the cursor can no longer be closed. Unless mongodb is restarted, these cursors remain on mongodb and occupy resources.
 
 ### Recommendations
@@ -891,7 +1008,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### Alerts
 
-"Not applicable"
+`MongoDB CPU Usage`
 
 ### Stack trace(s)
 
@@ -1042,7 +1159,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### Alerts
 
-"Not applicable"
+`MongoDB Memory Usage`
 
 ### Stack trace(s)
 
@@ -1089,7 +1206,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
         }
     ```
     
-    View the `indexSize` and `dataSize` provided in bytes. Up to 50% of this size can be cached in RAM. If that is the problem, consider increasing the RAM limits on `datars` StatefulSets or review the index policy.
+    View the `indexSize` and `dataSize` provided in bytes. Up to 50% of this size can be cached in RAM. If that is the problem, raise `mongodb.dataResources.limits.memory` (`datarsN` pods) or `mongodb.cnfResources.limits.memory` (`cnfrsN` pods) in the `mongodb-operator` Helm chart values, or review the index policy. Raise the matching WiredTiger cache value in the same change (`mongodb.dataWiredTigerCacheGb` / `mongodb.cnfWiredTigerCacheGb`), see the section "Common Issues - MongoDB Read Latency Spikes / WT_CACHE_FULL (Not Corruption)".
 
 ### Recommendations
 
@@ -1107,7 +1224,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### Alerts
 
-"Not applicable"
+`MongoDB replication Status 3 (RECOVERING)`, `MongoDBRecoveringTooLong` (state 3 for more than 15 minutes)
 
 ### Stack trace(s)
 
@@ -1115,7 +1232,11 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### How to solve
 
-1. **Check the pod logs and find error messages to continue investigation of the root cause.**
+1. **Match the member's mongod log against these strings:**
+   - `replication: Data too stale, halting replication` → section "Common Issues - Mongo Pod Was Down for Some Time and Now Cannot Start".
+   - `Assertion: 28595:2: No such file or directory` → section "Common Issues - Mongodb Statefulset is Not Starting With Error".
+2. **If the alert is `MongoDBRecoveringTooLong` (state 3 for more than 15 minutes), no log line matches, and at least one other member of the same replica set is `PRIMARY` or `SECONDARY`:** resync the member by clearing its data, as in the section "Common Issues - Could not find host matching read preference for set datarsX".
+3. If neither applies, no fix is documented; report the member name and the log lines found.
 
 ### Recommendations
 
@@ -1134,7 +1255,7 @@ This section describes the alerts, the possible reasons, and the solution relate
 
 ### Alerts
 
-"Not applicable"
+`MongoDB replication Status 6 (UNKNOWN)`
 
 ### Stack trace(s)
 
@@ -1142,7 +1263,7 @@ This section describes the alerts, the possible reasons, and the solution relate
 
 ### How to solve
 
-1. **Check pod logs and find error messages to continue investigation of the root cause.**
+1. **Match the member's mongod log against the strings listed in the section "Prometheus Alerts Troubleshooting - MongoDB Replication Status 3".** If none matches, no fix is documented; report the member name and the log lines found.
 
 ### Recommendations
 
@@ -1160,7 +1281,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### Alerts
 
-"Not applicable"
+`MongoDB replication Status 8 (DOWN)`
 
 ### Stack trace(s)
 
@@ -1168,7 +1289,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### How to solve
 
-1. **Check pod logs and find error messages to continue investigation of the root cause.**
+1. **Match the member's mongod log against the strings listed in the section "Prometheus Alerts Troubleshooting - MongoDB Replication Status 3".** If none matches, no fix is documented; report the member name and the log lines found.
 
 ### Recommendations
 
@@ -1186,7 +1307,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### Alerts
 
-"Not applicable"
+`MongoDB replication Status 9 (ROLLBACK)`
 
 ### Stack trace(s)
 
@@ -1212,7 +1333,7 @@ This section describes in detail the alerts, the possible reasons, and the solut
 
 ### Alerts
 
-"Not applicable"
+`MongoDB replication Status 10 (REMOVED)`
 
 ### Stack trace(s)
 
@@ -1245,12 +1366,13 @@ A DR (active/standby) install fails on only one side. This is most often an inst
 ### How to solve
 
 1. **Confirm install order.**
-   - Deploy the **standby** instance first, with `schemaSettings.mode: standby`, and wait for it to finish successfully.
-   - Only then deploy the **active** instance, with `schemaSettings.mode: active`.
+   - Deploy the **standby** instance first, with `disasterRecovery.mode: standby` (`mongodb-operator` Helm chart values; `MongodbDeployment` CR `spec.disasterRecovery.mode`), and wait for it to finish successfully.
+   - Only then deploy the **active** instance, with `disasterRecovery.mode: active`.
    - If active was deployed first or concurrently with standby, redeploy in the correct order.
 2. **Check the domain name swap.**
-   - `schemaSettings.thisDomainName` and `schemaSettings.otherDomainName` must swap between the two sides — each side's `thisDomainName` is the other side's `otherDomainName`. A common mistake is copying the same pair of values to both sides instead of swapping them.
-3. **If both of the above check out and the failure persists**, check operator logs on the failing side for the underlying reconciliation error rather than continuing to assume ordering or configuration.
+   - `schemaSettings.thisDomainName` and `schemaSettings.otherDomainName` (`mongodb-operator` Helm chart values; `MongodbDeployment` CR `spec.schemaSettings`) must swap between the two sides — each side's `thisDomainName` is the other side's `otherDomainName`. A common mistake is copying the same pair of values to both sides instead of swapping them.
+3. **If both of the above check out and the failure persists**, look in the operator logs of the failing side for the line starting `Reconciliation exception:` and match its text against the other sections of this guide.
+4. **If the standby site is not available at install time** and the release includes the HA-to-DR live migration fix, you can deploy as HA first and then follow the [HA to DR Transition](https://github.com/Netcracker/qubership-mongodb-operator/blob/main/docs/public/installation_guide.md#ha-to-dr-transition) procedure once the standby cluster is ready. See also *DR Issues - Transitioning from HA to DR Fails* in this guide.
 
 ### Recommendations
 
@@ -1266,7 +1388,7 @@ The pod stays up; queries get slow or start failing under load because the Wired
 
 ### Alerts
 
-"Not applicable"
+`MongoWiredTigerCachePressure`
 
 ### Stack trace(s)
 
@@ -1277,7 +1399,7 @@ Also visible as `cache used` sitting at or near `cache size` in `db.serverStatus
 
 ### How to solve
 
-1. **Raise the appropriate typed cache value for the affected component:**
+1. **Raise the typed cache value for the affected component (`mongodb-operator` Helm chart values):**
 
     ```text
     mongodb.dataWiredTigerCacheGb        # data shards
@@ -1285,7 +1407,7 @@ Also visible as `cache used` sitting at or near `cache size` in `db.serverStatus
     mongodb.singleWiredTigerCacheGb      # standalone deployments
     ```
 
-2. **Before applying, confirm the pod's memory limit has headroom above the new cache value.** WiredTiger's cache is heap-allocated on top of its own overhead — raising the cache setting without raising the pod's memory limit to match risks an OOM kill instead of fixing the latency.
+2. **Raise the pod's memory limit in the same change.** The new cache value in GB must be lower than the limit of the same component: `mongodb.dataResources.limits.memory` for `mongodb.dataWiredTigerCacheGb`, `mongodb.cnfResources.limits.memory` for `mongodb.cnfWiredTigerCacheGb`. WiredTiger's cache is heap-allocated on top of its own overhead, so a cache value at or above the limit causes an OOM kill instead of fixing the latency. All four values are in the `mongodb-operator` Helm chart values (`MongodbDeployment` CR `spec.mongodb`). The `MongoWiredTigerCachePressure` threshold is `prometheusExporter.alerts.common.cachePressureThreshold` in the `mongodb-services` chart.
 
 ### Recommendations
 
@@ -1313,7 +1435,7 @@ The primary steps down and a new one is elected repeatedly, and the oplog applie
    - Disk IOPS saturation on the current primary.
    - Network jitter or latency between replica set members.
    - An unbalanced workload concentrating writes/reads on one member.
-2. This overlaps with [MongoDB Replication Lag](#prometheus-alerts-troubleshooting-mongodb-replication-lag) — if lag is also being reported, the same root-cause list applies.
+2. This overlaps with the section "Prometheus Alerts Troubleshooting - MongoDB Replication Lag" — if lag is also being reported, the same root-cause list applies.
 
 ### Recommendations
 
@@ -1325,7 +1447,7 @@ This section provides information about the MongoDB issues related to replica-se
 
 ### Description
 
-During a rolling update on a sharded cluster, replica-set members start rejecting each other. Logs show SCRAM-SHA-256 authentication failures for the `__system` user (`SASL step` errors / auth challenge mismatch) between members, and mongos routing starts failing against the affected shards. This is a different root cause than [Cannot Login to MongoDB](#common-issues---cannot-login-to-mongodb) — users already exist and normally authenticate fine.
+During a rolling update on a sharded cluster, replica-set members start rejecting each other. Logs show SCRAM-SHA-256 authentication failures for the `__system` user (`SASL step` errors / auth challenge mismatch) between members, and mongos routing starts failing against the affected shards. This is a different root cause than the section "Common Issues - Cannot Login to MongoDB" — users already exist and normally authenticate fine.
 
 The rolling update rotates the `mongo-secret` keyfile Kubernetes Secret. Pods that have already restarted mount the new keyfile; pods still pending restart hold the old one. A pod on the new key computes a different `__system` challenge/response than a peer still on the old key, so cluster membership auth fails until every member is on the same keyfile.
 
@@ -1335,7 +1457,11 @@ The rolling update rotates the `mongo-secret` keyfile Kubernetes Secret. Pods th
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+SCRAM-SHA-256
+SASL step
+__system
+```
 
 ### How to solve
 
@@ -1347,13 +1473,51 @@ The rolling update rotates the `mongo-secret` keyfile Kubernetes Secret. Pods th
 
 "Not applicable"
 
+## Common Issues - Mongos Did Not Restart After Keyfile Change During Rolling Update
+
+This section provides information about mongos pods not being restarted during a rolling update, causing them to keep the old keyfile while datars/cnfrs pods have the new one.
+
+### Description
+
+After a MongoDB rolling update that rotates the `mongo-secret` keyfile, mongos pods may not be recreated automatically and continue to use the old keyfile. Because datars/cnfrs pods that have restarted already mount the new keyfile, mongos cannot authenticate to them, resulting in repeated SCRAM failures for the `__system` user and continuous restarts of data/config replica-set members.
+
+### Alerts
+
+Continuous restarts of `datars*` / `cnfrs*` pods, `MongoDB replication Status 3 (RECOVERING)`, or inter-member `AuthenticationFailed` during/after an upgrade.
+
+### Stack trace(s)
+
+```text
+Failed to authenticate
+isClusterMember: true
+mechanism: SCRAM-SHA-256
+user: __system
+db: local
+error: AuthenticationFailed: SCRAM authentication failed, storedKey mismatch
+```
+
+The keyfile inside mongos pods still matches the old `mongo-secret` value while `datars`/`cnfrs` pods already have the rotated value.
+
+### How to solve
+
+1. **Compare keyfiles** in mongos pods versus datars/cnfrs pods that have already restarted. If mongos still has the pre-rotation keyfile, proceed to step 2.
+2. **Restart mongos** so it loads the rotated keyfile:
+   ```bash
+   kubectl rollout restart deployment/mongos -n <namespace>
+   ```
+3. **Verify** that the SCRAM `storedKey mismatch` errors stop and replica-set members recover to `PRIMARY`/`SECONDARY`.
+
+### Recommendations
+
+After any keyfile-rotating rolling update, confirm that mongos pods were recreated. If not, roll them out manually before declaring the upgrade complete.
+
 ## Common Issues - Connections Refused With "Too Many Open Files" Error
 
 This section provides information about the MongoDB issues related to connections being refused due to the container's open file descriptor limit being exceeded, resulting in ```Error accepting new connection on local endpoint``` and ```Too many open files```.
 
 ### Description
 
-MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused.
+MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `LimitNOFILE`) under load, causing new connections to be refused. If the limit is hit while WiredTiger is recovering or allocating files, the process may abort with fatal assertions such as 50882 or 50853, but the root cause is still the exhausted file-descriptor limit.
 
 ### Alerts
 
@@ -1361,16 +1525,102 @@ MongoDB pods hit the container's open file descriptor limit (`ulimit -n` / `Limi
 
 ### Stack trace(s)
 
-"Not applicable"
+```text
+Error accepting new connection on local endpoint
+Too many open files
+WiredTiger error (24)
+```
+
+WiredTiger fatal assertions that immediately follow an EMFILE / "Too many open files" error are also covered by this section, for example:
+
+```text
+Fatal Assertion 50882 at src/mongo/db/storage/wiredtiger/wiredtiger_session_cache.cpp
+Fatal Assertion 50853 at src/mongo/db/storage/wiredtiger/wiredtiger_util.cpp
+```
 
 ### How to solve
 
 1. **Increase the open file descriptor limit for MongoDB pods on all affected worker nodes:**
    - Most commonly this is set at the containerd level — raise `LimitNOFILE` in the containerd service configuration (e.g. a systemd drop-in for `containerd.service`) on each affected worker node, then restart containerd.
-   - If node-level access is not available, set the equivalent limit at the pod level instead (e.g. via `securityContext` ulimits, or an init container that raises it before the MongoDB container starts).
-   - MongoDB's own documentation recommends a `ulimit` of 64000 as the minimum for this setting.
+   - There is no Helm value or CR field in the charts of this repository for the file descriptor limit; the change is made on the worker node.
+   - Set `LimitNOFILE=64000` or higher (MongoDB's documented minimum `ulimit -n`).
    - Restart the affected MongoDB pods (and containerd, if that layer was changed) so they pick up the new limit.
 
 ### Recommendations
 
 "Not applicable"
+
+## Common Issues - DBaaS Adapter Does Not Support Backup Operation
+
+This section provides information about the MongoDB issues related to dbaas-mongo-adapter reporting `backupRestore: false` and DBaaS backup requests failing because the adapter was not reconciled with backup API credentials.
+
+### Description
+
+When backup is enabled (or the operator is upgraded) without changing any `spec.dbaas` field, the operator's `DbaasCompound.Condition()` may not re-run the dbaas-mongo-adapter deployment. Because backup-related parameters are not tagged as common parameters, the adapter Deployment is never updated with the `BACKUP_DAEMON_API_CREDENTIALS_USERNAME` and `BACKUP_DAEMON_API_CREDENTIALS_PASSWORD` environment variables. The adapter starts without backup credentials and disables the Backup API.
+
+### Alerts
+
+"Not applicable"
+
+### Stack trace(s)
+
+DBaaS backup request returns:
+
+```text
+The backup request have not been passed validate procedure and some adapters do not supported backup operation: Some adapters do not supported backup operation. To skip databases which does not support backup send the same request with parameter "ignoreNotBackupableDatabases=true"
+```
+
+Registered physical database shows:
+
+```text
+"backupRestore": false
+```
+
+dbaas-mongo-adapter log shows:
+
+```text
+Backup credentials are not set. Backup API is not working.
+```
+
+Operator log may show:
+
+```text
+Current dbaas-mongo-adapter version is: ...
+dbaas-mongo-adapter didn't change
+```
+
+### How to solve
+
+Choose one of the following options:
+
+1. **Force operator reconciliation by touching a dbaas field (recommended workaround)**
+   - Edit the `MongodbDeployment` / `MongodbSupplService` CR or the Helm values.
+   - Change any field under `spec.dbaas` (for example, `dbaasResources.limits.cpu`) so that `CheckSpecChange` returns true.
+   - Redeploy and wait for the operator to recreate the dbaas-mongo-adapter Deployment with the backup credential env vars.
+
+2. **Patch the running dbaas-mongo-adapter Deployment directly**
+   - Add the missing environment variables to the dbaas-mongo-adapter container:
+
+   ```yaml
+   - name: BACKUP_DAEMON_API_CREDENTIALS_USERNAME
+     valueFrom:
+       secretKeyRef:
+         name: mongodb-backup-api-credentials.v1
+         key: username
+   - name: BACKUP_DAEMON_API_CREDENTIALS_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: mongodb-backup-api-credentials.v1
+         key: password
+   ```
+
+   - Verify the secret `mongodb-backup-api-credentials.v1` exists in the namespace.
+
+3. **Verify the fix**
+   - Check the dbaas-mongo-adapter Deployment contains the backup credential env vars.
+   - Re-register the physical database or restart the dbaas-mongo-adapter pod if needed.
+   - Retry the backup request through DBaaS swagger.
+
+### Recommendations
+
+After upgrading the operator or enabling backup, always verify that `dbaas-mongo-adapter` is reconciled and the backup credentials are mounted. If backup is enabled after the initial deployment, touch a dbaas field or do a rolling restart of the dbaas-mongo-adapter Deployment to force reconciliation.

@@ -108,16 +108,37 @@ Uses value from values.yaml if defined, otherwise value from environment variabl
 {{- end -}}
 
 {{/*
+Domains used in certificate SANs. In DR schema the old domain is kept next to thisDomainName while
+members may still carry old hostnames (HA -> DR transition):
+*/}}
+{{- define "mongodb.certDomains" -}}
+  {{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
+  {{- $domains := list $domain -}}
+  {{- if eq .Values.schemaSettings.schemaType "dr" -}}
+    {{- $prev := "cluster.local" -}}
+    {{- $cr := lookup "netcracker.com/v1alpha1" "MongodbDeployment" .Release.Namespace .Values.operator.operatorName -}}
+    {{- if $cr -}}
+      {{- $prev = dig "spec" "schemaSettings" "thisDomainName" "" $cr -}}
+    {{- end -}}
+    {{- if and $prev (ne $prev $domain) -}}
+      {{- $domains = append $domains $prev -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $domains | toYaml -}}
+{{- end -}}
+
+{{/*
 DNS names used to generate SSL certificate with "Subject Alternative Name" field
 */}}
 {{- define "mongodb.generateCNFRSFQDNs" -}}
   {{- $size := int .Values.schemaSettings.cnfReplicaSize -}}
   {{- $namespace := .Release.Namespace -}}
-  {{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
   {{- $fqdnList := list -}}
+  {{- range $domain := (include "mongodb.certDomains" . | fromYamlArray) -}}
   {{- range $i := until $size -}}
   {{- $fqdn := printf "cnfrs%d-0.cnfrs.%s.svc.%s" $i $namespace $domain -}}
   {{- $fqdnList = append $fqdnList $fqdn -}}
+  {{- end -}}
   {{- end -}}
   {{- $fqdnList | toYaml -}} 
 {{- end -}}
@@ -192,13 +213,14 @@ type: Opaque
   {{- $size := int .Values.schemaSettings.dataReplicaSize -}}
   {{- $shCount := int .Values.schemaSettings.shardCount -}}
   {{- $namespace := .Release.Namespace -}}
-  {{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
   {{- $fqdnList := list -}}
+  {{- range $domain := (include "mongodb.certDomains" . | fromYamlArray) -}}
   {{- range $sh := until $shCount -}}
     {{- range $r := until $size -}}
       {{- $fqdn := printf "datars%d%d-0.datars%d.%s.svc.%s" (add1 $sh) $r (add1 $sh) $namespace $domain -}}
       {{- $fqdnList = append $fqdnList $fqdn -}}
     {{- end -}}
+  {{- end -}}
   {{- end -}}
   {{- $fqdnList | toYaml -}} 
 {{- end -}}
@@ -457,11 +479,12 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- define "mongodb.x509.generateCNFRSFQDNs" -}}
 {{- $size := int .Values.schemaSettings.cnfReplicaSize -}}
 {{- $namespace := .Release.Namespace -}}
-{{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
 
 - localhost
+{{- range $domain := (include "mongodb.certDomains" . | fromYamlArray) }}
 {{- range $i := until $size }}
 - {{ printf "cnfrs%d-0.cnfrs.%s.svc.%s" $i $namespace $domain }}
+{{- end }}
 {{- end }}
 
 {{- end }}
@@ -473,20 +496,22 @@ app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 
 {{- $size := int $ctx.Values.schemaSettings.dataReplicaSize -}}
 {{- $namespace := $ctx.Release.Namespace -}}
-{{- $domain := $ctx.Values.schemaSettings.thisDomainName | default "cluster.local" -}}
 
 - localhost
+{{- range $domain := (include "mongodb.certDomains" $ctx | fromYamlArray) }}
 {{- range $r := until $size }}
 - {{ printf "datars%d%d-0.datars%d.%s.svc.%s" $shard $r $shard $namespace $domain }}
+{{- end }}
 {{- end }}
 
 {{- end }}
 
 {{- define "mongodb.x509.generateMongosFQDNs" -}}
 {{- $namespace := .Release.Namespace -}}
-{{- $domain := .Values.schemaSettings.thisDomainName | default "cluster.local" -}}
 
 - localhost
+{{- range $domain := (include "mongodb.certDomains" . | fromYamlArray) }}
 - {{ printf "mongos.%s.svc.%s" $namespace $domain }}
+{{- end }}
 
 {{- end }}

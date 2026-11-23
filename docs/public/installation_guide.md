@@ -420,6 +420,7 @@ The list of DBaaS Adapter parameters is as follows:
 | `dbaas.dbaasAggregatorRegistrationRetryTimeMS`           | false     | int            | 60000                                                                                          | The number of retries for registration in the DBaaS aggregator.           |
 | `dbaas.dbaasAggregatorPhysicalDatabaseIdentifier`        | false     | string         | ""                                                                                             | The database identifier in the DBaaS aggregator.                          |
 | `dbaas.dbaasPhysicalDatabasesCustomLabels`               | false     | object         | `{}`                                                                                           | The custom labels for registration in the DBaaS aggregator.               |
+| `dbaas.declarativeRegistration.operatorNamespace`        | false     | string         | `dbaas`                                                                                        | The namespace of the DBaaS Operator. Required when declarative registration is active. |
 | `dbaas.dbaasStreamingRoleName`                           | false     | string         | `streaming`                                                                                    | The streaming user role name. |
 | `dbaas.dbaasStreamingRoles`                              | false     | string         | `{ role: 'read', db: 'admin' }, { role: 'read', db: 'config' }, { role: 'read', db: 'local' }` | The streaming user roles.|
 | `dbaas.dbaasStreamingPrivileges`                         | false     | string         | `{ resource: { db: '', collection: '' }, actions: ['find', 'changeStream'] }`                  | The streaming user priviliges.|
@@ -433,6 +434,21 @@ The list of DBaaS Adapter parameters is as follows:
 | `dbaas.tls.subjectAlternativeName.additionalIpAddresses` | false     | list of string | [ ]                                                                                            | The list of additional IP addresses.|
 | `dbaas.gatewayAPI.gatewayName`                        | false     | string | default-external-gateway           | Chart default for Gateway name.                   |
 | `dbaas.gatewayAPI.gatewayNamespace`                   | false     | string | gateway-system                     | Chart default for Gateway namespace.            |
+| `dbaas.gatewayAPI.gatewayType`                        | false     | string | legacy-ingress                     | Chart default for Gateway type.                 |
+
+### Declarative Physical Database Registration
+
+The chart chooses the registration mode at render time. Declarative mode is used when `dbaas.install` is enabled and the cluster provides the `PhysicalDatabase` CRD (`dbaas.netcracker.com/v1`). Otherwise the adapter registers itself in the DBaaS aggregator as before.
+
+In declarative mode:
+
+* The chart creates a `PhysicalDatabase` custom resource named `<release>-physical-db`. It points to the `dbaas-mongo-adapter` Service and to the `dbaas.dbaasAggregatorSecretName` Secret. The Service uses `https` and port `8443` when TLS is enabled and the aggregator address is `https`, otherwise `http` and port `8080`.
+* The chart creates a Role and RoleBinding, `<release>-dbaas-credentials-reader`. They allow the DBaaS Operator ServiceAccount to `get` only that Secret.
+* The `MongodbSupplService` custom resource gets `dbaas.declarativeRegistration.operatorNamespace`. The adapter then gets `DBAAS_DECLARATIVE_REGISTRATION_ENABLED=true` and does not self-register.
+* The DBaaS Operator reads the descriptor from `GET /api/v2/adapter/physical_database` (Basic Auth with the adapter credentials) and registers the physical database in the aggregator.
+* `dbaas.declarativeRegistration.operatorNamespace` is optional. When empty, the namespace is extracted from `API_DBAAS_ADDRESS` (format `http://<aggregator>.<namespace>:<port>`). In that case `API_DBAAS_ADDRESS` must be set to an address that contains a namespace, otherwise the Helm render fails. Set `operatorNamespace` explicitly only when you need to override the derived value.
+
+**Note:** The CRD being available does not mean the DBaaS Operator is running. Make sure the DBaaS Operator is ready before you install or upgrade. If the CRD is installed after the adapter, run `helm upgrade` to switch to declarative mode. Deleting the `PhysicalDatabase` resource does not delete any databases.
 
 ## Prometheus Exporter Parameters
 
@@ -751,6 +767,13 @@ The operator performs the following steps automatically:
 7. Performs a final health check. DR status is set to `done` on success.
 
 **Note**: The replication lag wait in step 6 blocks until the standby cluster has fully replicated all data from the active cluster. For large datasets this may take hours. The operator remains in `running` DR status during this time — this is expected.
+
+
+**TLS certificates during the transition**
+If TLS certificates are generated by the chart (`tls.generateCerts.enabled: true`), the member hostnames still use `cluster.local` until the operator renames them, while the new certificate is issued for `thisDomainName`. To keep pods trusted in between, the chart handles the SANs automatically for `schemaType: dr`:
+* On the upgrade that switches to DR, the chart reads the `thisDomainName` of the currently deployed `MongodbDeployment` . If it differs from the new value, the old domain (e.g. `cluster.local`) is added to the certificate SANs next to the new one.
+* On the next upgrade the deployed and new domains are equal, so the old SAN is dropped and the certificate is reissued with `thisDomainName` only. No extra parameters are required.
+* If the deployed domain cannot be read (Helm `lookup` returns nothing for `helm template`, `--dry-run`, Argo CD or Flux), the chart always adds `cluster.local` to the SANs of a DR deployment. The transition still works, but `cluster.local` is not removed later; it only names the same in-namespace pods, so this is harmless.
 
 ### Backup Daemon With S3 Storage
 

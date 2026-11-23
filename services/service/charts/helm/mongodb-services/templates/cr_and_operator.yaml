@@ -8,7 +8,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   deploymentVersion: {{ $deploymentVersion | quote }}
-  cloudPublicHost: {{ .Values.CLOUD_PUBLIC_HOST }}
+  {{- /* Rendered only when set: an unset value would render as null, which the CRD rejects */}}
+  {{- with .Values.CLOUD_PUBLIC_HOST }}
+  cloudPublicHost: {{ . | quote }}
+  {{- end }}
   schemaSettings:
     schemaType: {{ .Values.schemaSettings.schemaType }}
     sharded: {{ .Values.schemaSettings.sharded }}
@@ -207,6 +210,10 @@ spec:
       {{- toYaml .Values.dbaas.affinity | nindent 6 }}
     {{- end }}
     multiUsers: {{ .Values.dbaas.multiUsers }}
+    {{- if eq (include "dbaas.declarativeRegistration.enabled" .) "true" }}
+    declarativeRegistration:
+      operatorNamespace: {{ include "dbaas.operatorNamespace" . | quote }}
+    {{- end }}
     dbaasAdminSecretName: {{ .Values.dbaas.dbaasAdminSecretName }}
     dbaasAggregatorSecretName: {{ .Values.dbaas.dbaasAggregatorSecretName }}
     dbaasRegistrationSecretName: {{ .Values.dbaas.dbaasRegistrationSecretName }}
@@ -383,7 +390,7 @@ spec:
             - name: APP_VERSION
               value: "{{ .Chart.AppVersion }}"
             - name: CLOUD_PUBLIC_HOST
-              value: {{ .Values.CLOUD_PUBLIC_HOST }}
+              value: {{ .Values.CLOUD_PUBLIC_HOST | default "" | quote }}
             - name: NAMESPACE
               valueFrom:
                 fieldRef:

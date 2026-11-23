@@ -41,6 +41,8 @@ func main() {
 	aggregatorAdapterAddress := utils.GetEnv("DBAAS_ADAPTER_ADDRESS", fmt.Sprintf("http://dbaas-%s-adapter.%s:8080", appName, namespace))
 	aggregatorRegistrationAddress := utils.GetEnv("DBAAS_AGGREGATOR_REGISTRATION_ADDRESS", "http://dbaas-aggregator.dbaas:8080")
 	aggregatorRegistrationIdentifier := utils.GetEnv("DBAAS_AGGREGATOR_PHYSICAL_DATABASE_IDENTIFIER", appName)
+	// In declarative mode the DBaaS Operator registers the physical database, so the adapter must not self-register.
+	declarativeRegistration := utils.GetEnvAsBool("DBAAS_DECLARATIVE_REGISTRATION_ENABLED", false)
 
 	aggregatorRegistrationUser := mUtils.GetSecret(
 		"/var/run/secrets/mongodb/dbaas-registration/username",
@@ -143,25 +145,33 @@ func main() {
 		},
 	}
 
-	basicRegistrationAuth := dao.BasicAuth{
-		Username: aggregatorRegistrationUser,
-		Password: aggregatorRegistrationPass,
-	}
-
-	dbaasClient, err := dbaas.NewDbaasClient(aggregatorRegistrationAddress, &basicRegistrationAuth, nil)
-	if dbaasClient == nil {
-		panic(fmt.Errorf("Failed to establish connection to DBaaS aggregator, err: %v", err))
-	}
-
-	if err != nil {
-		ctxLogger.Error(fmt.Sprintf("Failed to get DBaaS aggregator version, err %v. Setting default API version", err))
-	}
-
-	version, _ := dbaasClient.GetVersion() // if err != nil it will fail in the condition above
-	if version == "v3" {
+	var dbaasClient *dbaas.Client
+	if declarativeRegistration {
+		// The DBaaS Operator requires the v2 API and the Aggregator cannot be probed without a client.
+		ctxLogger.Info("Declarative registration is enabled, adapter self-registration is disabled")
 		apiVersion = "v2"
 	} else {
-		apiVersion = "v1"
+		basicRegistrationAuth := dao.BasicAuth{
+			Username: aggregatorRegistrationUser,
+			Password: aggregatorRegistrationPass,
+		}
+
+		var err error
+		dbaasClient, err = dbaas.NewDbaasClient(aggregatorRegistrationAddress, &basicRegistrationAuth, nil)
+		if dbaasClient == nil {
+			panic(fmt.Errorf("Failed to establish connection to DBaaS aggregator, err: %v", err))
+		}
+
+		if err != nil {
+			ctxLogger.Error(fmt.Sprintf("Failed to get DBaaS aggregator version, err %v. Setting default API version", err))
+		}
+
+		version, _ := dbaasClient.GetVersion() // if err != nil it will fail in the condition above
+		if version == "v3" {
+			apiVersion = "v2"
+		} else {
+			apiVersion = "v1"
+		}
 	}
 
 	var dbAdminImpl service.DbAdministration = pkg.GetMongoDbAdministration(
@@ -187,13 +197,10 @@ func main() {
 
 	// Defaults
 	log.Fatal(fiber2.RunFiberServer(port, func(app *fiber.App, ctx context.Context) error {
-		fiber2.BuildFiberDBaaSAdapterHandlers(
-			app,
-			apiUser,
-			apiPass,
-			appPath,
-			admService,
-			service.NewPhysicalRegistrationService(
+		// nil disables the legacy registration routes and the periodic registration worker.
+		var physicalService *service.PhysicalDatabaseRegistrationService
+		if !declarativeRegistration {
+			physicalService = service.NewPhysicalRegistrationService(
 				appName,
 				logger,
 				aggregatorRegistrationIdentifier,
@@ -209,11 +216,23 @@ func main() {
 				aggregatorRegistrationRetryDelay,
 				admService,
 				ctx,
-			),
+			)
+		}
+
+		fiber2.BuildFiberDBaaSAdapterHandlers(
+			app,
+			apiUser,
+			apiPass,
+			appPath,
+			admService,
+			physicalService,
 			backupAdminServiceImpl,
 			supports.ToMap(),
 			logger,
 			profiler, "")
+
+		pkg.RegisterDescriptorHandler(app, apiUser, apiPass,
+			pkg.BuildDescriptor(aggregatorRegistrationIdentifier, appName, aggregatorRegistrationLabels, admService))
 
 		prefix := fmt.Sprintf("/api/%s/dbaas/adapter/mongodb/databases/", apiVersion)
 		app.Put(prefix+":dbName/settings", dbAdminImpl.(*pkg.MongoDbAdministration).UpdateMongodbSettingsHandler)

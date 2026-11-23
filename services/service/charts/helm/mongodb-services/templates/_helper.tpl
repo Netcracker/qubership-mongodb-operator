@@ -23,6 +23,12 @@ app.kubernetes.io/part-of: {{ default "mongodb-services" .Values.PART_OF }}
 app.kubernetes.io/managed-by: {{ default "operator" .Values.MANAGED_BY }}
 {{- end -}}
 
+{{/* Ingress/HTTPRoute labels */}}
+{{- define "ingress.labels" -}}
+deployment.netcracker.com/ingress-audience-type: "ops-user"
+deployment.netcracker.com/ingress-type: "private-network"
+{{- end -}}
+
 {{/*
 Configure MongoDB service 'enableDisasterRecovery' property
 */}}
@@ -433,6 +439,17 @@ Usage example:
 {{- end -}}
 
 {{/*
+Return type for gateway
+*/}}
+{{- define "gateway.type" -}}
+{{- if and .Values.GATEWAY_SYSTEM_TYPE .Values.global.cloudIntegrationEnabled }}
+{{- .Values.GATEWAY_SYSTEM_TYPE }}
+{{- else }}
+{{- default "legacy-ingress" .Values.dbass.gatewayAPI.gatewayType }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return name for gateway
 */}}
 {{- define "gateway.name" -}}
@@ -470,5 +487,53 @@ Backup Daemon SSL secret name
     {{- else -}}
       {{- printf "" -}}
     {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+DBaaS Operator namespace for declarative registration.
+Uses explicitly configured dbaas.declarativeRegistration.operatorNamespace if set,
+otherwise extracts the namespace from API_DBAAS_ADDRESS.
+*/}}
+{{- define "dbaas.operatorNamespace" -}}
+  {{- $explicit := .Values.dbaas.declarativeRegistration.operatorNamespace -}}
+  {{- if and (ne ($explicit | toString) "<nil>") (ne ($explicit | toString) "") -}}
+    {{- $explicit -}}
+  {{- else -}}
+    {{- $address := toString (default "" .Values.API_DBAAS_ADDRESS) -}}
+    {{- $host := first (splitList ":" (last (splitList "://" $address))) -}}
+    {{- $parts := splitList "." $host -}}
+    {{- $namespace := "" -}}
+    {{- if ge (len $parts) 2 -}}
+      {{- $namespace = index $parts 1 -}}
+    {{- end -}}
+    {{- if or (eq $namespace "") (regexMatch "^[0-9]+$" $namespace) -}}
+      {{- fail (printf "API_DBAAS_ADDRESS %q names no namespace. Set it to http://<aggregator>.<namespace>:<port> or set dbaas.declarativeRegistration.operatorNamespace." $address) -}}
+    {{- end -}}
+    {{- $namespace -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Declarative physical database registration is used when the Adapter is installed and the shared
+PhysicalDatabase CRD is available at render time. Renders "true" or "false".
+*/}}
+{{- define "dbaas.declarativeRegistration.enabled" -}}
+  {{- if and (eq (include "fromValuesThenEnvElseDefault" (dict "dotVar" .Values.dbaas.install "envVar" .Values.DBAAS_ENABLED "default" true )) "true") (.Capabilities.APIVersions.Has "dbaas.netcracker.com/v1/PhysicalDatabase") -}}
+    true
+  {{- else -}}
+    false
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Address of the DBaaS Adapter Service reachable by the DBaaS Operator; the scheme and port follow the Adapter TLS setting.
+*/}}
+{{- define "dbaas.adapterAddress" -}}
+  {{- $aggregatorAddress := include "fromEnv" (dict "envName" .Values.API_DBAAS_ADDRESS "default" .Values.dbaas.dbaasAggregatorRegistrationAddress) -}}
+  {{- if and (ne .Values.tls.mode "disabled") (contains "https" $aggregatorAddress) -}}
+    https://dbaas-mongo-adapter.{{ .Release.Namespace }}:8443
+  {{- else -}}
+    http://dbaas-mongo-adapter.{{ .Release.Namespace }}:8080
   {{- end -}}
 {{- end -}}

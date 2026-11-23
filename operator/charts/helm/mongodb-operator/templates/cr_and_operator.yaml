@@ -8,7 +8,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   deploymentVersion: {{ $deploymentVersion | quote }}
-  cloudPublicHost: {{ .Values.CLOUD_PUBLIC_HOST }}
+  {{- /* Rendered only when set: an unset value would render as null, which the CRD rejects */}}
+  {{- with .Values.CLOUD_PUBLIC_HOST }}
+  cloudPublicHost: {{ . | quote }}
+  {{- end }}
   # Add fields here
   schemaSettings:
     schemaType: {{ .Values.schemaSettings.schemaType }}
@@ -254,7 +257,7 @@ spec:
                 - ALL
           env:
             - name: CLOUD_PUBLIC_HOST
-              value: {{ .Values.CLOUD_PUBLIC_HOST }}
+              value: {{ .Values.CLOUD_PUBLIC_HOST | default "" | quote }}
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
