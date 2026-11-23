@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	github.com/Netcracker/qubership-dbaas-adapter-core v0.13.0
 	github.com/docker/distribution v2.8.3+incompatible
-	github.com/gofiber/fiber/v2 v2.52.15
+	github.com/gofiber/fiber/v2 v2.52.16
 	github.com/stretchr/testify v1.12.1
 	go.mongodb.org/mongo-driver v1.17.10
 	go.uber.org/zap v1.28.0
