@@ -6,7 +6,7 @@ import (
 	"time"
 
 	nosqlFiber "github.com/Netcracker/qubership-nosqldb-operator-core/pkg/fiber"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 

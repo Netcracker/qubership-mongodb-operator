@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/Netcracker/qubership-dbaas-adapter-core/pkg/dao"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/basicauth"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/basicauth"
 )
 
 // DescriptorPath is the declarative registration endpoint polled by the DBaaS Operator.
