@@ -1,9 +1,9 @@
 module github.com/Netcracker/qubership-mongodb-operator
 
-go 1.27.1
+go 1.27.4
 
 require (
-	github.com/Netcracker/qubership-credential-manager v0.0.18
+	github.com/Netcracker/qubership-credential-manager v0.0.19
 	github.com/Netcracker/qubership-nosqldb-operator-core v1.0.16
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/gofiber/swagger v1.1.1
