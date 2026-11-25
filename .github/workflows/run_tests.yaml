@@ -47,11 +47,11 @@ jobs:
 
   MongoDB-Pipeline:
     needs: Wait-for-images
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@96118c398ac5bb4f8e8dff69b05a71789e873684 # v1.17.2
+    uses: Netcracker/qubership-test-pipelines/.github/workflows/mongodb.yaml@4ebc866a2ca5e308d2fad2e91de81a0aa6d42ba5 # v1.19.1
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: '96118c398ac5bb4f8e8dff69b05a71789e873684' # v1.17.2 renovate: depName=Netcracker/qubership-test-pipelines
+      pipeline_branch: '4ebc866a2ca5e308d2fad2e91de81a0aa6d42ba5' # v1.19.1 renovate: depName=Netcracker/qubership-test-pipelines
       skip_tests: ${{ fromJSON(needs.Wait-for-images.outputs.skip_tests) }}
       # ubuntu-22.04 (kernel 6.8): MongoDB 8.0 refuses to start on kernel 6.19+, and both ubuntu-24.04 and ubuntu-26.04 runners ship 7.0.0-azure, see SERVER-136848
       runner_type: 'ubuntu-22.04'
