@@ -392,6 +392,28 @@ func TestMongoDbAdministration_CreateUserNotExists(t *testing.T) {
 	assert.NotEqual(t, url, "")
 }
 
+func TestMongoDbAdministration_CreateUserRoleInConnectionProperties(t *testing.T) {
+	config := new(MongoConfigurationTest)
+	config.On("GetMongoClient").Return(nil, nil)
+	config.On("GetHost").Return("mongos.mongo-cluster.svc")
+	config.On("GetPort").Return(27017)
+	config.On("IsTLSEnabled").Return(false)
+
+	service := &MongoServiceTest{configuration: config}
+	service.On("CreateOrUpdateUser", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	dbAdmin := &MongoDbAdministration{mongodService: service, logger: utils.GetLogger(true), apiVersion: "v2"}
+	userResponse, err := dbAdmin.CreateUser(context.Background(), "", dao.UserCreateRequest{
+		DbName:   generateUUID(),
+		Password: generateUUID(),
+		Role:     "admin",
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, "admin", userResponse.ConnectionProperties["role"])
+	assert.Equal(t, "admin", userResponse.Role)
+}
+
 func getAllParamsDescriptionNoVault(randomRequestCreateDb dao.DbCreateRequest) *dao.LogicalDatabaseDescribed {
 	var connectionProperties []dao.ConnectionProperties
 	connectionProperties = append(connectionProperties, dao.ConnectionProperties{

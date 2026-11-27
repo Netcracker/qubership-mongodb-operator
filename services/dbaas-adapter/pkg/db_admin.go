@@ -489,7 +489,7 @@ func (c *MongoDbAdministration) CreateUser(ctx context.Context, userName string,
 	connProp := c.getConnectionProperties(
 		logicalDbName,
 		userName,
-		requestOnCreateUser.Password, "")
+		requestOnCreateUser.Password, requestOnCreateUser.Role)
 
 	return &dao.CreatedUser{
 		ConnectionProperties: connProp,
